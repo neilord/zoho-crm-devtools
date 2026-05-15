@@ -12,7 +12,7 @@
 - `src/content/zoho`: selectors and DOM adapters for Zoho CRM
 - `src/content/editor`: editor lifecycle and injected integrations
 - `src/settings`: setting schema, defaults, storage, and migrations
-- `src/themes`: theme metadata and CSS variable payloads
+- `src/themes`: theme metadata, theme-local palette variables, and the shared Zoho variable mapping
 - `src/syntax`: syntax-enhancement styles and toggles
 - `src/features`: stable feature registry and release metadata
 - `src/shared`: browser and utility abstractions
@@ -22,6 +22,8 @@
 
 - Run the full verification command before commits: `npm run verify`.
 - Treat live-debug experiments as provisional until real Zoho verification passes.
+- Keep theme palettes separate from the shared Zoho mapping layer so Zoho variable changes are handled
+  once instead of copied into every theme.
 
 ## Data Flow
 

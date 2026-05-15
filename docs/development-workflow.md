@@ -11,6 +11,8 @@
 - Use Conventional Commits.
 - Prefer small logical commits over large mixed commits.
 - Before every commit, run `npm run verify`.
+- If a lint rule needs an intentional exception, suppress it at the narrowest useful scope with a
+  reason comment so later verification output stays actionable for other contributors.
 - If `npm run verify` is too slow later, revise the workflow explicitly rather than quietly skipping checks.
 
 ## Review
