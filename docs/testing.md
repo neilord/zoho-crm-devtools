@@ -29,4 +29,6 @@ When a live Zoho interaction reveals a stable structure worth testing, capture t
 
 Do not try to mirror or download the full Zoho application. Fixtures should be focused snippets for the exact control or state under test.
 
-If a feature depends on Zoho DOM the assistant cannot inspect directly, the assistant should ask the user for the relevant source fragment or screenshot rather than inventing selectors from memory.
+If a feature depends on Zoho DOM the assistant cannot inspect directly, the assistant should ask the user for the smallest relevant source fragment or screenshot needed for that feature rather than inventing selectors from memory.
+
+For example, a themes task may need the native theme-picklist DOM and selection-state classes so it can build focused fixture tests. It should not request broad page captures or unrelated material just to plan future end-to-end coverage.
