@@ -15,7 +15,7 @@ export interface FeatureDefinition {
 }
 
 export const features: readonly FeatureDefinition[] = [
-  { id: 'editorThemes', tier: 'free', status: 'released' },
+  { id: 'editorThemes', tier: 'free', status: 'planned' },
   { id: 'fontControls', tier: 'free', status: 'planned' },
   { id: 'indentGuides', tier: 'free', status: 'planned' },
   { id: 'syntaxEnhancement', tier: 'free', status: 'planned' },

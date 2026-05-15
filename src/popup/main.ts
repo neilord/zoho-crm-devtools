@@ -33,8 +33,9 @@ async function initializePopup(): Promise<void> {
     : 'Open Zoho CRM to use editor tools';
 
   enabledInput.addEventListener('change', async () => {
+    const latestSettings = await loadSettings();
     const nextSettings: Settings = {
-      ...settings,
+      ...latestSettings,
       enabled: enabledInput.checked,
     };
     await saveSettings(nextSettings);

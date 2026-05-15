@@ -2,11 +2,11 @@ import { describe, expect, it } from 'vitest';
 import { getFeature } from '../src/features/registry';
 
 describe('feature registry', () => {
-  it('keeps MVP editor themes free and released', () => {
+  it('keeps MVP editor themes free while they are still planned', () => {
     expect(getFeature('editorThemes')).toEqual({
       id: 'editorThemes',
       tier: 'free',
-      status: 'released',
+      status: 'planned',
     });
   });
 

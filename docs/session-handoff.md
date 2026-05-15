@@ -4,8 +4,9 @@
 
 1. `docs/product.md`
 2. `docs/architecture.md`
-3. `docs/debugging-playbook.md`
-4. This file
+3. `docs/development-workflow.md`
+4. `docs/debugging-playbook.md`
+5. This file
 
 ## Current Milestone
 

@@ -18,10 +18,14 @@
 - `src/shared`: browser and utility abstractions
 - `src/popup`: minimal extension popup
 
+## Working Rules
+
+- Run the full verification command before commits: `npm run verify`.
+- Treat live-debug experiments as provisional until real Zoho verification passes.
+
 ## Data Flow
 
 1. Popup or native Zoho controls update typed settings.
 2. Settings are persisted through the storage adapter.
 3. Content scripts observe editor availability and react to setting changes.
 4. Theme and editor modules update the live page through the Zoho adapter layer.
-
