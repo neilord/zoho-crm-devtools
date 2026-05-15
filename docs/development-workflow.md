@@ -15,6 +15,7 @@
 
 ## Review
 
+- GitHub CI runs `npm run verify` on every push and pull request.
 - Run a code-review pass before publishing a branch or opening a pull request.
 - Review for correctness first: runtime bugs, lifecycle gaps, risky assumptions, selector fragility, and missing tests.
 - Keep provisional live-debug experiments off the shared branch until they survive real Zoho verification.
@@ -26,4 +27,3 @@
 3. Review the diff.
 4. Commit with a Conventional Commit message.
 5. Update docs when the change adds durable project knowledge.
-
