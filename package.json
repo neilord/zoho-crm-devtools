@@ -1,0 +1,27 @@
+{
+  "name": "zoho-crm-devtools",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "typecheck": "tsc --noEmit",
+    "check": "biome check .",
+    "format": "biome format --write .",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "playwright test",
+    "zip": "npm run build && cd dist && zip -r ../zoho-crm-devtools.zip ."
+  },
+  "devDependencies": {
+    "@biomejs/biome": "latest",
+    "@crxjs/vite-plugin": "latest",
+    "@playwright/test": "latest",
+    "@types/chrome": "latest",
+    "jsdom": "latest",
+    "typescript": "latest",
+    "vite": "latest",
+    "vitest": "latest"
+  }
+}
