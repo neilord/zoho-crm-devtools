@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import {
   applyCustomThemePresentation,
+  CUSTOM_THEME_ACTIVE_CLASS,
   CUSTOM_THEME_SHADOW_LABEL_CLASS,
   injectCustomThemeOptions,
   reconcileThemeSelection,
@@ -45,6 +46,7 @@ describe('Zoho native theme dropdown integration', () => {
     const shadowLabel = document.querySelector(`.${CUSTOM_THEME_SHADOW_LABEL_CLASS}`);
 
     expect(document.body.classList.contains(theme.cssClass)).toBe(true);
+    expect(document.body.classList.contains(CUSTOM_THEME_ACTIVE_CLASS)).toBe(true);
     expect((nativeLabel as HTMLElement).style.display).toBe('none');
     expect(shadowLabel?.textContent).toBe('VS Code Dark');
   });

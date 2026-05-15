@@ -11,6 +11,7 @@ import {
 
 export const CUSTOM_THEME_OPTION_ATTR = 'data-zcdt-theme-option';
 export const CUSTOM_THEME_SHADOW_LABEL_CLASS = 'zcdt-custom-theme-label';
+export const CUSTOM_THEME_ACTIVE_CLASS = 'zcdt-custom-theme-active';
 
 function getThemeId(option: Element): string | null {
   return option.getAttribute('data-value');
@@ -48,6 +49,7 @@ function applyThemeClass(activeTheme: ThemeDefinition | null): void {
   for (const theme of themes) {
     document.body.classList.remove(theme.cssClass);
   }
+  document.body.classList.toggle(CUSTOM_THEME_ACTIVE_CLASS, activeTheme !== null);
 
   if (activeTheme) {
     document.body.classList.add(activeTheme.cssClass);
