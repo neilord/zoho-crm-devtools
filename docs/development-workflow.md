@@ -10,6 +10,10 @@
 
 - Use Conventional Commits.
 - Prefer small logical commits over large mixed commits.
+- When a feature spans several concerns, commit at stable seams as soon as each slice is coherent and
+  verifiable instead of waiting for one large end-of-branch commit.
+- Favor commits that are easy to review independently, such as schema/registry groundwork, one
+  integration slice, or focused tests/docs, rather than bundling all feature work together.
 - Before every commit, run `npm run verify`.
 - If a lint rule needs an intentional exception, suppress it at the narrowest useful scope with a
   reason comment so later verification output stays actionable for other contributors.
