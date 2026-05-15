@@ -11,27 +11,41 @@
 
 ## Current Milestone
 
-Ready for first real feature branch.
+First real feature slice implemented and live-verified.
 
-## Current State
+## Last Completed Task
 
-- Foundation scaffold committed on `codex/chore-project-scaffold`
-- Logged-in Chrome live-debug path verified
-- Current Zoho editor and native settings modal inspected
-- Local unpacked extension loaded in Chrome from `dist`
-- Popup opens locally
-- Content script verified on the live Zoho editor via `document.documentElement.dataset.zcdtReady === "true"`
-- Native theme settings flow confirmed as the right first feature slice
+Implemented native custom-theme injection for the Zoho CRM Deluge editor and verified both dark and
+light alias paths live in Zoho.
 
-## Next Task
+## Current Branch
 
-Create a fresh feature branch from `main`, inspect the native Zoho behavior for the chosen feature, and implement the first real vertical slice.
+`codex/theme-injection-core`
 
-## Update This File With
+## What Works
 
-- Last completed task
-- Branch name
-- What works
-- Known fragile selectors
-- Failed approaches worth remembering
-- Exact next task
+- Custom options are injected into Zoho's native theme dropdown without replacing the native UX.
+- `VS Code Dark` delegates to native `vs-dark`; `VS Code Light` delegates to native `vs-light`.
+- Custom selection persists, updates the visible dropdown label, and keeps the custom checkmark
+  selected while Zoho still owns the underlying light/dark switch.
+- The proof-theme CSS now uses theme-local `--zcdt-theme-*` palette variables mapped onto Zoho's
+  editor-facing `--dre-*` variables.
+
+## Known Fragile Selectors
+
+- Theme dropdown: `lyte-dropdown[data-zcqa="dxDroptheme"]`
+- Editor settings button: `[data-zcqa="delgv2sbsettings_click"]`
+- Native fallback anchor: `lyte-drop-item[data-value="vs-dark"]`
+
+## Failed Approaches Worth Remembering
+
+- Do **not** unconditionally rewrite selected-state attributes/classes inside the mutation observer
+  reconciliation path. That creates a self-feeding mutation loop and can crash the tab.
+- Reconciliation must only mutate when state is actually wrong, and it should keep the hover guard
+  before moving `lyteDropdownSelection` away from Zoho's native alias option.
+
+## Exact Next Task
+
+Create a separate theme-catalog branch after theme research, then add curated real themes by extending
+the registry and theme palettes without reopening the proven native-injection logic unless live
+verification reveals a gap.
