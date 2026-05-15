@@ -13,25 +13,33 @@ export interface BrowserFacade {
   };
 }
 
-function promisifyStorage(area: chrome.storage.StorageArea): StorageArea {
+function getChromeApi(): typeof chrome {
+  if (!globalThis.chrome) {
+    throw new Error('Chrome extension APIs are unavailable in this environment.');
+  }
+
+  return globalThis.chrome;
+}
+
+function promisifyStorage(getArea: () => chrome.storage.StorageArea): StorageArea {
   return {
     get<T extends Record<string, unknown>>(keys?: string[] | null) {
-      return area.get(keys ?? null) as Promise<T>;
+      return getArea().get(keys ?? null) as Promise<T>;
     },
     set(items: Record<string, unknown>) {
-      return area.set(items);
+      return getArea().set(items);
     },
   };
 }
 
 export const browser: BrowserFacade = {
   storage: {
-    sync: promisifyStorage(chrome.storage.sync),
-    local: promisifyStorage(chrome.storage.local),
+    sync: promisifyStorage(() => getChromeApi().storage.sync),
+    local: promisifyStorage(() => getChromeApi().storage.local),
   },
   tabs: {
     query(queryInfo) {
-      return chrome.tabs.query(queryInfo);
+      return getChromeApi().tabs.query(queryInfo);
     },
   },
 };

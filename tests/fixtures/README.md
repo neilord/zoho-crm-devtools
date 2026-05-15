@@ -10,3 +10,8 @@ Store small captured Zoho DOM fragments here when they make a feature easier to 
 - Keep live Zoho verification as the final source of truth for browser behavior and visuals.
 - If the assistant cannot inspect the needed DOM directly, request the smallest relevant Zoho source fragment from the user before creating the fixture.
 - Keep fixtures tied to the current feature. For a theme-picklist change, capture the picklist and its relevant states, not unrelated page structure.
+
+## Current Fixtures
+
+- `theme-dropdown.html`: focused native Lyte theme dropdown captured from the live Zoho editor
+  settings flow on 2026-05-15.
