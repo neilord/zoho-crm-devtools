@@ -10,18 +10,21 @@
 
 ## Current Milestone
 
-Foundation plus live-debug setup.
+Ready for first real feature branch.
 
 ## Current State
 
 - Foundation scaffold committed on `codex/chore-project-scaffold`
 - Logged-in Chrome live-debug path verified
 - Current Zoho editor and native settings modal inspected
+- Local unpacked extension loaded in Chrome from `dist`
+- Popup opens locally
+- Content script verified on the live Zoho editor via `document.documentElement.dataset.zcdtReady === "true"`
 - Native theme settings flow confirmed as the right first feature slice
 
 ## Next Task
 
-Load the unpacked build in Chrome, inspect the native theme combobox DOM in detail, and implement the first theme-picklist slice.
+Create a fresh feature branch from `main`, inspect the native Zoho behavior for the chosen feature, and implement the first real vertical slice.
 
 ## Update This File With
 

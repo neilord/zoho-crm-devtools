@@ -20,3 +20,4 @@ Real-site checks are required for:
 
 When a live Zoho interaction reveals a stable structure worth testing, capture the smallest useful HTML fixture and document its origin in `docs/zoho-integration.md`.
 
+Do not try to mirror or download the full Zoho application. Fixtures should be focused snippets for the exact control or state under test.
