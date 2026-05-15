@@ -7,6 +7,13 @@
 - Playwright extension tests for built-extension flows
 - Real Zoho checks in an authenticated Chrome session
 
+## Test Scope By Stage
+
+- Early feature slices should add the smallest useful tests that protect the behavior being built.
+- Do not pause a feature to design the full future end-to-end test architecture unless the current task specifically requires it.
+- Prefer focused unit or fixture coverage first when live behavior has become clear enough to encode.
+- Add broader Playwright coverage incrementally as stable user flows emerge.
+
 ## Real-site Verification
 
 Real-site checks are required for:
@@ -21,3 +28,5 @@ Real-site checks are required for:
 When a live Zoho interaction reveals a stable structure worth testing, capture the smallest useful HTML fixture and document its origin in `docs/zoho-integration.md`.
 
 Do not try to mirror or download the full Zoho application. Fixtures should be focused snippets for the exact control or state under test.
+
+If a feature depends on Zoho DOM the assistant cannot inspect directly, the assistant should ask the user for the relevant source fragment or screenshot rather than inventing selectors from memory.

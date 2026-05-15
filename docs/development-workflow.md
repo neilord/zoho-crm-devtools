@@ -20,6 +20,14 @@
 - Review for correctness first: runtime bugs, lifecycle gaps, risky assumptions, selector fragility, and missing tests.
 - Keep provisional live-debug experiments off the shared branch until they survive real Zoho verification.
 
+## Feature Session Expectations
+
+- Read the project docs before changing code.
+- Inspect the live Zoho UI before implementing integration behavior.
+- Ask for browser access or relevant Zoho source when required evidence is missing.
+- Add only the test depth justified by the current feature slice; do not turn routine feature work into architecture redesign.
+- Update docs when new durable Zoho knowledge, workflow facts, or selector risks are discovered.
+
 ## Suggested Commit Loop
 
 1. Make one coherent change.

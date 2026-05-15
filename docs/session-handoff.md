@@ -6,7 +6,8 @@
 2. `docs/architecture.md`
 3. `docs/development-workflow.md`
 4. `docs/debugging-playbook.md`
-5. This file
+5. `docs/testing.md`
+6. This file
 
 ## Current Milestone
 
