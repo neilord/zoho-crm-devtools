@@ -4,6 +4,8 @@
 
 - Use short-lived feature branches with the `codex/` prefix.
 - Keep one concern per branch whenever practical.
+- Merge completed feature branches into `main` with an explicit no-fast-forward merge so the branch
+  boundary remains visible in history alongside the smaller logical commits inside it.
 - Do not publish exploratory branches until the approach is agreed and verified.
 
 ## Commits
