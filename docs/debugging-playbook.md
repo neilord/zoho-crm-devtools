@@ -14,6 +14,13 @@
 - Verify reopen/reload behavior, not only the happy path immediately after insertion.
 - If a failed approach teaches us something, record the lesson instead of erasing it from memory.
 - When browser inspection is needed but unavailable, ask the user to enable the browser tool or provide the missing evidence.
+- After each significant step, be able to state what changed, what was verified, and what remains unknown before continuing.
+
+## Conflicting Patterns
+
+- If two patterns conflict, do not average them together.
+- Prefer the more recent, more verified, or more native pattern, then record why.
+- Surface the older or conflicting pattern for later cleanup instead of silently blending both.
 
 ## Escalate To The User When
 

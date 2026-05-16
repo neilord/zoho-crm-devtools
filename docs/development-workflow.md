@@ -23,8 +23,11 @@
 ## Feature Session Expectations
 
 - Read the project docs before changing code.
+- For non-trivial work, state the success criteria before implementing so verification is concrete.
+- Read the relevant existing modules, exports, callers, and helpers before adding new code.
 - Inspect the live Zoho UI before implementing integration behavior.
 - Ask for browser access or relevant Zoho source when required evidence is missing.
+- Prefer the smallest change that solves the current task; avoid speculative abstractions and unrelated cleanup.
 - Add only the test depth justified by the current feature slice; do not turn routine feature work into architecture redesign.
 - Update docs when new durable Zoho knowledge, workflow facts, or selector risks are discovered.
 
@@ -35,3 +38,8 @@
 3. Review the diff.
 4. Commit with a Conventional Commit message.
 5. Update docs when the change adds durable project knowledge.
+
+## Verification Honesty
+
+- Say explicitly when browser verification, live Zoho verification, or a planned test was not run.
+- Do not describe work as complete if a meaningful verification step was skipped or still failing.

@@ -13,6 +13,10 @@
 - Do not pause a feature to design the full future end-to-end test architecture unless the current task specifically requires it.
 - Prefer focused unit or fixture coverage first when live behavior has become clear enough to encode.
 - Add broader Playwright coverage incrementally as stable user flows emerge.
+- Tests should prove the intent that matters, not merely assert that some markup exists.
+
+For example, a theme integration test is stronger when it protects selected-state persistence or native
+alias behavior than when it only checks that a custom option node was appended.
 
 ## Real-site Verification
 
