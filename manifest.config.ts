@@ -1,5 +1,7 @@
 import type { ManifestV3Export } from '@crxjs/vite-plugin';
 
+type ManifestV3 = Extract<Awaited<ManifestV3Export>, { manifest_version: number }>;
+
 const crmMatches = [
   'https://crm.zoho.com/*',
   'https://crm.zoho.au/*',
@@ -24,24 +26,40 @@ const crmMatches = [
   'https://*.zohoportal.in/*',
 ] as const;
 
-const manifest: ManifestV3Export = {
-  manifest_version: 3,
-  name: 'Zoho CRM DevTools',
-  version: '0.1.0',
-  description: 'Enhance the Zoho CRM Deluge editor with themes and editor improvements.',
-  permissions: ['storage'],
-  action: {
-    default_title: 'Zoho CRM DevTools',
-    default_popup: 'src/popup/index.html',
-  },
-  content_scripts: [
-    {
-      matches: [...crmMatches],
-      js: ['src/content/index.ts'],
-      run_at: 'document_idle',
+export function createManifest(mode: string): ManifestV3 {
+  const manifest: ManifestV3 = {
+    manifest_version: 3,
+    name: 'Zoho CRM DevTools',
+    version: '0.1.0',
+    description: 'Enhance the Zoho CRM Deluge editor with themes and editor improvements.',
+    permissions: ['storage'],
+    action: {
+      default_title: 'Zoho CRM DevTools',
+      default_popup: 'src/popup/index.html',
     },
-  ],
-};
+    content_scripts: [
+      {
+        matches: [...crmMatches],
+        js: ['src/content/index.ts'],
+        run_at: 'document_idle',
+      },
+    ],
+  };
+
+  if (mode === 'development') {
+    manifest.background = {
+      service_worker: 'src/internal/dev-reload/background-entry.ts',
+      type: 'module',
+    };
+    manifest.content_scripts?.push({
+      matches: [...crmMatches],
+      js: ['src/internal/dev-reload/content-entry.ts'],
+      run_at: 'document_idle',
+    });
+  }
+
+  return manifest;
+}
 
 export { crmMatches };
-export default manifest;
+export default createManifest('production');

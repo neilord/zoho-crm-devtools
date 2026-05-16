@@ -49,3 +49,41 @@
 
 - Say explicitly when browser verification, live Zoho verification, or a planned test was not run.
 - Do not describe work as complete if a meaningful verification step was skipped or still failing.
+
+## Development-Only Extension Reload
+
+Use the internal reload control when iterating on the unpacked extension locally and browser automation
+cannot reach `chrome://extensions`.
+
+1. Build the local development artifact with `npm run build:dev`.
+2. Load `dist-dev` as the unpacked extension if it is not already installed.
+3. After rebuilding, click the hidden dev control in the Zoho tab:
+
+   ```ts
+   await tab.playwright
+     .locator('[data-zcdt-dev-reload-extension]')
+     .click({ force: true });
+   ```
+
+   Manual console fallback:
+
+   ```js
+   document.querySelector('[data-zcdt-dev-reload-extension]')?.click();
+   ```
+
+4. Reload the Zoho tab before verifying the new behavior.
+
+Keep the two build outputs separate on purpose:
+
+- `npm run verify` remains the production-quality gate and ends by writing a production build to
+  `dist`.
+- `npm run build:dev` writes the locally loaded development extension to `dist-dev`.
+
+That separation lets contributors run `npm run verify` freely without overwriting the unpacked
+development extension currently under live test. The reload control exists only in development
+builds. A normal `npm run build` output does not include the reload control or background worker, so
+this is not product UI and is not reachable in production builds.
+
+`chrome://extensions` may still need one manual reload when the extension has not been installed yet,
+or when the currently loaded copy is broken enough that it cannot receive the event. After that,
+prefer the self-reload control for routine local iteration.

@@ -1,7 +1,7 @@
 node_modules/
 dist/
+dist-dev/
 coverage/
 playwright-report/
 test-results/
 .DS_Store
-
