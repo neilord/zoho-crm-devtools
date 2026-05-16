@@ -1,11 +1,11 @@
-import { DEV_RELOAD_COMMAND } from './protocol';
+import { isDevReloadMessage } from './protocol';
 
 export interface DevReloadRuntime {
   reload(): void;
 }
 
-export function handleDevReloadCommand(command: string, runtime: DevReloadRuntime): boolean {
-  if (command !== DEV_RELOAD_COMMAND) {
+export function handleDevReloadMessage(message: unknown, runtime: DevReloadRuntime): boolean {
+  if (!isDevReloadMessage(message)) {
     return false;
   }
 

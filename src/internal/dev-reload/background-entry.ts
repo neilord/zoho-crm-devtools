@@ -1,5 +1,5 @@
-import { handleDevReloadCommand } from './background-handler';
+import { handleDevReloadMessage } from './background-handler';
 
-chrome.commands.onCommand.addListener((command) => {
-  handleDevReloadCommand(command, chrome.runtime);
+chrome.runtime.onMessage.addListener((message) => {
+  handleDevReloadMessage(message, chrome.runtime);
 });
