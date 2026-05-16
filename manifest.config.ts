@@ -51,11 +51,15 @@ export function createManifest(mode: string): ManifestV3 {
       service_worker: 'src/internal/dev-reload/background-entry.ts',
       type: 'module',
     };
-    manifest.content_scripts?.push({
-      matches: [...crmMatches],
-      js: ['src/internal/dev-reload/content-entry.ts'],
-      run_at: 'document_idle',
-    });
+    manifest.commands = {
+      'reload-extension': {
+        suggested_key: {
+          default: 'Alt+Shift+R',
+          mac: 'Alt+Shift+R',
+        },
+        description: 'Reload the extension during local development.',
+      },
+    };
   }
 
   return manifest;
