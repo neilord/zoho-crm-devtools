@@ -1,7 +1,7 @@
 export interface Settings {
   version: 1;
   enabled: boolean;
-  themeId: string;
+  customThemeId: string | null;
   fontFamily: string;
   fontSizePx: number;
   fontWeight: number;
@@ -15,7 +15,7 @@ export interface Settings {
 export const defaultSettings: Settings = {
   version: 1,
   enabled: true,
-  themeId: 'zoho-default-light',
+  customThemeId: null,
   fontFamily: 'JetBrains Mono',
   fontSizePx: 14,
   fontWeight: 400,

@@ -4,6 +4,7 @@ import { defaultSettings, normalizeSettings } from '../src/settings/schema';
 describe('settings schema', () => {
   it('uses the full default shape when nothing is stored', () => {
     expect(normalizeSettings(undefined)).toEqual(defaultSettings);
+    expect(defaultSettings.customThemeId).toBeNull();
   });
 
   it('keeps known stored values while forcing the current version', () => {
@@ -11,11 +12,13 @@ describe('settings schema', () => {
       normalizeSettings({
         version: 99 as 1,
         enabled: false,
+        customThemeId: 'vscode-dark',
         fontSizePx: 16,
       }),
     ).toMatchObject({
       version: 1,
       enabled: false,
+      customThemeId: 'vscode-dark',
       fontSizePx: 16,
     });
   });

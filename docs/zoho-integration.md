@@ -22,12 +22,21 @@ The extension targets Zoho CRM only.
   - `Syntax Assist`
   - `Font`
   - `Word Spacing`
-- The theme page currently renders a `Color` panel with a native combobox showing `Light`.
+- The theme page renders a native Lyte dropdown at `lyte-dropdown[data-zcqa="dxDroptheme"]`.
+- The live native theme options currently observed are:
+  - `vs-dark` → `Dark`
+  - `vs-darkplus` → `Midnight Blue`
+  - `vs-light` → `Light`
+- Native theme selection updates the dropdown's `lt-prop-selected`, visible label text, and selected
+  state on `lyte-drop-item` nodes while Zoho flips the page-level `deluge-theme`.
+- A custom theme can preserve native behavior by acting as a managed alias of either `vs-dark` or
+  `vs-light`: the extension presents the custom option, then delegates the real mode switch back to
+  the matching native option.
+- Because Zoho mutates dropdown DOM and selected-state attributes after interaction, custom options
+  need lightweight reconciliation for injected nodes, visible labels, and checkmarks.
 
 ## Known Open Questions
 
 - Durable selectors for the current editor mount and settings trigger
-- The exact DOM structure and classes behind the native theme combobox
-- Best insertion point for custom theme options
-- How native selected-state is derived and persisted
-- Whether cloned native options can preserve native behavior across reopen/reload without extra reconciliation
+- Whether editor-scoped `--dre-*` overrides are sufficient for all desired custom themes, or whether a
+  small number of `--delg-*` variables are also needed for specific editor-owned surfaces
