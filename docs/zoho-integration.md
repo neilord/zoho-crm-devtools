@@ -34,9 +34,15 @@ The extension targets Zoho CRM only.
   the matching native option.
 - Because Zoho mutates dropdown DOM and selected-state attributes after interaction, custom options
   need lightweight reconciliation for injected nodes, visible labels, and checkmarks.
+- Live theme auditing shows two styling paths inside the editor:
+  - many editor surfaces and syntax colors respond to `--dre-*` / `--delg-*` variables
+  - some surfaces, such as parts of the revision-history UI, are painted by compiled selector rules
+    instead of a reusable variable layer
+- The theme-polish work therefore needs both a low-level variable inventory and a small shared
+  selector-override compatibility layer for surfaces Zoho does not expose through variables.
 
 ## Known Open Questions
 
 - Durable selectors for the current editor mount and settings trigger
-- Whether editor-scoped `--dre-*` overrides are sufficient for all desired custom themes, or whether a
-  small number of `--delg-*` variables are also needed for specific editor-owned surfaces
+- Which selector-backed editor surfaces cannot be expressed through variables alone, and which shared
+  theme tokens they should consume once mapped

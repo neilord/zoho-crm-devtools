@@ -11,18 +11,20 @@
 
 ## Current Milestone
 
-Developer workflow now supports self-reloading the unpacked extension during local iteration, on top
-of the already-complete native custom-theme injection slice.
+Theme selection infrastructure is merged; the current phase is full editor theme coverage and visual
+polish.
 
 ## Last Completed Task
 
-Added a development-only extension reload control so local assistants can rebuild, trigger an extension
-self-reload from the Zoho tab, reload the tab, and continue verification without routinely asking for
-manual `chrome://extensions` interaction.
+- Implemented native custom-theme injection for the Zoho CRM Deluge editor and live-verified both
+  dark and light alias paths.
+- Added a development-only extension reload control so contributors can rebuild, trigger an extension
+  self-reload from the Zoho tab, reload the tab, and continue verification without routinely asking
+  for manual `chrome://extensions` interaction.
 
 ## Current Branch
 
-`codex/dev-extension-reload`
+`codex/theme-surface-polish`
 
 ## What Works
 
@@ -32,11 +34,8 @@ manual `chrome://extensions` interaction.
   selected while Zoho still owns the underlying light/dark switch.
 - The proof-theme CSS uses theme-local `--zcdt-theme-*` palette variables mapped onto Zoho's
   editor-facing `--dre-*` variables.
-- Logged-in Chrome live-debug path is verified.
-- Local unpacked development extension loads from `dist-dev`, the popup opens locally, and the content
-  script marks
-  the live editor with `document.documentElement.dataset.zcdtReady === "true"`.
-- `npm run build:dev` creates a development build with the internal reload control.
+- Logged-in Chrome live-debugging is verified against the local unpacked extension.
+- `npm run build:dev` creates a development build in `dist-dev` with an internal reload control.
 - Clicking `[data-zcdt-dev-reload-extension]` in a Zoho tab asks the extension to call
   `chrome.runtime.reload()`.
 - Production builds from `npm run build` write to `dist` and omit both the dev-only control and
@@ -51,6 +50,8 @@ manual `chrome://extensions` interaction.
 - `chrome://extensions` may still need one manual reload if the extension is not installed yet or the
   loaded copy is too broken to receive the event.
 - After reloading the extension, reload the Zoho tab before verifying changed behavior.
+- Keep theme palettes semantic and compact; map them once onto Zoho variables and shared selector
+  fallbacks rather than duplicating Zoho-specific rules in every theme.
 
 ## Known Fragile Selectors
 
@@ -74,5 +75,6 @@ manual `chrome://extensions` interaction.
 
 ## Exact Next Task
 
-Resume the next product feature branch from `main`, using the local self-reload flow when iterative
-browser verification is needed.
+Inventory Zoho's low-level color variables and selector-backed surfaces, then turn the temporary audit
+work into a shared compatibility layer that makes themes visually complete across the editor shell,
+diff/revision views, popovers, and helper UI.
