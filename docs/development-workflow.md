@@ -52,23 +52,25 @@
 
 ## Development-Only Extension Reload
 
-Use the internal reload bridge when iterating on the unpacked extension locally and browser automation
+Use the internal reload command when iterating on the unpacked extension locally and browser automation
 cannot reach `chrome://extensions`.
 
 1. Build the local development artifact with `npm run build:dev`.
-2. Load `dist` as the unpacked extension if it is not already installed.
-3. After rebuilding, trigger a self-reload from the Zoho tab console or browser automation:
-
-   ```js
-   window.dispatchEvent(new Event('zcdt:dev:reload-extension'));
-   ```
-
+2. Load `dist-dev` as the unpacked extension if it is not already installed.
+3. After rebuilding, focus a Zoho tab and trigger a self-reload with `Alt+Shift+R`.
 4. Reload the Zoho tab before verifying the new behavior.
 
-The bridge exists only in development builds. A normal `npm run build` output does not include the
-reload content script or background worker, so this is not product UI and is not reachable in
-production builds.
+Keep the two build outputs separate on purpose:
+
+- `npm run verify` remains the production-quality gate and ends by writing a production build to
+  `dist`.
+- `npm run build:dev` writes the locally loaded development extension to `dist-dev`.
+
+That separation lets contributors run `npm run verify` freely without overwriting the unpacked
+development extension currently under live test. The reload command exists only in development
+builds. A normal `npm run build` output does not include the reload command or background worker, so
+this is not product UI and is not reachable in production builds.
 
 `chrome://extensions` may still need one manual reload when the extension has not been installed yet,
 or when the currently loaded copy is broken enough that it cannot receive the event. After that,
-prefer the self-reload bridge for routine local iteration.
+prefer the self-reload command for routine local iteration.

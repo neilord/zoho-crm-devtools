@@ -16,7 +16,7 @@ of the already-complete native custom-theme injection slice.
 
 ## Last Completed Task
 
-Added a development-only extension reload bridge so local assistants can rebuild, trigger an extension
+Added a development-only extension reload command so local assistants can rebuild, trigger an extension
 self-reload from the Zoho tab, reload the tab, and continue verification without routinely asking for
 manual `chrome://extensions` interaction.
 
@@ -33,17 +33,20 @@ manual `chrome://extensions` interaction.
 - The proof-theme CSS uses theme-local `--zcdt-theme-*` palette variables mapped onto Zoho's
   editor-facing `--dre-*` variables.
 - Logged-in Chrome live-debug path is verified.
-- Local unpacked extension loads from `dist`, the popup opens locally, and the content script marks
+- Local unpacked development extension loads from `dist-dev`, the popup opens locally, and the content
+  script marks
   the live editor with `document.documentElement.dataset.zcdtReady === "true"`.
-- `npm run build:dev` creates a development build with the internal reload bridge.
-- From an already-injected Zoho tab, `window.dispatchEvent(new Event('zcdt:dev:reload-extension'))`
-  asks the extension to call `chrome.runtime.reload()`.
-- Production builds from `npm run build` omit both the dev-only content script and background worker.
+- `npm run build:dev` creates a development build with the internal reload command.
+- With a Zoho tab focused, `Alt+Shift+R` asks the extension to call `chrome.runtime.reload()`.
+- Production builds from `npm run build` write to `dist` and omit both the dev-only command and
+  background worker.
 
 ## Durable Workflow Knowledge
 
-- Use the self-reload bridge only for local development iteration; it is infrastructure, not a product
+- Use the self-reload command only for local development iteration; it is infrastructure, not a product
   feature.
+- Keep production and local-development artifacts separate: `npm run verify` writes `dist`, while
+  `npm run build:dev` writes `dist-dev`.
 - `chrome://extensions` may still need one manual reload if the extension is not installed yet or the
   loaded copy is too broken to receive the event.
 - After reloading the extension, reload the Zoho tab before verifying changed behavior.
@@ -61,7 +64,10 @@ manual `chrome://extensions` interaction.
 - Reconciliation must only mutate when state is actually wrong, and it should keep the hover guard
   before moving `lyteDropdownSelection` away from Zoho's native alias option.
 - Do not add reload controls to product-facing UI just to support local iteration.
-- Do not assume browser automation can operate `chrome://extensions`; use the dev bridge once the
+- A page-event bridge is a poor primary trigger for logged-in Chrome verification because the Chrome
+  automation surface exposes read-only page evaluation; use a command that automation can trigger
+  with a key chord instead.
+- Do not assume browser automation can operate `chrome://extensions`; use the dev command once the
   unpacked extension is healthy enough to receive it.
 
 ## Exact Next Task

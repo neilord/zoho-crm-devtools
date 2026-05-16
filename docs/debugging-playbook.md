@@ -12,7 +12,7 @@
 - Compare DOM, classes, attributes, and computed styles before and after each interaction.
 - Capture screenshots when visual correctness matters.
 - Verify reopen/reload behavior, not only the happy path immediately after insertion.
-- After rebuilding the local development extension, use the internal self-reload bridge when
+- After rebuilding the local development extension, use the internal self-reload command when
   available, then reload the Zoho tab before checking the new behavior.
 - If a failed approach teaches us something, record the lesson instead of erasing it from memory.
 - When browser inspection is needed but unavailable, ask the user to enable the browser tool or provide the missing evidence.
