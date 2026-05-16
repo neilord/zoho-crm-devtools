@@ -15,6 +15,7 @@
 - `src/themes`: theme metadata, theme-local palette variables, and the shared Zoho variable mapping
 - `src/syntax`: syntax-enhancement styles and toggles
 - `src/features`: stable feature registry and release metadata
+- `src/internal`: development-only infrastructure that is not part of the product feature surface
 - `src/shared`: browser and utility abstractions
 - `src/popup`: minimal extension popup
 

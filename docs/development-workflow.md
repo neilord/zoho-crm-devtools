@@ -49,3 +49,26 @@
 
 - Say explicitly when browser verification, live Zoho verification, or a planned test was not run.
 - Do not describe work as complete if a meaningful verification step was skipped or still failing.
+
+## Development-Only Extension Reload
+
+Use the internal reload bridge when iterating on the unpacked extension locally and browser automation
+cannot reach `chrome://extensions`.
+
+1. Build the local development artifact with `npm run build:dev`.
+2. Load `dist` as the unpacked extension if it is not already installed.
+3. After rebuilding, trigger a self-reload from the Zoho tab console or browser automation:
+
+   ```js
+   window.dispatchEvent(new Event('zcdt:dev:reload-extension'));
+   ```
+
+4. Reload the Zoho tab before verifying the new behavior.
+
+The bridge exists only in development builds. A normal `npm run build` output does not include the
+reload content script or background worker, so this is not product UI and is not reachable in
+production builds.
+
+`chrome://extensions` may still need one manual reload when the extension has not been installed yet,
+or when the currently loaded copy is broken enough that it cannot receive the event. After that,
+prefer the self-reload bridge for routine local iteration.

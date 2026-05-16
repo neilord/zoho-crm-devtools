@@ -27,6 +27,10 @@ Real-site checks are required for:
 - Visual alignment
 - Selector drift after Zoho UI changes
 
+For repeated local browser checks after rebuilding the unpacked extension, prefer the development-only
+self-reload flow documented in `docs/development-workflow.md`, then reload the Zoho tab before
+verifying the changed behavior.
+
 ## Fixture Capture
 
 When a live Zoho interaction reveals a stable structure worth testing, capture the smallest useful HTML fixture and document its origin in `docs/zoho-integration.md`.
