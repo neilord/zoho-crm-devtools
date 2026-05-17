@@ -85,9 +85,15 @@ body.zcdt-custom-theme-active {
   --dre-editor-line-span-moz-selection-background: var(--zcdt-theme-editor-selection-bg) !important;
   --dre-editor-cursor-border: 1px solid var(--zcdt-theme-editor-fg) !important;
   --dre-editor-matchingbracket-foreground: var(--zcdt-theme-editor-fg) !important;
+  --dre-editor-matchingbracket-background: var(--zcdt-theme-selected-bg) !important;
   --dre-editor-variable-foreground: var(--zcdt-theme-editor-variable) !important;
   --dre-editor-variable-2-foreground: var(--zcdt-theme-editor-variable) !important;
+  --dre-editor-variable-3-and-type-foreground: var(--zcdt-theme-editor-variable) !important;
   --dre-editor-comment-foreground: var(--zcdt-theme-editor-comment) !important;
+  --dre-editor-comment-attribute-foreground: var(--zcdt-theme-editor-comment) !important;
+  --dre-editor-comment-def-foreground: var(--zcdt-theme-editor-string) !important;
+  --dre-editor-comment-tag-foreground: var(--zcdt-theme-editor-symbol) !important;
+  --dre-editor-comment-type-foreground: var(--zcdt-theme-editor-keyword) !important;
   --dre-editor-string-foreground: var(--zcdt-theme-editor-string) !important;
   --dre-editor-syntax-foreground: var(--zcdt-theme-editor-string) !important;
   --dre-editor-def-foreground: var(--zcdt-theme-editor-string) !important;
@@ -98,6 +104,12 @@ body.zcdt-custom-theme-active {
   --dre-editor-link-foreground: var(--zcdt-theme-editor-symbol) !important;
   --dre-editor-keyword-foreground: var(--zcdt-theme-editor-keyword) !important;
   --dre-editor-tag-foreground: var(--zcdt-theme-editor-keyword) !important;
+  --dre-editor-property-and-attribute-foreground: var(--zcdt-theme-editor-constant) !important;
+  --dre-editor-builtin-foreground: var(--zcdt-theme-editor-keyword) !important;
+  --dre-editor-guttermarker-foreground: var(--zcdt-theme-editor-fg) !important;
+  --dre-editor-error-background: var(--zcdt-theme-danger) !important;
+  --dre-editor-error-foreground: var(--zcdt-theme-accent-fg) !important;
+  --dre-editor-error-text-decoration-color: var(--zcdt-theme-danger) !important;
 
   --dre-leftpane-border: var(--zcdt-theme-border) !important;
   --dre-leftpane-background: var(--zcdt-theme-panel-subtle-bg) !important;

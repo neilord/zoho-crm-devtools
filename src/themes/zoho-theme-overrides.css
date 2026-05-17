@@ -232,6 +232,11 @@ body.zcdt-custom-theme-active {
     color: var(--zcdt-theme-panel-fg) !important;
   }
 
+  .clientscript_status_bar {
+    background: var(--zcdt-theme-shell-bg) !important;
+    color: var(--zcdt-theme-shell-fg) !important;
+  }
+
   .consoleInputDiv {
     border-top-color: var(--zcdt-theme-border) !important;
   }
@@ -254,5 +259,15 @@ body.zcdt-custom-theme-active {
 
   .delugeEditorArea .CodeMirror-Tern-hint-doc {
     color: var(--zcdt-theme-panel-fg) !important;
+  }
+
+  .delugeEditorArea .hint-divider {
+    background: var(--zcdt-theme-border) !important;
+  }
+
+  .deluge-gutter-edit-btn {
+    background: var(--zcdt-theme-popover-bg) !important;
+    border-color: var(--zcdt-theme-accent) !important;
+    color: var(--zcdt-theme-accent) !important;
   }
 }
