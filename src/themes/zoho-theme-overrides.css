@@ -1,0 +1,258 @@
+/* biome-ignore-all lint/complexity/noImportantStyles: Zoho hardcodes a few editor-owned surfaces outside its variable system, so this shared compatibility layer must override those declarations intentionally. */
+body.zcdt-custom-theme-active {
+  .csRHContainer {
+    background-color: var(--zcdt-theme-panel-bg) !important;
+    border-right-color: var(--zcdt-theme-border) !important;
+  }
+
+  .csRHrow {
+    border-bottom-color: var(--zcdt-theme-border) !important;
+  }
+
+  .csRHrow:hover {
+    background: var(--zcdt-theme-hover-bg) !important;
+  }
+
+  .csRHrowActive {
+    background: var(--zcdt-theme-selected-bg) !important;
+  }
+
+  .csRHNumber {
+    background: var(--zcdt-theme-panel-elevated-bg) !important;
+    color: var(--zcdt-theme-panel-fg) !important;
+  }
+
+  .dxe_widget_sidebar {
+    background-color: var(--zcdt-theme-panel-bg) !important;
+    border-color: var(--zcdt-theme-border) !important;
+  }
+
+  .dxe_version_history_container {
+    background: var(--zcdt-theme-panel-bg) !important;
+  }
+
+  .dxe_version_history_container.crmOuterTab lyte-tab-title,
+  .dxe_version_history_container.crmOuterTab lyte-tab-title.lyteTabActive {
+    background: var(--zcdt-theme-panel-bg) !important;
+    color: var(--zcdt-theme-panel-fg) !important;
+  }
+
+  .dxe_version_history_container lyte-tab-head,
+  .dxe_version_history_container.crmOuterTab lyte-tab-head {
+    background: var(--zcdt-theme-panel-bg) !important;
+    border-bottom-color: var(--zcdt-theme-border) !important;
+  }
+
+  .dxe_version_history_container.crmOuterTab lyte-tab-body {
+    background-color: var(--zcdt-theme-panel-bg) !important;
+  }
+
+  .dxe_version_history_container.crmOuterTab lyte-tab-title:hover {
+    background: var(--zcdt-theme-hover-bg) !important;
+    color: var(--zcdt-theme-panel-fg) !important;
+  }
+
+  .dxe_version_history_container.crmOuterTab .lyteOuterActiveTab {
+    background: var(--zcdt-theme-accent) !important;
+  }
+
+  .dxe_version_change {
+    background: var(--zcdt-theme-panel-subtle-bg) !important;
+    border-color: var(--zcdt-theme-border) !important;
+  }
+
+  .dxe_nav_button {
+    border-color: var(--zcdt-theme-panel-fg) !important;
+    color: var(--zcdt-theme-panel-fg) !important;
+  }
+
+  .dxe_nav_button .zcicn-arrow-line-left-sm-mask,
+  .dxe_nav_button .zcicn-arrow-line-right-sm-mask {
+    background: var(--zcdt-theme-panel-fg) !important;
+  }
+
+  .dxe_vc_descp,
+  .dxe_vc_name {
+    color: var(--zcdt-theme-panel-fg) !important;
+  }
+
+  .dxe_table_tree_triangle,
+  .dxe_tree_close .dxe_table_tree_triangle {
+    border-left-color: var(--zcdt-theme-panel-fg) !important;
+  }
+
+  .dxe_tree_open .dxe_table_tree_triangle {
+    border-top-color: var(--zcdt-theme-panel-fg) !important;
+  }
+
+  #drop-zone lyte-tree,
+  #version lyte-tree,
+  .dxe_file_history_section {
+    background: var(--zcdt-theme-panel-bg) !important;
+  }
+
+  .dxe_treevalue {
+    color: var(--zcdt-theme-panel-fg) !important;
+  }
+
+  .dxe_custom_tree lyte-tree-content:hover,
+  .lyte-tree-content_active,
+  .dxe_file_history_items:hover,
+  .dxe_file_history_items_active,
+  .dxe_file_history_items_active:has(.lyteMenuSelected) {
+    background: var(--zcdt-theme-hover-bg) !important;
+  }
+
+  .dxe_file_history_search lyte-drop-button,
+  .dxe_file_history_search,
+  .dxe_widget_version_modal .lyteModal {
+    background: var(--zcdt-theme-popover-bg) !important;
+    border-color: var(--zcdt-theme-border) !important;
+    color: var(--zcdt-theme-panel-fg) !important;
+  }
+
+  .dxe_file_history_items {
+    border-top-color: var(--zcdt-theme-border) !important;
+  }
+
+  .dxe_settingsModal_header {
+    border-bottom-color: var(--zcdt-theme-border) !important;
+  }
+
+  .afterSeparator::after {
+    background-color: var(--zcdt-theme-border) !important;
+  }
+
+  .bdrRightDCDFE6 {
+    border-right-color: var(--zcdt-theme-border) !important;
+  }
+
+  .ceEditorSettingModal .lyteModal,
+  .ceEditorSettingModal lyte-accordion-item,
+  .ceEditorSettingModal lyte-modal-content,
+  .ceEditorSettingModal lyte-modal-footer {
+    background: var(--zcdt-theme-popover-bg) !important;
+    border-color: var(--zcdt-theme-border) !important;
+    color: var(--zcdt-theme-panel-fg) !important;
+  }
+
+  .ceEditorSettingModal lyte-accordion-header,
+  .ceEditorSettingModal lyte-accordion-body,
+  .ceEditorSettingModal .lyteCheckBoxDefault,
+  .ceEditorSettingModal lyte-checkbox:hover .lyteCheckBoxDefault span {
+    color: var(--zcdt-theme-panel-fg) !important;
+  }
+
+  .ceEditorSettingModal lyte-accordion-body .dx_accordionItem.selectedEditOption,
+  .ceEditorSettingModal lyte-accordion-body .dx_accordionItem:hover {
+    background-color: var(--zcdt-theme-hover-bg) !important;
+  }
+
+  .ceEditorSettingModal .lyteInputBox .lyteField,
+  .ceEditorSettingModal .lyteInputBox .lyteField input {
+    background: var(--zcdt-theme-input-bg) !important;
+    border-color: var(--zcdt-theme-border) !important;
+    color: var(--zcdt-theme-panel-fg) !important;
+  }
+
+  .ceEditorSettingModal .lyteInputBox .lyteField input::placeholder {
+    color: var(--zcdt-theme-panel-muted-fg) !important;
+  }
+
+  .dxe_readMore {
+    background-color: var(--zcdt-theme-popover-bg) !important;
+  }
+
+  .dxe_readMore::before {
+    color: var(--zcdt-theme-panel-fg) !important;
+  }
+
+  .ceToolbar .ceToolbarIcon.ceSelected {
+    background-color: var(--zcdt-theme-selected-bg) !important;
+  }
+
+  .ceToolbar .ceToolbarIcon.ceSelected::after {
+    border-right-color: var(--zcdt-theme-accent) !important;
+    outline-color: var(--zcdt-theme-border) !important;
+  }
+
+  .ceToolbar .ceToolbarIcon.ceSelected::before {
+    background: var(--zcdt-theme-selected-bg) !important;
+  }
+
+  :is(crux-dropdown, lyte-dropdown).ceFontEditDropdown .cxFakeDropButton,
+  crux-dropdown.ceInfoZDKCruxDropdown .cxFakeDropButton,
+  crux-dropdown.ceInfoZDKCruxDropdown lyte-drop-button,
+  crux-dropdown.faas-newpath-dropdown .cxFakeDropButton,
+  crux-dropdown.faas-newpath-dropdown lyte-drop-button,
+  :is(crux-dropdown, lyte-dropdown).ceFontEditDropdown lyte-drop-button,
+  lyte-dropdown.ceInfoZDKDropdown lyte-drop-button {
+    background: var(--zcdt-theme-input-bg) !important;
+    border-color: var(--zcdt-theme-border) !important;
+    color: var(--zcdt-theme-panel-fg) !important;
+  }
+
+  /* biome-ignore lint/style/noDescendingSpecificity: disabled fields intentionally refine the shared dropdown surface rule below. */
+  crux-dropdown.ceFontEditDropdown .cxDropdownDisabled .cxFakeDropButton {
+    background: var(--zcdt-theme-panel-elevated-bg) !important;
+    border-color: var(--zcdt-theme-border) !important;
+    color: var(--zcdt-theme-panel-muted-fg) !important;
+  }
+
+  crux-dropdown.ceFontEditDropdown lyte-drop-button:hover,
+  lyte-dropdown.ceFontEditDropdown lyte-drop-button:hover,
+  lyte-dropdown.ceInfoZDKDropdown lyte-drop-button:hover {
+    box-shadow: 0 1px 6px var(--zcdt-theme-shadow-color) !important;
+  }
+
+  .ceEditorSettingModal .lyteInputBox.lyteInputFocus .lyteField,
+  crux-dropdown.ceFontEditDropdown .lyteDummyEventContainer:focus lyte-drop-button,
+  lyte-dropdown.ceFontEditDropdown .lyteDummyEventContainer:focus lyte-drop-button,
+  lyte-dropdown.ceInfoZDKDropdown .lyteDummyEventContainer:focus lyte-drop-button {
+    border-color: var(--zcdt-theme-accent) !important;
+    box-shadow: 0 1px 6px var(--zcdt-theme-accent) !important;
+  }
+
+  .dxEditorDetails.lyteInputDisabled .lyteField,
+  .dxEditorDetails.lyteInputDisabled .lyteField textarea:disabled,
+  .dxEditorNameEditPopover .cxElementDisabled .lyteInputBox input {
+    background: var(--zcdt-theme-panel-elevated-bg) !important;
+    border-color: var(--zcdt-theme-border) !important;
+    color: var(--zcdt-theme-panel-muted-fg) !important;
+  }
+
+  .csconsoleContainer .inputDiv,
+  .csconsoleTopBar {
+    background: var(--zcdt-theme-panel-elevated-bg) !important;
+    color: var(--zcdt-theme-panel-fg) !important;
+  }
+
+  .csconsoleContainer .outputDiv {
+    background: var(--zcdt-theme-panel-subtle-bg) !important;
+    color: var(--zcdt-theme-panel-fg) !important;
+  }
+
+  .consoleInputDiv {
+    border-top-color: var(--zcdt-theme-border) !important;
+  }
+
+  .dxe_tooltip.lyteTooltip,
+  .dxEditorNameEditPopover .lyteModal,
+  .dxEditorNameEditPopover .lytePopover,
+  .dxEditorSuggestionPopover .lytePopover {
+    background: var(--zcdt-theme-popover-bg) !important;
+    border-color: var(--zcdt-theme-border) !important;
+    box-shadow: 0 5px 22px var(--zcdt-theme-shadow-color) !important;
+    color: var(--zcdt-theme-panel-fg) !important;
+  }
+
+  .dxeDescTooltip,
+  .dxEditorNameEditPopover .lyteModal lyte-modal-header,
+  .dxEditorSuggestionPopover .lytePopover lyte-popover-header {
+    color: var(--zcdt-theme-panel-fg) !important;
+  }
+
+  .delugeEditorArea .CodeMirror-Tern-hint-doc {
+    color: var(--zcdt-theme-panel-fg) !important;
+  }
+}
