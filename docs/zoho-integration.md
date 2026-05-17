@@ -41,8 +41,28 @@ The extension targets Zoho CRM only.
 - The theme-polish work therefore needs both a low-level variable inventory and a small shared
   selector-override compatibility layer for surfaces Zoho does not expose through variables.
 
+### Confirmed theme-surface inventory
+
+The current custom-theme implementation keeps the palette in `src/themes/themes.css`, maps supported
+Zoho variables in `src/themes/zoho-theme-mapping.css`, and keeps selector-only compatibility rules in
+`src/themes/zoho-theme-overrides.css`.
+
+| Surface family | Confirmed path | Notes |
+| --- | --- | --- |
+| editor canvas, gutters, syntax, active line, selection | `--dre-editor-*` | Native variable layer is reliable. |
+| top bar, side rail, right rail, details pane, generic shell colors | `--delg-*` | Includes `--delg-topbar*`, `--delg-sidebar*`, `--delg-rightbar*`, `--delg-info*`, and `--delg-active*`. |
+| left task pane, bottom bar, show/hide tooltip | `--dre-leftpane-*`, `--dre-bottombar-*` | The selected rail state is variable-driven through `--delg-activebg` / `--delg-activeborder`, not selector-only. |
+| hints/autocomplete list, diff/merge surfaces, expression builder | `--dre-editor-hint-*`, `--dre-codemirror-merge-*`, `--dre-expr-builder-*` | Native variables cover the main surfaces well. |
+| autocomplete documentation tooltip text | shared selector override | Zoho first uses the hint variables, then a later compiled rule hardcodes `.CodeMirror-Tern-hint-doc { color: #444; }`. |
+| revision/history shell | shared selector override | `.csRH*`, `.dxe_widget_sidebar`, and `.dxe_version_history_container*` are compiled with hardcoded colors. |
+| settings modal, editor toolbar selected state, some editor dropdown/input shells, console fragments | shared selector override | These use compiled rules such as `.ceEditorSettingModal*`, `.ceToolbar*`, `.ceInfoZDK*`, and `.csconsole*`. |
+
+When a new untouched island appears, first inspect whether it already resolves through a low-level
+Zoho variable. Only add a selector fallback after confirming that the compiled rule bypasses the
+usable variable layer.
+
 ## Known Open Questions
 
 - Durable selectors for the current editor mount and settings trigger
-- Which selector-backed editor surfaces cannot be expressed through variables alone, and which shared
-  theme tokens they should consume once mapped
+- Which less common editor-owned overlays outside the current audit states still bypass variables,
+  especially rare error and helper popovers
