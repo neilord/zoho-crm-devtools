@@ -258,3 +258,7 @@ body.zcdt-custom-theme-active {
   --dre-version-leftpane-bottombar-foreground: var(--zcdt-theme-panel-fg) !important;
   --dre-version-leftpane-bottombar-border: var(--zcdt-theme-border) !important;
 }
+
+:root[deluge-theme="light"] body.zcdt-custom-theme-active {
+  --dre-editor-cursor-border: 2px solid var(--zcdt-theme-editor-fg) !important;
+}
