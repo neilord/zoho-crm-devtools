@@ -40,6 +40,9 @@ The extension targets Zoho CRM only.
 - Indent-guide styling can stay native and width-safe by decorating those existing `.cm-tab` spans
   instead of estimating grid columns across the whole editor surface. The older public extension used
   the same `.cm-tab` idea globally; this codebase scopes it to the live Deluge CodeMirror host.
+- A plain background on `.cm-tab` paints only the tab span's box, while Zoho's line rows include
+  extra vertical padding; use a guide pseudo-element that bridges that padding when the rail must read
+  as continuous instead of dashed.
 - `#createfunctionpopdiv` still exists during live editing, but the visible CodeMirror host is not a
   descendant of it; keep using live inspection before scoping visual editor features to legacy mounts.
 - Zoho can rewrite page-level state during setup, so one-time global flags are brittle for editor
