@@ -1,5 +1,6 @@
 import { loadSettings } from '../../settings/storage';
 import { findEditorRoot } from '../zoho/selectors';
+import { applyIndentGuidesPreference } from './indent-guides';
 import { installThemeIntegration } from './themes';
 
 export async function bootstrapEditorIntegration(): Promise<void> {
@@ -11,6 +12,8 @@ export async function bootstrapEditorIntegration(): Promise<void> {
   installThemeIntegration(settings.customThemeId);
 
   const markEditorReady = () => {
+    applyIndentGuidesPreference(settings.indentGuidesEnabled);
+
     if (findEditorRoot()) {
       document.documentElement.dataset.zcdtReady = 'true';
     }

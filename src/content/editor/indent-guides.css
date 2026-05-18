@@ -1,0 +1,11 @@
+.CodeMirror-deluge-edit-task[data-zcdt-indent-guides="true"] {
+  --zcdt-indent-guide-color: color-mix(
+    in srgb,
+    var(--dre-editor-linenumber-foreground, currentColor) 28%,
+    transparent
+  );
+}
+
+.CodeMirror-deluge-edit-task[data-zcdt-indent-guides="true"] .CodeMirror-line .cm-tab {
+  background: linear-gradient(to right, var(--zcdt-indent-guide-color) 1px, transparent 0) no-repeat;
+}
