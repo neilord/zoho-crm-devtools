@@ -2,6 +2,13 @@ import type { ManifestV3Export } from '@crxjs/vite-plugin';
 
 type ManifestV3 = Extract<Awaited<ManifestV3Export>, { manifest_version: number }>;
 
+const extensionIcons = {
+  '16': 'icons/icon-16.png',
+  '32': 'icons/icon-32.png',
+  '48': 'icons/icon-48.png',
+  '128': 'icons/icon-128.png',
+} as const;
+
 const crmMatches = [
   'https://crm.zoho.com/*',
   'https://crm.zoho.au/*',
@@ -32,10 +39,12 @@ export function createManifest(mode: string): ManifestV3 {
     name: 'Zoho CRM DevTools',
     version: '0.1.0',
     description: 'Enhance the Zoho CRM Deluge editor with themes and editor improvements.',
+    icons: extensionIcons,
     permissions: ['storage'],
     action: {
       default_title: 'Zoho CRM DevTools',
       default_popup: 'src/popup/index.html',
+      default_icon: extensionIcons,
     },
     content_scripts: [
       {

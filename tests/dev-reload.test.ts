@@ -63,4 +63,17 @@ describe('development-only extension reload tooling', () => {
       run_at: 'document_idle',
     });
   });
+
+  it('uses the bundled icon set for extension and toolbar surfaces', () => {
+    const manifest = createManifest('production');
+    const expectedIcons = {
+      '16': 'icons/icon-16.png',
+      '32': 'icons/icon-32.png',
+      '48': 'icons/icon-48.png',
+      '128': 'icons/icon-128.png',
+    };
+
+    expect(manifest.icons).toEqual(expectedIcons);
+    expect(manifest.action?.default_icon).toEqual(expectedIcons);
+  });
 });
