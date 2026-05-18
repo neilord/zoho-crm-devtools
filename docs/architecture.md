@@ -25,6 +25,9 @@
 - Treat live-debug experiments as provisional until real Zoho verification passes.
 - Keep theme palettes separate from the shared Zoho mapping layer so Zoho variable changes are handled
   once instead of copied into every theme.
+- When Zoho does not expose a useful variable for a themeable surface, keep selector-based fallback
+  overrides in one shared Zoho compatibility layer that consumes the same `--zcdt-theme-*` palette
+  variables instead of duplicating selector rules in every theme file.
 
 ## Data Flow
 

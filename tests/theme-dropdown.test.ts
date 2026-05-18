@@ -7,7 +7,7 @@ import {
   reconcileThemeSelection,
 } from '../src/content/editor/themes';
 import { findThemeDropBody, findThemeDropdown } from '../src/content/zoho/theme-dropdown';
-import { getTheme } from '../src/themes/registry';
+import { getTheme, themes } from '../src/themes/registry';
 import fixture from './fixtures/theme-dropdown.html?raw';
 
 describe('Zoho native theme dropdown integration', () => {
@@ -22,7 +22,7 @@ describe('Zoho native theme dropdown integration', () => {
   });
 
   it('injects custom themes once before the no-result row', () => {
-    expect(injectCustomThemeOptions()).toBe(2);
+    expect(injectCustomThemeOptions()).toBe(themes.length);
     expect(injectCustomThemeOptions()).toBe(0);
 
     const values = [...document.querySelectorAll('lyte-drop-body > *')].map((node) =>
@@ -32,8 +32,7 @@ describe('Zoho native theme dropdown integration', () => {
       'vs-dark',
       'vs-darkplus',
       'vs-light',
-      'vscode-dark',
-      'vscode-light',
+      ...themes.map((theme) => theme.id),
       'lyteDropdownNoResult',
     ]);
   });
