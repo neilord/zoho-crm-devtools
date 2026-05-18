@@ -7,5 +7,15 @@
 }
 
 .CodeMirror-deluge-edit-task[data-zcdt-indent-guides="true"] .CodeMirror-line .cm-tab {
-  background: linear-gradient(to right, var(--zcdt-indent-guide-color) 1px, transparent 0) no-repeat;
+  position: relative;
+}
+
+.CodeMirror-deluge-edit-task[data-zcdt-indent-guides="true"] .CodeMirror-line .cm-tab::before {
+  position: absolute;
+  top: -1px;
+  bottom: -2px;
+  left: 0;
+  border-left: 1px solid var(--zcdt-indent-guide-color);
+  content: "";
+  pointer-events: none;
 }
