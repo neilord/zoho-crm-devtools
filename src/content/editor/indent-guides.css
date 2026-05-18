@@ -1,0 +1,21 @@
+.CodeMirror-deluge-edit-task[data-zcdt-indent-guides="true"] {
+  --zcdt-indent-guide-color: color-mix(
+    in srgb,
+    var(--dre-editor-linenumber-foreground, currentColor) 28%,
+    transparent
+  );
+}
+
+.CodeMirror-deluge-edit-task[data-zcdt-indent-guides="true"] .CodeMirror-line .cm-tab {
+  position: relative;
+}
+
+.CodeMirror-deluge-edit-task[data-zcdt-indent-guides="true"] .CodeMirror-line .cm-tab::before {
+  position: absolute;
+  top: -1px;
+  bottom: -2px;
+  left: 0;
+  border-left: 1px solid var(--zcdt-indent-guide-color);
+  content: "";
+  pointer-events: none;
+}

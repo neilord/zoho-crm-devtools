@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { findEditorRoot } from '../src/content/zoho/selectors';
+import { findEditorRoot, findEditorSurfaces } from '../src/content/zoho/selectors';
 
 describe('Zoho editor detection', () => {
   beforeEach(() => {
@@ -13,5 +13,11 @@ describe('Zoho editor detection', () => {
 
   it('returns null when the editor is absent', () => {
     expect(findEditorRoot()).toBeNull();
+  });
+
+  it('finds the visible Deluge editor surface separately from the legacy root', () => {
+    document.body.innerHTML = '<div class="CodeMirror-deluge-edit-task"></div>';
+
+    expect(findEditorSurfaces()).toHaveLength(1);
   });
 });
