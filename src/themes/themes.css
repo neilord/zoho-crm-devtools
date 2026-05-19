@@ -437,12 +437,12 @@ body.zcdt-theme-tokyo-night {
   --zcdt-theme-editor-callable: var(--dre-editor-syntax-foreground, #c69060);
   --zcdt-theme-editor-method: var(--dre-editor-variable-2-foreground, #05a);
   --zcdt-theme-editor-property: var(--dre-editor-variable-foreground, #5e57b5);
-  --zcdt-theme-editor-custom-call: var(--dre-editor-def-foreground, #00f);
-  --zcdt-theme-editor-special-form: var(--dre-editor-string-foreground, #d10000);
-  --zcdt-theme-editor-block-key: var(--dre-editor-variable-2-foreground, #05a);
+  --zcdt-theme-editor-custom-call: #6a55a8;
+  --zcdt-theme-editor-special-form: #b3261e;
+  --zcdt-theme-editor-block-key: var(--dre-editor-variable-foreground, #5e57b5);
   --zcdt-theme-editor-http-method: var(--dre-editor-constant-foreground, #c6607c);
-  --zcdt-theme-editor-namespace: var(--dre-editor-string-foreground, #d10000);
-  --zcdt-theme-editor-type: var(--dre-editor-variable-3-and-type-foreground, #66d9ef);
+  --zcdt-theme-editor-namespace: #b3261e;
+  --zcdt-theme-editor-type: var(--dre-editor-syntax-foreground, #c69060);
   --zcdt-theme-editor-matching-bracket-bg: var(--dre-editor-matchingbracket-background, #cfead6);
   --zcdt-theme-editor-matching-bracket-border: var(--dre-editor-matchingbracket-foreground, #000);
   --zcdt-theme-editor-invalid: var(--dre-editor-error-text-decoration-color, #f83933);
@@ -473,15 +473,12 @@ body.zcdt-theme-tokyo-night {
   --zcdt-theme-editor-callable: var(--dre-editor-syntax-foreground, #ce9178);
   --zcdt-theme-editor-method: var(--dre-editor-constant-foreground, #3dc9b0);
   --zcdt-theme-editor-property: var(--dre-editor-variable-foreground, #9cdcfe);
-  --zcdt-theme-editor-custom-call: var(--dre-editor-def-foreground, #ce9178);
-  --zcdt-theme-editor-special-form: var(--dre-editor-error-text-decoration-color, #f7433d);
+  --zcdt-theme-editor-custom-call: var(--dre-editor-variable-foreground, #9cdcfe);
+  --zcdt-theme-editor-special-form: #ff6f61;
   --zcdt-theme-editor-block-key: var(--dre-editor-variable-2-foreground, #9cdcfe);
   --zcdt-theme-editor-http-method: var(--dre-editor-constant-foreground, #3dc9b0);
-  --zcdt-theme-editor-namespace: var(--dre-editor-error-text-decoration-color, #f7433d);
-  --zcdt-theme-editor-type: var(
-    --dre-editor-variable-3-and-type-foreground,
-    var(--dre-editor-constant-foreground, #3dc9b0)
-  );
+  --zcdt-theme-editor-namespace: #ff6f61;
+  --zcdt-theme-editor-type: var(--dre-editor-syntax-foreground, #ce9178);
   --zcdt-theme-editor-matching-bracket-bg: var(
     --dre-editor-matchingbracket-background,
     transparent
