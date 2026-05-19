@@ -3,6 +3,7 @@ import { findTheme, type ThemeDefinition, themes } from '../../themes/registry';
 import { zohoSelectors } from '../zoho/selectors';
 import {
   findThemeDropBody,
+  findThemeDropdown,
   findThemeLabel,
   findThemeOption,
   isNativeThemeOption,
@@ -128,6 +129,13 @@ export function reconcileThemeSelection(
     return;
   }
 
+  const dropBody = findThemeDropBody(root);
+  if (dropBody) {
+    for (const option of dropBody.querySelectorAll(`lyte-drop-item[${CUSTOM_THEME_OPTION_ATTR}]`)) {
+      setThemeOptionSelected(option, option === customOption);
+    }
+  }
+
   if (
     nativeAliasOption.hasAttribute('selected') ||
     nativeAliasOption.getAttribute('aria-selected') === 'true'
@@ -136,18 +144,6 @@ export function reconcileThemeSelection(
       nativeAliasOption.setAttribute('aria-selected', 'false');
     }
     nativeAliasOption.removeAttribute('selected');
-  }
-
-  if (
-    !customOption.hasAttribute('selected') ||
-    customOption.getAttribute('aria-selected') !== 'true'
-  ) {
-    if (customOption.getAttribute('aria-selected') !== 'true') {
-      customOption.setAttribute('aria-selected', 'true');
-    }
-    if (!customOption.hasAttribute('selected')) {
-      customOption.setAttribute('selected', 'true');
-    }
   }
 
   if (
@@ -175,6 +171,26 @@ function clearCustomOptionSelection(dropBody: Element): void {
   }
 }
 
+export function ensureNativeThemeAlias(
+  activeTheme: ThemeDefinition | null,
+  root: ParentNode = document,
+): void {
+  if (!activeTheme) {
+    return;
+  }
+
+  const dropdown = findThemeDropdown(root);
+  const nativeAliasOption = findThemeOption(activeTheme.nativeAlias, root);
+  if (
+    dropdown?.getAttribute('lt-prop-selected') === activeTheme.nativeAlias ||
+    !(nativeAliasOption instanceof HTMLElement)
+  ) {
+    return;
+  }
+
+  nativeAliasOption.click();
+}
+
 export function installThemeIntegration(initialCustomThemeId: string | null): void {
   let activeTheme = findTheme(initialCustomThemeId);
   let reconciliationQueued = false;
@@ -183,6 +199,7 @@ export function installThemeIntegration(initialCustomThemeId: string | null): vo
     injectCustomThemeOptions();
     applyCustomThemePresentation(activeTheme);
     reconcileThemeSelection(activeTheme);
+    ensureNativeThemeAlias(activeTheme);
   };
 
   const queueReconciliation = () => {
@@ -223,11 +240,6 @@ export function installThemeIntegration(initialCustomThemeId: string | null): vo
         activeTheme = clickedTheme;
         void persistCustomThemeId(clickedTheme.id);
         reconcile();
-
-        const nativeAliasOption = findThemeOption(clickedTheme.nativeAlias);
-        if (nativeAliasOption instanceof HTMLElement) {
-          nativeAliasOption.click();
-        }
         return;
       }
 

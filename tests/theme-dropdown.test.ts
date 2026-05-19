@@ -1,8 +1,9 @@
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   applyCustomThemePresentation,
   CUSTOM_THEME_ACTIVE_CLASS,
   CUSTOM_THEME_SHADOW_LABEL_CLASS,
+  ensureNativeThemeAlias,
   injectCustomThemeOptions,
   reconcileThemeSelection,
 } from '../src/content/editor/themes';
@@ -62,6 +63,35 @@ describe('Zoho native theme dropdown integration', () => {
     expect(nativeAlias?.hasAttribute('selected')).toBe(false);
     expect(customOption?.getAttribute('aria-selected')).toBe('true');
     expect(customOption?.getAttribute('selected')).toBe('true');
+  });
+
+  it('keeps only the active custom theme selected when switching themes', () => {
+    const firstTheme = getTheme('vscode-dark');
+    const secondTheme = getTheme('github-dark');
+    injectCustomThemeOptions();
+
+    reconcileThemeSelection(firstTheme);
+    reconcileThemeSelection(secondTheme);
+
+    const firstCustomOption = document.querySelector('lyte-drop-item[data-value="vscode-dark"]');
+    const secondCustomOption = document.querySelector('lyte-drop-item[data-value="github-dark"]');
+
+    expect(firstCustomOption?.getAttribute('aria-selected')).toBe('false');
+    expect(firstCustomOption?.hasAttribute('selected')).toBe(false);
+    expect(secondCustomOption?.getAttribute('aria-selected')).toBe('true');
+    expect(secondCustomOption?.getAttribute('selected')).toBe('true');
+  });
+
+  it('reapplies the matching native alias when restoring a persisted custom theme', () => {
+    const theme = getTheme('github-light');
+    const dropdown = findThemeDropdown();
+    const lightAlias = document.querySelector('lyte-drop-item[data-value="vs-light"]');
+    dropdown?.setAttribute('lt-prop-selected', 'vs-dark');
+    const click = vi.spyOn(lightAlias as HTMLElement, 'click');
+
+    ensureNativeThemeAlias(theme);
+
+    expect(click).toHaveBeenCalledTimes(1);
   });
 
   it('stops mutating once the active custom option is already reconciled', () => {
