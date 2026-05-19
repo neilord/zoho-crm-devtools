@@ -25,8 +25,13 @@ body.zcdt-theme-vscode-dark {
   --zcdt-theme-editor-muted-fg: #858585;
   --zcdt-theme-editor-selection-bg: #264f78;
   --zcdt-theme-editor-active-line-bg: #2a2d2e;
+  --zcdt-theme-editor-search-match-bg: #ea5c0055;
+  --zcdt-theme-editor-search-match-border: #ea5c00;
+  --zcdt-theme-editor-search-current-bg: #264f78;
+  --zcdt-theme-editor-search-current-border: #9cdcfe;
   --zcdt-theme-editor-comment: #6a9955;
   --zcdt-theme-editor-variable: #9cdcfe;
+  --zcdt-theme-editor-syntax: #dcdcaa;
   --zcdt-theme-editor-string: #ce9178;
   --zcdt-theme-editor-number: #b5cea8;
   --zcdt-theme-editor-constant: #4ec9b0;
@@ -66,8 +71,13 @@ body.zcdt-theme-vscode-light {
   --zcdt-theme-editor-muted-fg: #237893;
   --zcdt-theme-editor-selection-bg: #add6ff;
   --zcdt-theme-editor-active-line-bg: #f3f3f3;
+  --zcdt-theme-editor-search-match-bg: #ea5c0033;
+  --zcdt-theme-editor-search-match-border: #ea5c00;
+  --zcdt-theme-editor-search-current-bg: #add6ff;
+  --zcdt-theme-editor-search-current-border: #007acc;
   --zcdt-theme-editor-comment: #008000;
   --zcdt-theme-editor-variable: #001080;
+  --zcdt-theme-editor-syntax: #795e26;
   --zcdt-theme-editor-string: #a31515;
   --zcdt-theme-editor-number: #098658;
   --zcdt-theme-editor-constant: #098658;
@@ -78,4 +88,234 @@ body.zcdt-theme-vscode-light {
   --zcdt-theme-diff-chunk-bg: #fff3cd;
   --zcdt-theme-diff-inserted-bg: #dff6dd;
   --zcdt-theme-diff-deleted-bg: #ffd7d7;
+}
+
+body.zcdt-theme-github-light {
+  --zcdt-theme-shell-bg: #ffffff;
+  --zcdt-theme-shell-fg: #1f2328;
+  --zcdt-theme-panel-bg: #f6f8fa;
+  --zcdt-theme-panel-subtle-bg: #ffffff;
+  --zcdt-theme-panel-elevated-bg: #ffffff;
+  --zcdt-theme-panel-fg: #1f2328;
+  --zcdt-theme-panel-muted-fg: #656d76;
+  --zcdt-theme-border: #d0d7de;
+  --zcdt-theme-border-strong: #afb8c1;
+  --zcdt-theme-hover-bg: #eaeef280;
+  --zcdt-theme-selected-bg: #afb8c133;
+  --zcdt-theme-input-bg: #ffffff;
+  --zcdt-theme-popover-bg: #ffffff;
+  --zcdt-theme-scroll-track: #f6f8fa;
+  --zcdt-theme-scroll-thumb: #8c959f33;
+  --zcdt-theme-shadow-color: rgba(31, 35, 40, 0.18);
+  --zcdt-theme-accent: #0969da;
+  --zcdt-theme-accent-fg: #ffffff;
+  --zcdt-theme-danger: #cf222e;
+
+  --zcdt-theme-editor-bg: #ffffff;
+  --zcdt-theme-editor-surface: #ffffff;
+  --zcdt-theme-editor-fg: #1f2328;
+  --zcdt-theme-editor-muted-fg: #8c959f;
+  --zcdt-theme-editor-selection-bg: #afb8c133;
+  --zcdt-theme-editor-active-line-bg: #eaeef280;
+  --zcdt-theme-editor-search-match-bg: #0969da1f;
+  --zcdt-theme-editor-search-match-border: #0969da66;
+  --zcdt-theme-editor-search-current-bg: #0969da40;
+  --zcdt-theme-editor-search-current-border: #0969da;
+  --zcdt-theme-editor-comment: #6e7781;
+  --zcdt-theme-editor-variable: #953800;
+  --zcdt-theme-editor-syntax: #8250df;
+  --zcdt-theme-editor-string: #0a3069;
+  --zcdt-theme-editor-number: #0550ae;
+  --zcdt-theme-editor-constant: #0550ae;
+  --zcdt-theme-editor-symbol: #116329;
+  --zcdt-theme-editor-keyword: #cf222e;
+
+  --zcdt-theme-diff-gap-bg: var(--zcdt-theme-panel-bg);
+  --zcdt-theme-diff-chunk-bg: #fae17d80;
+  --zcdt-theme-diff-inserted-bg: #aceebb4d;
+  --zcdt-theme-diff-deleted-bg: #ffcecb4d;
+}
+
+body.zcdt-theme-github-dark {
+  --zcdt-theme-shell-bg: #0d1117;
+  --zcdt-theme-shell-fg: #e6edf3;
+  --zcdt-theme-panel-bg: #010409;
+  --zcdt-theme-panel-subtle-bg: #0d1117;
+  --zcdt-theme-panel-elevated-bg: #161b22;
+  --zcdt-theme-panel-fg: #e6edf3;
+  --zcdt-theme-panel-muted-fg: #7d8590;
+  --zcdt-theme-border: #30363d;
+  --zcdt-theme-border-strong: #484f58;
+  --zcdt-theme-hover-bg: #6e76811a;
+  --zcdt-theme-selected-bg: #6e768166;
+  --zcdt-theme-input-bg: #0d1117;
+  --zcdt-theme-popover-bg: #161b22;
+  --zcdt-theme-scroll-track: #010409;
+  --zcdt-theme-scroll-thumb: #8b949e33;
+  --zcdt-theme-shadow-color: rgba(0, 0, 0, 0.36);
+  --zcdt-theme-accent: #1f6feb;
+  --zcdt-theme-accent-fg: #ffffff;
+  --zcdt-theme-danger: #ff7b72;
+
+  --zcdt-theme-editor-bg: #0d1117;
+  --zcdt-theme-editor-surface: #0d1117;
+  --zcdt-theme-editor-fg: #e6edf3;
+  --zcdt-theme-editor-muted-fg: #6e7681;
+  --zcdt-theme-editor-selection-bg: #6e768166;
+  --zcdt-theme-editor-active-line-bg: #6e76811a;
+  --zcdt-theme-editor-search-match-bg: #1f6feb33;
+  --zcdt-theme-editor-search-match-border: #1f6feb99;
+  --zcdt-theme-editor-search-current-bg: #1f6feb66;
+  --zcdt-theme-editor-search-current-border: #58a6ff;
+  --zcdt-theme-editor-comment: #8b949e;
+  --zcdt-theme-editor-variable: #ffa657;
+  --zcdt-theme-editor-syntax: #d2a8ff;
+  --zcdt-theme-editor-string: #a5d6ff;
+  --zcdt-theme-editor-number: #79c0ff;
+  --zcdt-theme-editor-constant: #79c0ff;
+  --zcdt-theme-editor-symbol: #7ee787;
+  --zcdt-theme-editor-keyword: #ff7b72;
+
+  --zcdt-theme-diff-gap-bg: var(--zcdt-theme-panel-bg);
+  --zcdt-theme-diff-chunk-bg: #f2cc6080;
+  --zcdt-theme-diff-inserted-bg: #23863626;
+  --zcdt-theme-diff-deleted-bg: #da363326;
+}
+
+body.zcdt-theme-one-dark-pro {
+  --zcdt-theme-shell-bg: #282c34;
+  --zcdt-theme-shell-fg: #d7dae0;
+  --zcdt-theme-panel-bg: #21252b;
+  --zcdt-theme-panel-subtle-bg: #282c34;
+  --zcdt-theme-panel-elevated-bg: #2c313a;
+  --zcdt-theme-panel-fg: #abb2bf;
+  --zcdt-theme-panel-muted-fg: #9da5b4;
+  --zcdt-theme-border: #3e4452;
+  --zcdt-theme-border-strong: #515a6b;
+  --zcdt-theme-hover-bg: #2c313a;
+  --zcdt-theme-selected-bg: #323842;
+  --zcdt-theme-input-bg: #1d1f23;
+  --zcdt-theme-popover-bg: #21252b;
+  --zcdt-theme-scroll-track: #21252b;
+  --zcdt-theme-scroll-thumb: #4e566660;
+  --zcdt-theme-shadow-color: rgba(0, 0, 0, 0.36);
+  --zcdt-theme-accent: #61afef;
+  --zcdt-theme-accent-fg: #ffffff;
+  --zcdt-theme-danger: #c24038;
+
+  --zcdt-theme-editor-bg: #282c34;
+  --zcdt-theme-editor-surface: #282c34;
+  --zcdt-theme-editor-fg: #abb2bf;
+  --zcdt-theme-editor-muted-fg: #495162;
+  --zcdt-theme-editor-selection-bg: #67769660;
+  --zcdt-theme-editor-active-line-bg: #2c313c;
+  --zcdt-theme-editor-search-match-bg: #ffffff1a;
+  --zcdt-theme-editor-search-match-border: #5c6370;
+  --zcdt-theme-editor-search-current-bg: #33445c;
+  --zcdt-theme-editor-search-current-border: #61afef;
+  --zcdt-theme-editor-comment: #7f848e;
+  --zcdt-theme-editor-variable: #e06c75;
+  --zcdt-theme-editor-syntax: #61afef;
+  --zcdt-theme-editor-string: #98c379;
+  --zcdt-theme-editor-number: #d19a66;
+  --zcdt-theme-editor-constant: #56b6c2;
+  --zcdt-theme-editor-symbol: #e5c07b;
+  --zcdt-theme-editor-keyword: #c678dd;
+
+  --zcdt-theme-diff-gap-bg: var(--zcdt-theme-panel-bg);
+  --zcdt-theme-diff-chunk-bg: #d19a6644;
+  --zcdt-theme-diff-inserted-bg: #00809b33;
+  --zcdt-theme-diff-deleted-bg: #c2403833;
+}
+
+body.zcdt-theme-monokai-pro {
+  --zcdt-theme-shell-bg: #221f22;
+  --zcdt-theme-shell-fg: #c1c0c0;
+  --zcdt-theme-panel-bg: #221f22;
+  --zcdt-theme-panel-subtle-bg: #2d2a2e;
+  --zcdt-theme-panel-elevated-bg: #403e41;
+  --zcdt-theme-panel-fg: #fcfcfa;
+  --zcdt-theme-panel-muted-fg: #939293;
+  --zcdt-theme-border: #5b595c;
+  --zcdt-theme-border-strong: #727072;
+  --zcdt-theme-hover-bg: #fcfcfa0c;
+  --zcdt-theme-selected-bg: #c1c0c00c;
+  --zcdt-theme-input-bg: #2d2a2e;
+  --zcdt-theme-popover-bg: #403e41;
+  --zcdt-theme-scroll-track: #2d2a2e;
+  --zcdt-theme-scroll-thumb: #c1c0c026;
+  --zcdt-theme-shadow-color: rgba(0, 0, 0, 0.36);
+  --zcdt-theme-accent: #ffd866;
+  --zcdt-theme-accent-fg: #2d2a2e;
+  --zcdt-theme-danger: #ff6188;
+
+  --zcdt-theme-editor-bg: #2d2a2e;
+  --zcdt-theme-editor-surface: #2d2a2e;
+  --zcdt-theme-editor-fg: #fcfcfa;
+  --zcdt-theme-editor-muted-fg: #5b595c;
+  --zcdt-theme-editor-selection-bg: #c1c0c026;
+  --zcdt-theme-editor-active-line-bg: #fcfcfa0c;
+  --zcdt-theme-editor-search-match-bg: #fcfcfa1a;
+  --zcdt-theme-editor-search-match-border: #727072;
+  --zcdt-theme-editor-search-current-bg: #4b5363cc;
+  --zcdt-theme-editor-search-current-border: #78dce8;
+  --zcdt-theme-editor-comment: #727072;
+  --zcdt-theme-editor-variable: #fcfcfa;
+  --zcdt-theme-editor-syntax: #a9dc76;
+  --zcdt-theme-editor-string: #ffd866;
+  --zcdt-theme-editor-number: #ab9df2;
+  --zcdt-theme-editor-constant: #ab9df2;
+  --zcdt-theme-editor-symbol: #78dce8;
+  --zcdt-theme-editor-keyword: #ff6188;
+
+  --zcdt-theme-diff-gap-bg: var(--zcdt-theme-panel-bg);
+  --zcdt-theme-diff-chunk-bg: #ffd86619;
+  --zcdt-theme-diff-inserted-bg: #a9dc7619;
+  --zcdt-theme-diff-deleted-bg: #ff618819;
+}
+
+body.zcdt-theme-tokyo-night {
+  --zcdt-theme-shell-bg: #16161e;
+  --zcdt-theme-shell-fg: #a9b1d6;
+  --zcdt-theme-panel-bg: #16161e;
+  --zcdt-theme-panel-subtle-bg: #1a1b26;
+  --zcdt-theme-panel-elevated-bg: #202330;
+  --zcdt-theme-panel-fg: #a9b1d6;
+  --zcdt-theme-panel-muted-fg: #787c99;
+  --zcdt-theme-border: #101014;
+  --zcdt-theme-border-strong: #29355a;
+  --zcdt-theme-hover-bg: #13131a;
+  --zcdt-theme-selected-bg: #202330;
+  --zcdt-theme-input-bg: #14141b;
+  --zcdt-theme-popover-bg: #16161e;
+  --zcdt-theme-scroll-track: #16161e;
+  --zcdt-theme-scroll-thumb: #868bc415;
+  --zcdt-theme-shadow-color: rgba(0, 0, 0, 0.36);
+  --zcdt-theme-accent: #3d59a1;
+  --zcdt-theme-accent-fg: #c0caf5;
+  --zcdt-theme-danger: #db4b4b;
+
+  --zcdt-theme-editor-bg: #1a1b26;
+  --zcdt-theme-editor-surface: #1a1b26;
+  --zcdt-theme-editor-fg: #a9b1d6;
+  --zcdt-theme-editor-muted-fg: #363b54;
+  --zcdt-theme-editor-selection-bg: #515c7e4d;
+  --zcdt-theme-editor-active-line-bg: #1e202e;
+  --zcdt-theme-editor-search-match-bg: #3d59a14d;
+  --zcdt-theme-editor-search-match-border: #3d59a1;
+  --zcdt-theme-editor-search-current-bg: #414868cc;
+  --zcdt-theme-editor-search-current-border: #7aa2f7;
+  --zcdt-theme-editor-comment: #51597d;
+  --zcdt-theme-editor-variable: #c0caf5;
+  --zcdt-theme-editor-syntax: #7aa2f7;
+  --zcdt-theme-editor-string: #9ece6a;
+  --zcdt-theme-editor-number: #ff9e64;
+  --zcdt-theme-editor-constant: #ff9e64;
+  --zcdt-theme-editor-symbol: #73daca;
+  --zcdt-theme-editor-keyword: #bb9af7;
+
+  --zcdt-theme-diff-gap-bg: var(--zcdt-theme-panel-bg);
+  --zcdt-theme-diff-chunk-bg: #e0af6820;
+  --zcdt-theme-diff-inserted-bg: #41a6b520;
+  --zcdt-theme-diff-deleted-bg: #db4b4b22;
 }

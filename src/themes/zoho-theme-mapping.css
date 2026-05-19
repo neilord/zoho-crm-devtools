@@ -95,7 +95,7 @@ body.zcdt-custom-theme-active {
   --dre-editor-comment-tag-foreground: var(--zcdt-theme-editor-symbol) !important;
   --dre-editor-comment-type-foreground: var(--zcdt-theme-editor-keyword) !important;
   --dre-editor-string-foreground: var(--zcdt-theme-editor-string) !important;
-  --dre-editor-syntax-foreground: var(--zcdt-theme-editor-string) !important;
+  --dre-editor-syntax-foreground: var(--zcdt-theme-editor-syntax) !important;
   --dre-editor-def-foreground: var(--zcdt-theme-editor-string) !important;
   --dre-editor-number-foreground: var(--zcdt-theme-editor-number) !important;
   --dre-editor-constant-foreground: var(--zcdt-theme-editor-constant) !important;
