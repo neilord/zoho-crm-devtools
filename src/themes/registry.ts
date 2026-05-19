@@ -20,6 +20,36 @@ export const themes: readonly ThemeDefinition[] = [
     nativeAlias: 'vs-light',
     cssClass: 'zcdt-theme-vscode-light',
   },
+  {
+    id: 'github-light',
+    label: 'GitHub Light',
+    nativeAlias: 'vs-light',
+    cssClass: 'zcdt-theme-github-light',
+  },
+  {
+    id: 'github-dark',
+    label: 'GitHub Dark',
+    nativeAlias: 'vs-dark',
+    cssClass: 'zcdt-theme-github-dark',
+  },
+  {
+    id: 'one-dark-pro',
+    label: 'One Dark Pro',
+    nativeAlias: 'vs-dark',
+    cssClass: 'zcdt-theme-one-dark-pro',
+  },
+  {
+    id: 'monokai-pro',
+    label: 'Monokai Pro',
+    nativeAlias: 'vs-dark',
+    cssClass: 'zcdt-theme-monokai-pro',
+  },
+  {
+    id: 'tokyo-night',
+    label: 'Tokyo Night',
+    nativeAlias: 'vs-dark',
+    cssClass: 'zcdt-theme-tokyo-night',
+  },
 ] as const;
 
 export function getTheme(id: string): ThemeDefinition {
