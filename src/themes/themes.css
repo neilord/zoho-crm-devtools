@@ -37,6 +37,15 @@ body.zcdt-theme-vscode-dark {
   --zcdt-theme-editor-constant: #4ec9b0;
   --zcdt-theme-editor-symbol: #c586c0;
   --zcdt-theme-editor-keyword: #569cd6;
+  --zcdt-theme-editor-control: #c586c0;
+  --zcdt-theme-editor-logical-operator: #d7ba7d;
+  --zcdt-theme-editor-operator: #d4d4d4;
+  --zcdt-theme-editor-punctuation: #808080;
+  --zcdt-theme-editor-bracket: #ffd700;
+  --zcdt-theme-editor-callable: #dcdcaa;
+  --zcdt-theme-editor-method: #4ec9b0;
+  --zcdt-theme-editor-namespace: #569cd6;
+  --zcdt-theme-editor-type: #4ec9b0;
 
   --zcdt-theme-diff-gap-bg: var(--zcdt-theme-panel-bg);
   --zcdt-theme-diff-chunk-bg: #3a3324;
@@ -83,6 +92,15 @@ body.zcdt-theme-vscode-light {
   --zcdt-theme-editor-constant: #098658;
   --zcdt-theme-editor-symbol: #795e26;
   --zcdt-theme-editor-keyword: #0000ff;
+  --zcdt-theme-editor-control: #af00db;
+  --zcdt-theme-editor-logical-operator: #0000ff;
+  --zcdt-theme-editor-operator: #000000;
+  --zcdt-theme-editor-punctuation: #666666;
+  --zcdt-theme-editor-bracket: #0431fa;
+  --zcdt-theme-editor-callable: #795e26;
+  --zcdt-theme-editor-method: #267f99;
+  --zcdt-theme-editor-namespace: #0000ff;
+  --zcdt-theme-editor-type: #267f99;
 
   --zcdt-theme-diff-gap-bg: var(--zcdt-theme-panel-bg);
   --zcdt-theme-diff-chunk-bg: #fff3cd;
@@ -129,6 +147,15 @@ body.zcdt-theme-github-light {
   --zcdt-theme-editor-constant: #0550ae;
   --zcdt-theme-editor-symbol: #116329;
   --zcdt-theme-editor-keyword: #cf222e;
+  --zcdt-theme-editor-control: #cf222e;
+  --zcdt-theme-editor-logical-operator: #8250df;
+  --zcdt-theme-editor-operator: #1f2328;
+  --zcdt-theme-editor-punctuation: #57606a;
+  --zcdt-theme-editor-bracket: #57606a;
+  --zcdt-theme-editor-callable: #8250df;
+  --zcdt-theme-editor-method: #116329;
+  --zcdt-theme-editor-namespace: #0969da;
+  --zcdt-theme-editor-type: #0550ae;
 
   --zcdt-theme-diff-gap-bg: var(--zcdt-theme-panel-bg);
   --zcdt-theme-diff-chunk-bg: #fae17d80;
@@ -175,6 +202,15 @@ body.zcdt-theme-github-dark {
   --zcdt-theme-editor-constant: #79c0ff;
   --zcdt-theme-editor-symbol: #7ee787;
   --zcdt-theme-editor-keyword: #ff7b72;
+  --zcdt-theme-editor-control: #ff7b72;
+  --zcdt-theme-editor-logical-operator: #d2a8ff;
+  --zcdt-theme-editor-operator: #e6edf3;
+  --zcdt-theme-editor-punctuation: #8b949e;
+  --zcdt-theme-editor-bracket: #8b949e;
+  --zcdt-theme-editor-callable: #d2a8ff;
+  --zcdt-theme-editor-method: #7ee787;
+  --zcdt-theme-editor-namespace: #79c0ff;
+  --zcdt-theme-editor-type: #79c0ff;
 
   --zcdt-theme-diff-gap-bg: var(--zcdt-theme-panel-bg);
   --zcdt-theme-diff-chunk-bg: #f2cc6080;
@@ -221,6 +257,15 @@ body.zcdt-theme-one-dark-pro {
   --zcdt-theme-editor-constant: #56b6c2;
   --zcdt-theme-editor-symbol: #e5c07b;
   --zcdt-theme-editor-keyword: #c678dd;
+  --zcdt-theme-editor-control: #c678dd;
+  --zcdt-theme-editor-logical-operator: #56b6c2;
+  --zcdt-theme-editor-operator: #abb2bf;
+  --zcdt-theme-editor-punctuation: #5c6370;
+  --zcdt-theme-editor-bracket: #e5c07b;
+  --zcdt-theme-editor-callable: #61afef;
+  --zcdt-theme-editor-method: #56b6c2;
+  --zcdt-theme-editor-namespace: #61afef;
+  --zcdt-theme-editor-type: #e5c07b;
 
   --zcdt-theme-diff-gap-bg: var(--zcdt-theme-panel-bg);
   --zcdt-theme-diff-chunk-bg: #d19a6644;
@@ -267,6 +312,15 @@ body.zcdt-theme-monokai-pro {
   --zcdt-theme-editor-constant: #ab9df2;
   --zcdt-theme-editor-symbol: #78dce8;
   --zcdt-theme-editor-keyword: #ff6188;
+  --zcdt-theme-editor-control: #ff6188;
+  --zcdt-theme-editor-logical-operator: #ff9d00;
+  --zcdt-theme-editor-operator: #fcfcfa;
+  --zcdt-theme-editor-punctuation: #939293;
+  --zcdt-theme-editor-bracket: #ffd866;
+  --zcdt-theme-editor-callable: #a9dc76;
+  --zcdt-theme-editor-method: #78dce8;
+  --zcdt-theme-editor-namespace: #ab9df2;
+  --zcdt-theme-editor-type: #78dce8;
 
   --zcdt-theme-diff-gap-bg: var(--zcdt-theme-panel-bg);
   --zcdt-theme-diff-chunk-bg: #ffd86619;
@@ -313,6 +367,15 @@ body.zcdt-theme-tokyo-night {
   --zcdt-theme-editor-constant: #ff9e64;
   --zcdt-theme-editor-symbol: #73daca;
   --zcdt-theme-editor-keyword: #bb9af7;
+  --zcdt-theme-editor-control: #bb9af7;
+  --zcdt-theme-editor-logical-operator: #f7768e;
+  --zcdt-theme-editor-operator: #e0af68;
+  --zcdt-theme-editor-punctuation: #565f89;
+  --zcdt-theme-editor-bracket: #ffcc66;
+  --zcdt-theme-editor-callable: #7aa2f7;
+  --zcdt-theme-editor-method: #73daca;
+  --zcdt-theme-editor-namespace: #7dcfff;
+  --zcdt-theme-editor-type: #2ac3de;
 
   --zcdt-theme-diff-gap-bg: var(--zcdt-theme-panel-bg);
   --zcdt-theme-diff-chunk-bg: #e0af6820;
