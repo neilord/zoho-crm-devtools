@@ -46,6 +46,9 @@ The extension targets Zoho CRM only.
 - Zoho's `cm-syntax` bucket is used for callable / built-in-looking Deluge tokens such as `info`,
   `zoho`, `.get`, and `Map`; map it independently from string literals so richer themes preserve
   useful semantic separation.
+- Advanced syntax highlighting is extension-owned and toggled by marking live editor hosts with
+  `data-zcdt-syntax-enhancement="true"`. Keep syntax color rules scoped to
+  `.CodeMirror-deluge-edit-task` and refine the existing CodeMirror spans instead of rewriting tokens.
 - Indent-guide styling can stay native and width-safe by decorating those existing `.cm-tab` spans
   instead of estimating grid columns across the whole editor surface. The older public extension used
   the same `.cm-tab` idea globally; this codebase scopes it to the live Deluge CodeMirror host.

@@ -1,0 +1,3 @@
+.CodeMirror-deluge-edit-task[data-zcdt-syntax-enhancement="true"] {
+  --zcdt-syntax-foreground: var(--zcdt-theme-editor-fg, var(--dre-editor-foreground, currentColor));
+}
