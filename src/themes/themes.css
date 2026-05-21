@@ -444,22 +444,22 @@ body.zcdt-theme-tokyo-night {
   --zcdt-theme-editor-constant: var(--dre-editor-constant-foreground, #c6607c);
   --zcdt-theme-editor-symbol: var(--dre-editor-atom-foreground, #219);
   --zcdt-theme-editor-keyword: var(--dre-editor-keyword-foreground, #708);
-  --zcdt-theme-editor-control: var(--dre-editor-keyword-foreground, #708);
+  --zcdt-theme-editor-control: #9b00b2;
   --zcdt-theme-editor-logical-operator: var(--dre-editor-logical-operator-foreground, #000);
   --zcdt-theme-editor-operator: var(--dre-editor-operator-foreground, #7e7d7c);
   --zcdt-theme-editor-punctuation: var(--dre-editor-semicolon-foreground, #7e7d7c);
   --zcdt-theme-editor-bracket: var(--dre-editor-brackets-foreground, #7e7d7c);
   --zcdt-theme-editor-callable: var(--dre-editor-syntax-foreground, #c69060);
-  --zcdt-theme-editor-method: var(--dre-editor-variable-2-foreground, #05a);
+  --zcdt-theme-editor-method: var(--dre-editor-syntax-foreground, #c69060);
   --zcdt-theme-editor-property: var(--dre-editor-variable-foreground, #5e57b5);
   --zcdt-theme-editor-custom-call: #6a55a8;
-  --zcdt-theme-editor-special-form: #b3261e;
+  --zcdt-theme-editor-special-form: #d8005c;
   --zcdt-theme-editor-block-key: var(--dre-editor-variable-foreground, #5e57b5);
   --zcdt-theme-editor-http-method: var(--dre-editor-constant-foreground, #c6607c);
-  --zcdt-theme-editor-namespace: #b3261e;
-  --zcdt-theme-editor-type: var(--dre-editor-syntax-foreground, #c69060);
-  --zcdt-theme-editor-matching-bracket-bg: var(--dre-editor-matchingbracket-background, #cfead6);
-  --zcdt-theme-editor-matching-bracket-border: var(--dre-editor-matchingbracket-foreground, #000);
+  --zcdt-theme-editor-namespace: #d8005c;
+  --zcdt-theme-editor-type: #2f8f5b;
+  --zcdt-theme-editor-matching-bracket-bg: rgba(0, 0, 0, 0.08);
+  --zcdt-theme-editor-matching-bracket-border: rgba(0, 0, 0, 0.35);
   --zcdt-theme-editor-invalid: var(--dre-editor-error-text-decoration-color, #f83933);
 }
 
