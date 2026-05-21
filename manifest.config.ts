@@ -62,7 +62,7 @@ export function createManifest(mode: string): ManifestV3 {
     };
     manifest.content_scripts?.push({
       matches: [...crmMatches],
-      js: ['src/internal/dev-reload/content-entry.ts'],
+      js: ['src/internal/dev-tools/content-entry.ts'],
       run_at: 'document_idle',
     });
   }

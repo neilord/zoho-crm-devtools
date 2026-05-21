@@ -98,3 +98,26 @@ this is not product UI and is not reachable in production builds.
 `chrome://extensions` may still need one manual reload when the extension has not been installed yet,
 or when the currently loaded copy is broken enough that it cannot receive the event. After that,
 prefer the self-reload control for routine local iteration.
+
+## Development-Only CSS Bridge
+
+Use the internal CSS bridge when browser automation needs to quickly test visual changes on a live
+Zoho page before turning them into extension CSS.
+
+The bridge exists only in `npm run build:dev` output and exposes hidden automation controls:
+
+```ts
+await tab.playwright.locator('[data-zcdt-dev-css-input]').fill('body { outline: 4px solid red; }');
+await tab.playwright.locator('[data-zcdt-dev-css-name]').fill('agent');
+await tab.playwright.locator('[data-zcdt-dev-insert-css]').click({ force: true });
+```
+
+Clear the same named style after the check:
+
+```ts
+await tab.playwright.locator('[data-zcdt-dev-css-name]').fill('agent');
+await tab.playwright.locator('[data-zcdt-dev-clear-css]').click({ force: true });
+```
+
+The bridge writes JSON status to `[data-zcdt-dev-output]`. It injects CSS only; it does not execute
+arbitrary JavaScript and does not add extension permissions.
