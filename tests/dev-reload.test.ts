@@ -59,7 +59,7 @@ describe('development-only extension reload tooling', () => {
     expect(developmentManifest.content_scripts).toHaveLength(2);
     expect(developmentManifest.content_scripts?.[1]).toEqual({
       matches: expect.any(Array),
-      js: ['src/internal/dev-reload/content-entry.ts'],
+      js: ['src/internal/dev-tools/content-entry.ts'],
       run_at: 'document_idle',
     });
   });

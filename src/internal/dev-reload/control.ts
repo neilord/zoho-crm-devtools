@@ -1,3 +1,4 @@
+import { styleHiddenDevControl } from '../dev-controls';
 import {
   DEV_RELOAD_CONTROL_ATTR,
   DEV_RELOAD_MESSAGE_TYPE,
@@ -6,21 +7,6 @@ import {
 
 export interface DevReloadMessenger {
   sendMessage(message: DevReloadMessage): Promise<unknown> | undefined;
-}
-
-function styleControl(control: HTMLButtonElement): void {
-  Object.assign(control.style, {
-    position: 'fixed',
-    top: '0',
-    left: '0',
-    width: '1px',
-    height: '1px',
-    padding: '0',
-    border: '0',
-    opacity: '0',
-    pointerEvents: 'auto',
-    zIndex: '2147483647',
-  });
 }
 
 export function installDevReloadControl(
@@ -37,7 +23,7 @@ export function installDevReloadControl(
   control.tabIndex = -1;
   control.setAttribute(DEV_RELOAD_CONTROL_ATTR, 'true');
   control.setAttribute('aria-hidden', 'true');
-  styleControl(control);
+  styleHiddenDevControl(control);
   control.addEventListener('click', () => {
     void messenger.sendMessage({ type: DEV_RELOAD_MESSAGE_TYPE });
   });
