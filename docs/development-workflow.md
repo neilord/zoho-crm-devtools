@@ -8,6 +8,15 @@
   boundary remains visible in history alongside the smaller logical commits inside it.
 - Do not publish exploratory branches until the approach is agreed and verified.
 
+## Merge Commit Messages
+
+- Use merge commits for substantial feature branches.
+- Prefer `merge: <feature outcome>` for merge commit messages, such as `merge: add editor themes`.
+- Include the source branch only when it adds useful traceability, such as
+  `merge: add editor themes from codex/add-editor-themes`.
+- Avoid squash merges by default when the commits inside the branch are already meaningful.
+- Avoid Git's default `Merge branch ...` messages.
+
 ## Commits
 
 - Use Conventional Commits.
