@@ -129,12 +129,12 @@ function getSemanticToken(token: Element): string | null {
     return 'constant';
   }
 
-  if (token.classList.contains('cm-relop') || token.classList.contains('cm-logicalOpr')) {
+  if (token.classList.contains('cm-logicalOpr')) {
     return 'logical-operator';
   }
 
-  if (token.classList.contains('cm-tag')) {
-    return 'logical-operator';
+  if (token.classList.contains('cm-relop') || token.classList.contains('cm-tag')) {
+    return 'comparison-operator';
   }
 
   if (token.classList.contains('cm-operator')) {

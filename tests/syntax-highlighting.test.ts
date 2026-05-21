@@ -213,4 +213,44 @@ describe('syntax highlighting enhancement', () => {
     expect(tokens).toContainEqual({ text: 'i', semantic: 'variable' });
     expect(tokens).toContainEqual({ text: 'j', semantic: 'variable' });
   });
+
+  it('separates comparison and boolean logical operators', () => {
+    document.body.innerHTML = `
+      <div class="CodeMirror-deluge-edit-task">
+        <pre class="CodeMirror-line">
+          <span>
+            <span class="cm-variable">isPhone</span>
+            <span class="cm-operator">=</span>
+            <span class="cm-variable">sPhone.length</span>
+            <span class="cm-brackets">()</span>
+            <span class="cm-tag">&gt;</span>
+            <span class="cm-constant">1</span>
+            <span class="cm-logicalOpr">&amp;&amp;</span>
+            <span class="cm-logicalOpr">!</span>
+            <span class="cm-variable">pNoNameList.contains</span>
+            <span class="cm-brackets">(sPhone)</span>
+            <span class="cm-semicolon">;</span>
+          </span>
+        </pre>
+        <pre class="CodeMirror-line">
+          <span>
+            <span class="cm-variable">count</span>
+            <span class="cm-relop">==</span>
+            <span class="cm-constant">10</span>
+          </span>
+        </pre>
+      </div>`;
+
+    applySyntaxEnhancementPreference(true);
+
+    const tokens = [...document.querySelectorAll(`[${SYNTAX_TOKEN_ATTR}]`)].map((token) => ({
+      text: token.textContent,
+      semantic: token.getAttribute(SYNTAX_TOKEN_ATTR),
+    }));
+
+    expect(tokens).toContainEqual({ text: '>', semantic: 'comparison-operator' });
+    expect(tokens).toContainEqual({ text: '==', semantic: 'comparison-operator' });
+    expect(tokens).toContainEqual({ text: '&&', semantic: 'logical-operator' });
+    expect(tokens).toContainEqual({ text: '!', semantic: 'logical-operator' });
+  });
 });
