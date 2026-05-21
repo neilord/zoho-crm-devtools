@@ -477,30 +477,21 @@ body.zcdt-theme-tokyo-night {
   --zcdt-theme-editor-constant: var(--dre-editor-constant-foreground, #3dc9b0);
   --zcdt-theme-editor-symbol: var(--dre-editor-atom-foreground, #da70d6);
   --zcdt-theme-editor-keyword: var(--dre-editor-keyword-foreground, #569cd6);
-  --zcdt-theme-editor-control: var(
-    --dre-editor-keyword-foreground,
-    var(--dre-editor-syntax-foreground, #ce9178)
-  );
+  --zcdt-theme-editor-control: #cf7cff;
   --zcdt-theme-editor-logical-operator: var(--dre-editor-logical-operator-foreground, #d4d4d4);
   --zcdt-theme-editor-operator: var(--dre-editor-operator-foreground, #d4d4d4);
   --zcdt-theme-editor-punctuation: var(--dre-editor-semicolon-foreground, #d4d4d4);
   --zcdt-theme-editor-bracket: var(--dre-editor-brackets-foreground, #d4d4d4);
   --zcdt-theme-editor-callable: var(--dre-editor-syntax-foreground, #ce9178);
-  --zcdt-theme-editor-method: var(--dre-editor-constant-foreground, #3dc9b0);
+  --zcdt-theme-editor-method: var(--dre-editor-syntax-foreground, #ce9178);
   --zcdt-theme-editor-property: var(--dre-editor-variable-foreground, #9cdcfe);
   --zcdt-theme-editor-custom-call: var(--dre-editor-variable-foreground, #9cdcfe);
   --zcdt-theme-editor-special-form: #ff6f61;
   --zcdt-theme-editor-block-key: var(--dre-editor-variable-2-foreground, #9cdcfe);
   --zcdt-theme-editor-http-method: var(--dre-editor-constant-foreground, #3dc9b0);
-  --zcdt-theme-editor-namespace: #ff6f61;
-  --zcdt-theme-editor-type: var(--dre-editor-syntax-foreground, #ce9178);
-  --zcdt-theme-editor-matching-bracket-bg: var(
-    --dre-editor-matchingbracket-background,
-    transparent
-  );
-  --zcdt-theme-editor-matching-bracket-border: var(
-    --dre-editor-matchingbracket-foreground,
-    #d4d4d4
-  );
+  --zcdt-theme-editor-namespace: #f87171;
+  --zcdt-theme-editor-type: #60c082;
+  --zcdt-theme-editor-matching-bracket-bg: rgba(255, 255, 255, 0.04);
+  --zcdt-theme-editor-matching-bracket-border: rgba(212, 212, 212, 0.45);
   --zcdt-theme-editor-invalid: var(--dre-editor-error-text-decoration-color, #f7433d);
 }
