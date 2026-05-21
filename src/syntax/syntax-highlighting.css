@@ -1,0 +1,453 @@
+/* biome-ignore-all lint/complexity/noImportantStyles: Zoho and CodeMirror theme rules use high-specificity editor selectors, so syntax enhancement must win intentionally. */
+.CodeMirror-deluge-edit-task[data-zcdt-syntax-enhancement="true"] {
+  --zcdt-syntax-foreground: var(--zcdt-theme-editor-fg, var(--dre-editor-foreground, currentColor));
+  --zcdt-syntax-comment: var(
+    --zcdt-theme-editor-comment,
+    var(--dre-editor-comment-foreground, #6a9955)
+  );
+  --zcdt-syntax-variable: var(
+    --zcdt-theme-editor-variable,
+    var(--dre-editor-variable-foreground, var(--zcdt-syntax-foreground))
+  );
+  --zcdt-syntax-type: var(
+    --zcdt-theme-editor-type,
+    var(--zcdt-theme-editor-constant, var(--dre-editor-constant-foreground, #4ec9b0))
+  );
+  --zcdt-syntax-callable: var(
+    --zcdt-theme-editor-callable,
+    var(--zcdt-theme-editor-syntax, var(--dre-editor-syntax-foreground, #dcdcaa))
+  );
+  --zcdt-syntax-namespace: var(--zcdt-theme-editor-namespace, var(--zcdt-syntax-callable));
+  --zcdt-syntax-method: var(
+    --zcdt-theme-editor-method,
+    var(--zcdt-theme-editor-symbol, var(--dre-editor-link-foreground, #c586c0))
+  );
+  --zcdt-syntax-property: var(--zcdt-theme-editor-property, var(--zcdt-syntax-method));
+  --zcdt-syntax-custom-call: var(--zcdt-theme-editor-custom-call, var(--zcdt-syntax-method));
+  --zcdt-syntax-special-form: var(--zcdt-theme-editor-special-form, var(--zcdt-syntax-control));
+  --zcdt-syntax-block-key: var(--zcdt-theme-editor-block-key, var(--zcdt-syntax-property));
+  --zcdt-syntax-http-method: var(--zcdt-theme-editor-http-method, var(--zcdt-syntax-constant));
+  --zcdt-syntax-control: var(
+    --zcdt-theme-editor-control,
+    var(--zcdt-theme-editor-keyword, var(--dre-editor-keyword-foreground, #569cd6))
+  );
+  --zcdt-syntax-string: var(
+    --zcdt-theme-editor-string,
+    var(--dre-editor-string-foreground, #ce9178)
+  );
+  --zcdt-syntax-number: var(
+    --zcdt-theme-editor-number,
+    var(--dre-editor-number-foreground, #b5cea8)
+  );
+  --zcdt-syntax-constant: var(
+    --zcdt-theme-editor-constant,
+    var(--dre-editor-constant-foreground, var(--zcdt-syntax-number))
+  );
+  --zcdt-syntax-operator: var(
+    --zcdt-theme-editor-operator,
+    var(--dre-editor-operator-foreground, var(--zcdt-syntax-foreground))
+  );
+  --zcdt-syntax-logical-operator: var(
+    --zcdt-theme-editor-logical-operator,
+    var(--zcdt-theme-editor-symbol, var(--dre-editor-logical-operator-foreground, #d7ba7d))
+  );
+  --zcdt-syntax-punctuation: var(
+    --zcdt-theme-editor-punctuation,
+    var(--dre-editor-semicolon-foreground, var(--zcdt-syntax-foreground))
+  );
+  --zcdt-syntax-bracket: var(
+    --zcdt-theme-editor-bracket,
+    var(--dre-editor-brackets-foreground, var(--zcdt-syntax-punctuation))
+  );
+  --zcdt-syntax-matching-bracket-bg: var(
+    --zcdt-theme-editor-matching-bracket-bg,
+    var(--dre-editor-matchingbracket-background, var(--zcdt-theme-selected-bg, transparent))
+  );
+  --zcdt-syntax-matching-bracket-border: var(
+    --zcdt-theme-editor-matching-bracket-border,
+    var(--dre-editor-matchingbracket-foreground, var(--zcdt-syntax-bracket))
+  );
+  --zcdt-syntax-invalid: var(
+    --zcdt-theme-editor-invalid,
+    var(--dre-editor-error-text-decoration-color, var(--zcdt-theme-danger, #f14c4c))
+  );
+}
+
+.CodeMirror-deluge-edit-task[data-zcdt-syntax-enhancement="true"] .CodeMirror-line > span {
+  color: var(--zcdt-syntax-foreground) !important;
+}
+
+.CodeMirror-deluge-edit-task[data-zcdt-syntax-enhancement="true"]
+  .CodeMirror-line
+  span[data-zcdt-token="comment"],
+.CodeMirror-deluge-edit-task[data-zcdt-syntax-enhancement="true"] .cm-comment {
+  color: var(--zcdt-syntax-comment) !important;
+}
+
+.CodeMirror-deluge-edit-task[data-zcdt-syntax-enhancement="true"]
+  .CodeMirror-line
+  span[data-zcdt-token="string"],
+.CodeMirror-deluge-edit-task[data-zcdt-syntax-enhancement="true"] :is(.cm-string, .cm-string-2) {
+  color: var(--zcdt-syntax-string) !important;
+}
+
+.CodeMirror-deluge-edit-task[data-zcdt-syntax-enhancement="true"]
+  .CodeMirror-line
+  span[data-zcdt-token="number"],
+.CodeMirror-deluge-edit-task[data-zcdt-syntax-enhancement="true"] .cm-number {
+  color: var(--zcdt-syntax-number) !important;
+}
+
+.CodeMirror-deluge-edit-task[data-zcdt-syntax-enhancement="true"]
+  .CodeMirror-line
+  span[data-zcdt-token="constant"],
+.CodeMirror-deluge-edit-task[data-zcdt-syntax-enhancement="true"]
+  .CodeMirror-line
+  span[data-zcdt-token="http-method"],
+.CodeMirror-deluge-edit-task[data-zcdt-syntax-enhancement="true"] :is(.cm-constant, .cm-atom) {
+  color: var(--zcdt-syntax-constant) !important;
+}
+
+.CodeMirror-deluge-edit-task[data-zcdt-syntax-enhancement="true"]
+  .CodeMirror-line
+  span[data-zcdt-token="control"],
+.CodeMirror-deluge-edit-task[data-zcdt-syntax-enhancement="true"] :is(.cm-keyword, .cm-header) {
+  color: var(--zcdt-syntax-control) !important;
+}
+
+.CodeMirror-deluge-edit-task[data-zcdt-syntax-enhancement="true"]
+  .CodeMirror-line
+  span[data-zcdt-token="callable"],
+.CodeMirror-deluge-edit-task[data-zcdt-syntax-enhancement="true"] :is(.cm-builtin, .cm-def) {
+  color: var(--zcdt-syntax-callable) !important;
+}
+
+.CodeMirror-deluge-edit-task[data-zcdt-syntax-enhancement="true"]
+  .CodeMirror-line
+  span[data-zcdt-token="namespace"] {
+  color: var(--zcdt-syntax-namespace) !important;
+}
+
+.CodeMirror-deluge-edit-task[data-zcdt-syntax-enhancement="true"]
+  .CodeMirror-line
+  span[data-zcdt-token="custom-call"] {
+  color: var(--zcdt-syntax-custom-call) !important;
+}
+
+.CodeMirror-deluge-edit-task[data-zcdt-syntax-enhancement="true"]
+  .CodeMirror-line
+  span[data-zcdt-token="special-form"] {
+  color: var(--zcdt-syntax-special-form) !important;
+}
+
+.CodeMirror-deluge-edit-task[data-zcdt-syntax-enhancement="true"]
+  .CodeMirror-line
+  span[data-zcdt-token="method"],
+.CodeMirror-deluge-edit-task[data-zcdt-syntax-enhancement="true"] :is(.cm-property, .cm-attribute) {
+  color: var(--zcdt-syntax-method) !important;
+}
+
+.CodeMirror-deluge-edit-task[data-zcdt-syntax-enhancement="true"]
+  .CodeMirror-line
+  span[data-zcdt-token="block-key"] {
+  color: var(--zcdt-syntax-block-key) !important;
+}
+
+.CodeMirror-deluge-edit-task[data-zcdt-syntax-enhancement="true"]
+  .CodeMirror-line
+  span[data-zcdt-token="variable"],
+.CodeMirror-deluge-edit-task[data-zcdt-syntax-enhancement="true"]
+  :is(.cm-variable, .cm-variable-2, .cm-variable-3) {
+  color: var(--zcdt-syntax-variable) !important;
+}
+
+.CodeMirror-deluge-edit-task[data-zcdt-syntax-enhancement="true"]
+  .CodeMirror-line
+  span[data-zcdt-token="type"],
+.CodeMirror-deluge-edit-task[data-zcdt-syntax-enhancement="true"] .cm-type {
+  color: var(--zcdt-syntax-type) !important;
+}
+
+.CodeMirror-deluge-edit-task[data-zcdt-syntax-enhancement="true"] .cm-syntax {
+  color: var(--zcdt-syntax-callable) !important;
+}
+
+.CodeMirror-deluge-edit-task[data-zcdt-syntax-enhancement="true"] .cm-syntax:has(+ .cm-variable) {
+  color: var(--zcdt-syntax-type) !important;
+}
+
+.CodeMirror-deluge-edit-task[data-zcdt-syntax-enhancement="true"]
+  :is(
+    .cm-variable + .cm-syntax,
+    .cm-operator + .cm-variable:has(+ .cm-brackets),
+    .cm-brackets + .cm-variable:has(+ .cm-brackets),
+    .cm-logicalOpr + .cm-variable:has(+ .cm-brackets),
+    .cm-separator + .cm-variable:has(+ .cm-brackets)
+  ) {
+  color: var(--zcdt-syntax-method) !important;
+}
+
+.CodeMirror-deluge-edit-task[data-zcdt-syntax-enhancement="true"]
+  .CodeMirror-line
+  > span
+  > .cm-syntax:first-child
+  + .cm-variable:has(+ .cm-brackets) {
+  color: var(--zcdt-syntax-callable) !important;
+}
+
+.CodeMirror-deluge-edit-task[data-zcdt-syntax-enhancement="true"]
+  .cm-operator
+  + .cm-syntax:has(+ .cm-brackets) {
+  color: var(--zcdt-syntax-callable) !important;
+}
+
+.CodeMirror-deluge-edit-task[data-zcdt-syntax-enhancement="true"]
+  :is(
+    .CodeMirror-line > span > .cm-syntax:first-child:has(+ .cm-brackets),
+    .cm-tab + .cm-syntax:has(+ .cm-brackets),
+    .CodeMirror-line > span > .cm-syntax:first-child:not(:has(+ .cm-variable)),
+    .cm-tab + .cm-syntax:not(:has(+ .cm-variable))
+  ) {
+  color: var(--zcdt-syntax-control) !important;
+}
+
+.CodeMirror-deluge-edit-task[data-zcdt-syntax-enhancement="true"]
+  :is(
+    .CodeMirror-line > span > .cm-variable:first-child:has(+ .cm-variable),
+    .cm-tab + .cm-variable:has(+ .cm-variable)
+  ) {
+  color: var(--zcdt-syntax-control) !important;
+}
+
+.CodeMirror-deluge-edit-task[data-zcdt-syntax-enhancement="true"]
+  .CodeMirror-line
+  span[data-zcdt-token="operator"],
+.CodeMirror-deluge-edit-task[data-zcdt-syntax-enhancement="true"] .cm-operator {
+  color: var(--zcdt-syntax-operator) !important;
+}
+
+.CodeMirror-deluge-edit-task[data-zcdt-syntax-enhancement="true"]
+  [data-zcdt-token="logical-operator"],
+.CodeMirror-deluge-edit-task[data-zcdt-syntax-enhancement="true"]
+  :is(.cm-relop, .cm-logicalOpr, .cm-tag) {
+  color: var(--zcdt-syntax-logical-operator) !important;
+}
+
+.CodeMirror-deluge-edit-task[data-zcdt-syntax-enhancement="true"]
+  .CodeMirror-line
+  span[data-zcdt-token="punctuation"],
+.CodeMirror-deluge-edit-task[data-zcdt-syntax-enhancement="true"]
+  :is(.cm-separator, .cm-semicolon) {
+  color: var(--zcdt-syntax-punctuation) !important;
+}
+
+.CodeMirror-deluge-edit-task[data-zcdt-syntax-enhancement="true"]
+  .CodeMirror-line
+  span[data-zcdt-token="bracket"],
+.CodeMirror-deluge-edit-task[data-zcdt-syntax-enhancement="true"] .cm-brackets {
+  color: var(--zcdt-syntax-bracket) !important;
+}
+
+.CodeMirror-deluge-edit-task[data-zcdt-syntax-enhancement="true"]
+  .CodeMirror-lines
+  .CodeMirror-code
+  .CodeMirror-line
+  > span
+  > span[data-zcdt-token="comment"] {
+  color: var(--zcdt-syntax-comment) !important;
+}
+
+.CodeMirror-deluge-edit-task[data-zcdt-syntax-enhancement="true"]
+  .CodeMirror-lines
+  .CodeMirror-code
+  .CodeMirror-line
+  > span
+  > span[data-zcdt-token="string"] {
+  color: var(--zcdt-syntax-string) !important;
+}
+
+.CodeMirror-deluge-edit-task[data-zcdt-syntax-enhancement="true"]
+  .CodeMirror-lines
+  .CodeMirror-code
+  .CodeMirror-line
+  > span
+  > span[data-zcdt-token="number"] {
+  color: var(--zcdt-syntax-number) !important;
+}
+
+.CodeMirror-deluge-edit-task[data-zcdt-syntax-enhancement="true"]
+  .CodeMirror-lines
+  .CodeMirror-code
+  .CodeMirror-line
+  > span
+  > span[data-zcdt-token="constant"] {
+  color: var(--zcdt-syntax-constant) !important;
+}
+
+.CodeMirror-deluge-edit-task[data-zcdt-syntax-enhancement="true"]
+  .CodeMirror-lines
+  .CodeMirror-code
+  .CodeMirror-line
+  > span
+  > span[data-zcdt-token="http-method"] {
+  color: var(--zcdt-syntax-http-method) !important;
+}
+
+.CodeMirror-deluge-edit-task[data-zcdt-syntax-enhancement="true"]
+  .CodeMirror-lines
+  .CodeMirror-code
+  .CodeMirror-line
+  > span
+  > span[data-zcdt-token="control"] {
+  color: var(--zcdt-syntax-control) !important;
+}
+
+.CodeMirror-deluge-edit-task[data-zcdt-syntax-enhancement="true"]
+  .CodeMirror-lines
+  .CodeMirror-code
+  .CodeMirror-line
+  > span
+  > span[data-zcdt-token="callable"] {
+  color: var(--zcdt-syntax-callable) !important;
+}
+
+.CodeMirror-deluge-edit-task[data-zcdt-syntax-enhancement="true"]
+  .CodeMirror-lines
+  .CodeMirror-code
+  .CodeMirror-line
+  > span
+  > span[data-zcdt-token="namespace"] {
+  color: var(--zcdt-syntax-namespace) !important;
+}
+
+.CodeMirror-deluge-edit-task[data-zcdt-syntax-enhancement="true"]
+  .CodeMirror-lines
+  .CodeMirror-code
+  .CodeMirror-line
+  > span
+  > span[data-zcdt-token="custom-call"] {
+  color: var(--zcdt-syntax-custom-call) !important;
+}
+
+.CodeMirror-deluge-edit-task[data-zcdt-syntax-enhancement="true"]
+  .CodeMirror-lines
+  .CodeMirror-code
+  .CodeMirror-line
+  > span
+  > span[data-zcdt-token="special-form"] {
+  color: var(--zcdt-syntax-special-form) !important;
+}
+
+.CodeMirror-deluge-edit-task[data-zcdt-syntax-enhancement="true"]
+  .CodeMirror-lines
+  .CodeMirror-code
+  .CodeMirror-line
+  > span
+  > span[data-zcdt-token="method"] {
+  color: var(--zcdt-syntax-method) !important;
+}
+
+.CodeMirror-deluge-edit-task[data-zcdt-syntax-enhancement="true"]
+  .CodeMirror-lines
+  .CodeMirror-code
+  .CodeMirror-line
+  > span
+  > span[data-zcdt-token="block-key"] {
+  color: var(--zcdt-syntax-block-key) !important;
+}
+
+.CodeMirror-deluge-edit-task[data-zcdt-syntax-enhancement="true"]
+  .CodeMirror-lines
+  .CodeMirror-code
+  .CodeMirror-line
+  > span
+  > span[data-zcdt-token="property"] {
+  color: var(--zcdt-syntax-property) !important;
+}
+
+.CodeMirror-deluge-edit-task[data-zcdt-syntax-enhancement="true"]
+  .CodeMirror-lines
+  .CodeMirror-code
+  .CodeMirror-line
+  > span
+  > span[data-zcdt-token="variable"] {
+  color: var(--zcdt-syntax-variable) !important;
+}
+
+.CodeMirror-deluge-edit-task[data-zcdt-syntax-enhancement="true"]
+  .CodeMirror-lines
+  .CodeMirror-code
+  .CodeMirror-line
+  > span
+  > span[data-zcdt-token="type"] {
+  color: var(--zcdt-syntax-type) !important;
+}
+
+.CodeMirror-deluge-edit-task[data-zcdt-syntax-enhancement="true"]
+  .CodeMirror-lines
+  .CodeMirror-code
+  .CodeMirror-line
+  > span
+  > span[data-zcdt-token="operator"] {
+  color: var(--zcdt-syntax-operator) !important;
+}
+
+.CodeMirror-deluge-edit-task[data-zcdt-syntax-enhancement="true"]
+  .CodeMirror-lines
+  .CodeMirror-code
+  .CodeMirror-line
+  > span
+  > span[data-zcdt-token="logical-operator"] {
+  color: var(--zcdt-syntax-logical-operator) !important;
+}
+
+.CodeMirror-deluge-edit-task[data-zcdt-syntax-enhancement="true"]
+  .CodeMirror-lines
+  .CodeMirror-code
+  .CodeMirror-line
+  > span
+  > span[data-zcdt-token="punctuation"] {
+  color: var(--zcdt-syntax-punctuation) !important;
+}
+
+.CodeMirror-deluge-edit-task[data-zcdt-syntax-enhancement="true"]
+  .CodeMirror-lines
+  .CodeMirror-code
+  .CodeMirror-line
+  > span
+  > span[data-zcdt-token="bracket"] {
+  color: var(--zcdt-syntax-bracket) !important;
+}
+
+.CodeMirror-deluge-edit-task[data-zcdt-syntax-enhancement="true"] .CodeMirror-matchingbracket {
+  background: var(--zcdt-syntax-matching-bracket-bg) !important;
+  color: var(--zcdt-syntax-bracket) !important;
+  padding-bottom: 1px !important;
+}
+
+.CodeMirror-deluge-edit-task[data-zcdt-syntax-enhancement="true"] .CodeMirror-nonmatchingbracket {
+  color: var(--zcdt-syntax-invalid) !important;
+}
+
+.CodeMirror-deluge-edit-task[data-zcdt-syntax-enhancement="true"]
+  .CodeMirror-matchingbracket:not(.CodeMirror-matchingbracket + .CodeMirror-matchingbracket):not(
+    .CodeMirror-matchingbracket:has(+ .CodeMirror-matchingbracket)
+  ) {
+  outline: 1px solid var(--zcdt-syntax-matching-bracket-border) !important;
+}
+
+.CodeMirror-deluge-edit-task[data-zcdt-syntax-enhancement="true"]
+  .CodeMirror-matchingbracket
+  + .CodeMirror-matchingbracket {
+  box-shadow:
+    1px 1px var(--zcdt-syntax-matching-bracket-border),
+    1px -1px var(--zcdt-syntax-matching-bracket-border) !important;
+}
+
+.CodeMirror-deluge-edit-task[data-zcdt-syntax-enhancement="true"]
+  .CodeMirror-matchingbracket:has(+ .CodeMirror-matchingbracket) {
+  box-shadow:
+    -1px -1px var(--zcdt-syntax-matching-bracket-border),
+    -1px 1px var(--zcdt-syntax-matching-bracket-border),
+    0 0 0 1px var(--zcdt-syntax-matching-bracket-border) !important;
+}

@@ -46,6 +46,26 @@ The extension targets Zoho CRM only.
 - Zoho's `cm-syntax` bucket is used for callable / built-in-looking Deluge tokens such as `info`,
   `zoho`, `.get`, and `Map`; map it independently from string literals so richer themes preserve
   useful semantic separation.
+- Advanced syntax highlighting is extension-owned and toggled by marking live editor hosts with
+  `data-zcdt-syntax-enhancement="true"`. Keep syntax color rules scoped to
+  `.CodeMirror-deluge-edit-task` and refine the existing CodeMirror spans instead of rewriting tokens.
+- CSS-only adjacency is not enough for every Deluge token because CodeMirror emits both callable
+  tokens like `ifnull(` and plain arguments like `recId_)` as `.cm-variable + .cm-brackets`. The MVP
+  syntax layer therefore annotates existing spans with `data-zcdt-token` from token text and immediate
+  neighbors, without parsing or rewriting editor content.
+- Live inspection also showed several Deluge-specific token roles that should not fall into the generic
+  callable bucket: `standalone.*` custom calls, `invokeurl`, invoke block keys such as `url` and `type`,
+  HTTP method words such as `GET`, and the `index` modifier in `for each index i`.
+- Live syntax inspection confirmed Zoho's `.cm-syntax` is mixed: control words such as `if` and
+  `else`, type/constructor-looking tokens such as `string`, `String`, and `Map`, and member calls
+  such as `.put` can all use that class. Prefer scoped adjacent-token selectors over treating
+  `.cm-syntax` as one semantic color.
+- Deluge member calls are emitted two ways: some methods are separate `.cm-syntax` spans after a
+  `.cm-variable`, while chained methods such as `phoneNumber.trim` can remain a single
+  `.cm-variable` span before `.cm-brackets`.
+- Useful observed Deluge token classes include `.cm-comment`, `.cm-syntax`, `.cm-variable`,
+  `.cm-string`, `.cm-constant`, `.cm-operator`, `.cm-relop`, `.cm-logicalOpr`, `.cm-tag`,
+  `.cm-separator`, `.cm-semicolon`, and `.cm-brackets`.
 - Indent-guide styling can stay native and width-safe by decorating those existing `.cm-tab` spans
   instead of estimating grid columns across the whole editor surface. The older public extension used
   the same `.cm-tab` idea globally; this codebase scopes it to the live Deluge CodeMirror host.

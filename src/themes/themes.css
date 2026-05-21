@@ -37,6 +37,20 @@ body.zcdt-theme-vscode-dark {
   --zcdt-theme-editor-constant: #4ec9b0;
   --zcdt-theme-editor-symbol: #c586c0;
   --zcdt-theme-editor-keyword: #569cd6;
+  --zcdt-theme-editor-control: #c586c0;
+  --zcdt-theme-editor-logical-operator: #d7ba7d;
+  --zcdt-theme-editor-operator: #d4d4d4;
+  --zcdt-theme-editor-punctuation: #808080;
+  --zcdt-theme-editor-bracket: #ffd700;
+  --zcdt-theme-editor-callable: #dcdcaa;
+  --zcdt-theme-editor-method: #4ec9b0;
+  --zcdt-theme-editor-property: #9cdcfe;
+  --zcdt-theme-editor-custom-call: #dcdcaa;
+  --zcdt-theme-editor-special-form: #f14c4c;
+  --zcdt-theme-editor-block-key: #4fc1ff;
+  --zcdt-theme-editor-http-method: #d7ba7d;
+  --zcdt-theme-editor-namespace: #f14c4c;
+  --zcdt-theme-editor-type: #4ec9b0;
 
   --zcdt-theme-diff-gap-bg: var(--zcdt-theme-panel-bg);
   --zcdt-theme-diff-chunk-bg: #3a3324;
@@ -83,6 +97,20 @@ body.zcdt-theme-vscode-light {
   --zcdt-theme-editor-constant: #098658;
   --zcdt-theme-editor-symbol: #795e26;
   --zcdt-theme-editor-keyword: #0000ff;
+  --zcdt-theme-editor-control: #af00db;
+  --zcdt-theme-editor-logical-operator: #0000ff;
+  --zcdt-theme-editor-operator: #000000;
+  --zcdt-theme-editor-punctuation: #666666;
+  --zcdt-theme-editor-bracket: #0431fa;
+  --zcdt-theme-editor-callable: #795e26;
+  --zcdt-theme-editor-method: #267f99;
+  --zcdt-theme-editor-property: #001080;
+  --zcdt-theme-editor-custom-call: #795e26;
+  --zcdt-theme-editor-special-form: #a1260d;
+  --zcdt-theme-editor-block-key: #267f99;
+  --zcdt-theme-editor-http-method: #af00db;
+  --zcdt-theme-editor-namespace: #a1260d;
+  --zcdt-theme-editor-type: #267f99;
 
   --zcdt-theme-diff-gap-bg: var(--zcdt-theme-panel-bg);
   --zcdt-theme-diff-chunk-bg: #fff3cd;
@@ -129,6 +157,20 @@ body.zcdt-theme-github-light {
   --zcdt-theme-editor-constant: #0550ae;
   --zcdt-theme-editor-symbol: #116329;
   --zcdt-theme-editor-keyword: #cf222e;
+  --zcdt-theme-editor-control: #cf222e;
+  --zcdt-theme-editor-logical-operator: #8250df;
+  --zcdt-theme-editor-operator: #1f2328;
+  --zcdt-theme-editor-punctuation: #57606a;
+  --zcdt-theme-editor-bracket: #57606a;
+  --zcdt-theme-editor-callable: #8250df;
+  --zcdt-theme-editor-method: #116329;
+  --zcdt-theme-editor-property: #953800;
+  --zcdt-theme-editor-custom-call: #8250df;
+  --zcdt-theme-editor-special-form: #cf222e;
+  --zcdt-theme-editor-block-key: #0969da;
+  --zcdt-theme-editor-http-method: #9a6700;
+  --zcdt-theme-editor-namespace: #cf222e;
+  --zcdt-theme-editor-type: #0550ae;
 
   --zcdt-theme-diff-gap-bg: var(--zcdt-theme-panel-bg);
   --zcdt-theme-diff-chunk-bg: #fae17d80;
@@ -175,6 +217,20 @@ body.zcdt-theme-github-dark {
   --zcdt-theme-editor-constant: #79c0ff;
   --zcdt-theme-editor-symbol: #7ee787;
   --zcdt-theme-editor-keyword: #ff7b72;
+  --zcdt-theme-editor-control: #ff7b72;
+  --zcdt-theme-editor-logical-operator: #d2a8ff;
+  --zcdt-theme-editor-operator: #e6edf3;
+  --zcdt-theme-editor-punctuation: #8b949e;
+  --zcdt-theme-editor-bracket: #8b949e;
+  --zcdt-theme-editor-callable: #d2a8ff;
+  --zcdt-theme-editor-method: #7ee787;
+  --zcdt-theme-editor-property: #ffa657;
+  --zcdt-theme-editor-custom-call: #d2a8ff;
+  --zcdt-theme-editor-special-form: #ff7b72;
+  --zcdt-theme-editor-block-key: #79c0ff;
+  --zcdt-theme-editor-http-method: #ffa657;
+  --zcdt-theme-editor-namespace: #ff7b72;
+  --zcdt-theme-editor-type: #79c0ff;
 
   --zcdt-theme-diff-gap-bg: var(--zcdt-theme-panel-bg);
   --zcdt-theme-diff-chunk-bg: #f2cc6080;
@@ -221,6 +277,20 @@ body.zcdt-theme-one-dark-pro {
   --zcdt-theme-editor-constant: #56b6c2;
   --zcdt-theme-editor-symbol: #e5c07b;
   --zcdt-theme-editor-keyword: #c678dd;
+  --zcdt-theme-editor-control: #c678dd;
+  --zcdt-theme-editor-logical-operator: #56b6c2;
+  --zcdt-theme-editor-operator: #abb2bf;
+  --zcdt-theme-editor-punctuation: #5c6370;
+  --zcdt-theme-editor-bracket: #e5c07b;
+  --zcdt-theme-editor-callable: #61afef;
+  --zcdt-theme-editor-method: #56b6c2;
+  --zcdt-theme-editor-property: #e06c75;
+  --zcdt-theme-editor-custom-call: #61afef;
+  --zcdt-theme-editor-special-form: #e06c75;
+  --zcdt-theme-editor-block-key: #e5c07b;
+  --zcdt-theme-editor-http-method: #d19a66;
+  --zcdt-theme-editor-namespace: #e06c75;
+  --zcdt-theme-editor-type: #e5c07b;
 
   --zcdt-theme-diff-gap-bg: var(--zcdt-theme-panel-bg);
   --zcdt-theme-diff-chunk-bg: #d19a6644;
@@ -267,6 +337,20 @@ body.zcdt-theme-monokai-pro {
   --zcdt-theme-editor-constant: #ab9df2;
   --zcdt-theme-editor-symbol: #78dce8;
   --zcdt-theme-editor-keyword: #ff6188;
+  --zcdt-theme-editor-control: #ff6188;
+  --zcdt-theme-editor-logical-operator: #ff9d00;
+  --zcdt-theme-editor-operator: #fcfcfa;
+  --zcdt-theme-editor-punctuation: #939293;
+  --zcdt-theme-editor-bracket: #ffd866;
+  --zcdt-theme-editor-callable: #a9dc76;
+  --zcdt-theme-editor-method: #78dce8;
+  --zcdt-theme-editor-property: #fcfcfa;
+  --zcdt-theme-editor-custom-call: #a9dc76;
+  --zcdt-theme-editor-special-form: #ff6188;
+  --zcdt-theme-editor-block-key: #78dce8;
+  --zcdt-theme-editor-http-method: #ff9d00;
+  --zcdt-theme-editor-namespace: #ff6188;
+  --zcdt-theme-editor-type: #78dce8;
 
   --zcdt-theme-diff-gap-bg: var(--zcdt-theme-panel-bg);
   --zcdt-theme-diff-chunk-bg: #ffd86619;
@@ -313,9 +397,95 @@ body.zcdt-theme-tokyo-night {
   --zcdt-theme-editor-constant: #ff9e64;
   --zcdt-theme-editor-symbol: #73daca;
   --zcdt-theme-editor-keyword: #bb9af7;
+  --zcdt-theme-editor-control: #bb9af7;
+  --zcdt-theme-editor-logical-operator: #f7768e;
+  --zcdt-theme-editor-operator: #e0af68;
+  --zcdt-theme-editor-punctuation: #565f89;
+  --zcdt-theme-editor-bracket: #ffcc66;
+  --zcdt-theme-editor-callable: #7aa2f7;
+  --zcdt-theme-editor-method: #73daca;
+  --zcdt-theme-editor-property: #c0caf5;
+  --zcdt-theme-editor-custom-call: #7aa2f7;
+  --zcdt-theme-editor-special-form: #f7768e;
+  --zcdt-theme-editor-block-key: #7dcfff;
+  --zcdt-theme-editor-http-method: #e0af68;
+  --zcdt-theme-editor-namespace: #f7768e;
+  --zcdt-theme-editor-type: #2ac3de;
 
   --zcdt-theme-diff-gap-bg: var(--zcdt-theme-panel-bg);
   --zcdt-theme-diff-chunk-bg: #e0af6820;
   --zcdt-theme-diff-inserted-bg: #41a6b520;
   --zcdt-theme-diff-deleted-bg: #db4b4b22;
+}
+
+:root[deluge-theme="light"] body:not(.zcdt-custom-theme-active) {
+  --zcdt-theme-editor-fg: var(--dre-editor-foreground, black);
+  --zcdt-theme-editor-muted-fg: var(--dre-editor-linenumber-foreground, #999);
+  --zcdt-theme-editor-comment: var(--dre-editor-comment-foreground, #75715e);
+  --zcdt-theme-editor-variable: var(--dre-editor-variable-foreground, #5e57b5);
+  --zcdt-theme-editor-syntax: var(--dre-editor-syntax-foreground, #c69060);
+  --zcdt-theme-editor-string: var(--dre-editor-string-foreground, #d10000);
+  --zcdt-theme-editor-number: var(--dre-editor-number-foreground, #164);
+  --zcdt-theme-editor-constant: var(--dre-editor-constant-foreground, #c6607c);
+  --zcdt-theme-editor-symbol: var(--dre-editor-atom-foreground, #219);
+  --zcdt-theme-editor-keyword: var(--dre-editor-keyword-foreground, #708);
+  --zcdt-theme-editor-control: var(--dre-editor-keyword-foreground, #708);
+  --zcdt-theme-editor-logical-operator: var(--dre-editor-logical-operator-foreground, #000);
+  --zcdt-theme-editor-operator: var(--dre-editor-operator-foreground, #7e7d7c);
+  --zcdt-theme-editor-punctuation: var(--dre-editor-semicolon-foreground, #7e7d7c);
+  --zcdt-theme-editor-bracket: var(--dre-editor-brackets-foreground, #7e7d7c);
+  --zcdt-theme-editor-callable: var(--dre-editor-syntax-foreground, #c69060);
+  --zcdt-theme-editor-method: var(--dre-editor-variable-2-foreground, #05a);
+  --zcdt-theme-editor-property: var(--dre-editor-variable-foreground, #5e57b5);
+  --zcdt-theme-editor-custom-call: #6a55a8;
+  --zcdt-theme-editor-special-form: #b3261e;
+  --zcdt-theme-editor-block-key: var(--dre-editor-variable-foreground, #5e57b5);
+  --zcdt-theme-editor-http-method: var(--dre-editor-constant-foreground, #c6607c);
+  --zcdt-theme-editor-namespace: #b3261e;
+  --zcdt-theme-editor-type: var(--dre-editor-syntax-foreground, #c69060);
+  --zcdt-theme-editor-matching-bracket-bg: var(--dre-editor-matchingbracket-background, #cfead6);
+  --zcdt-theme-editor-matching-bracket-border: var(--dre-editor-matchingbracket-foreground, #000);
+  --zcdt-theme-editor-invalid: var(--dre-editor-error-text-decoration-color, #f83933);
+}
+
+:root[deluge-theme="dark"] body:not(.zcdt-custom-theme-active),
+:root[deluge-theme="default"] body:not(.zcdt-custom-theme-active),
+:root[deluge-theme="midnight_blue"] body:not(.zcdt-custom-theme-active),
+:root[deluge-theme="midnight-blue"] body:not(.zcdt-custom-theme-active) {
+  --zcdt-theme-editor-fg: var(--dre-editor-foreground, #d4d4d4);
+  --zcdt-theme-editor-muted-fg: var(--dre-editor-linenumber-foreground, #858585);
+  --zcdt-theme-editor-comment: var(--dre-editor-comment-foreground, #75715e);
+  --zcdt-theme-editor-variable: var(--dre-editor-variable-foreground, #9cdcfe);
+  --zcdt-theme-editor-syntax: var(--dre-editor-syntax-foreground, #ce9178);
+  --zcdt-theme-editor-string: var(--dre-editor-string-foreground, #dcdcaa);
+  --zcdt-theme-editor-number: var(--dre-editor-number-foreground, #b5cea8);
+  --zcdt-theme-editor-constant: var(--dre-editor-constant-foreground, #3dc9b0);
+  --zcdt-theme-editor-symbol: var(--dre-editor-atom-foreground, #da70d6);
+  --zcdt-theme-editor-keyword: var(--dre-editor-keyword-foreground, #569cd6);
+  --zcdt-theme-editor-control: var(
+    --dre-editor-keyword-foreground,
+    var(--dre-editor-syntax-foreground, #ce9178)
+  );
+  --zcdt-theme-editor-logical-operator: var(--dre-editor-logical-operator-foreground, #d4d4d4);
+  --zcdt-theme-editor-operator: var(--dre-editor-operator-foreground, #d4d4d4);
+  --zcdt-theme-editor-punctuation: var(--dre-editor-semicolon-foreground, #d4d4d4);
+  --zcdt-theme-editor-bracket: var(--dre-editor-brackets-foreground, #d4d4d4);
+  --zcdt-theme-editor-callable: var(--dre-editor-syntax-foreground, #ce9178);
+  --zcdt-theme-editor-method: var(--dre-editor-constant-foreground, #3dc9b0);
+  --zcdt-theme-editor-property: var(--dre-editor-variable-foreground, #9cdcfe);
+  --zcdt-theme-editor-custom-call: var(--dre-editor-variable-foreground, #9cdcfe);
+  --zcdt-theme-editor-special-form: #ff6f61;
+  --zcdt-theme-editor-block-key: var(--dre-editor-variable-2-foreground, #9cdcfe);
+  --zcdt-theme-editor-http-method: var(--dre-editor-constant-foreground, #3dc9b0);
+  --zcdt-theme-editor-namespace: #ff6f61;
+  --zcdt-theme-editor-type: var(--dre-editor-syntax-foreground, #ce9178);
+  --zcdt-theme-editor-matching-bracket-bg: var(
+    --dre-editor-matchingbracket-background,
+    transparent
+  );
+  --zcdt-theme-editor-matching-bracket-border: var(
+    --dre-editor-matchingbracket-foreground,
+    #d4d4d4
+  );
+  --zcdt-theme-editor-invalid: var(--dre-editor-error-text-decoration-color, #f7433d);
 }
