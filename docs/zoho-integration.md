@@ -57,8 +57,9 @@ The extension targets Zoho CRM only.
   syntax layer therefore annotates existing spans with `data-zcdt-token` from token text and immediate
   neighbors, without parsing or rewriting editor content.
 - Live inspection also showed several Deluge-specific token roles that should not fall into the generic
-  callable bucket: `standalone.*` custom calls, `invokeurl`, invoke block keys such as `url` and `type`,
-  HTTP method words such as `GET`, and the `index` modifier in `for each index i`.
+  callable bucket: `standalone` / `automation` service namespaces, their dotted callable suffixes,
+  `invokeurl`, invoke block keys such as `url` and `type`, HTTP method words such as `GET`, and the
+  `index` modifier in `for each index i`.
 - Live syntax inspection confirmed Zoho's `.cm-syntax` is mixed: control words such as `if` and
   `else`, type/constructor-looking tokens such as `string`, `String`, and `Map`, and member calls
   such as `.put` can all use that class. Prefer scoped adjacent-token selectors over treating

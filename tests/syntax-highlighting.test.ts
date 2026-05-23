@@ -228,6 +228,15 @@ describe('syntax highlighting enhancement', () => {
         </pre>
         <pre class="CodeMirror-line">
           <span>
+            <span class="cm-variable">automation.runFlow</span>
+            <span class="cm-brackets">(</span>
+            <span class="cm-string">"Deals"</span>
+            <span class="cm-brackets">)</span>
+            <span class="cm-semicolon">;</span>
+          </span>
+        </pre>
+        <pre class="CodeMirror-line">
+          <span>
             <span class="cm-variable">resp</span>
             <span class="cm-operator">=</span>
             <span class="cm-syntax">invokeurl</span>
@@ -276,7 +285,10 @@ describe('syntax highlighting enhancement', () => {
       semantic: token.getAttribute(SYNTAX_TOKEN_ATTR),
     }));
 
-    expect(tokens).toContainEqual({ text: 'standalone.variables', semantic: 'custom-call' });
+    expect(tokens).toContainEqual({ text: 'standalone', semantic: 'service-namespace' });
+    expect(tokens).toContainEqual({ text: '.variables', semantic: 'method' });
+    expect(tokens).toContainEqual({ text: 'automation', semantic: 'service-namespace' });
+    expect(tokens).toContainEqual({ text: '.runFlow', semantic: 'method' });
     expect(tokens).toContainEqual({ text: 'invokeurl', semantic: 'special-form' });
     expect(tokens).toContainEqual({ text: 'url', semantic: 'block-key' });
     expect(tokens).toContainEqual({ text: 'type', semantic: 'block-key' });
@@ -284,6 +296,33 @@ describe('syntax highlighting enhancement', () => {
     expect(tokens).toContainEqual({ text: 'index', semantic: 'control' });
     expect(tokens).toContainEqual({ text: 'i', semantic: 'variable' });
     expect(tokens).toContainEqual({ text: 'j', semantic: 'variable' });
+  });
+
+  it('restores grouped service namespace spans when the preference is disabled', () => {
+    document.body.innerHTML = `
+      <div class="CodeMirror-deluge-edit-task">
+        <pre class="CodeMirror-line">
+          <span>
+            <span class="cm-variable">standalone.variables</span>
+            <span class="cm-brackets">(</span>
+            <span class="cm-string">"x"</span>
+            <span class="cm-brackets">)</span>
+          </span>
+        </pre>
+      </div>`;
+
+    applySyntaxEnhancementPreference(true);
+    applySyntaxEnhancementPreference(false);
+
+    const variableTokens = [
+      ...document.querySelectorAll(
+        '.CodeMirror-deluge-edit-task .CodeMirror-line span.cm-variable',
+      ),
+    ].map((token) => token.textContent);
+
+    expect(variableTokens).toEqual(['standalone.variables']);
+    expect(document.querySelector('[data-zcdt-split-group]')).toBeNull();
+    expect(document.querySelector(`[${SYNTAX_TOKEN_ATTR}]`)).toBeNull();
   });
 
   it('separates comparison and boolean logical operators', () => {

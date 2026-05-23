@@ -30,6 +30,7 @@ const CONTROL_WORDS = new Set([
   'while',
 ]);
 const CUSTOM_CALL_PREFIXES = ['automation.', 'standalone.'];
+const SERVICE_NAMESPACE_ROOTS = new Set(['automation', 'standalone']);
 const HTTP_METHOD_WORDS = new Set(['DELETE', 'GET', 'PATCH', 'POST', 'PUT']);
 const TYPE_WORDS = new Set([
   'bool',
@@ -68,6 +69,10 @@ function isCustomCallText(text: string): boolean {
   return CUSTOM_CALL_PREFIXES.some((prefix) => text.startsWith(prefix));
 }
 
+function isServiceNamespaceRoot(text: string): boolean {
+  return SERVICE_NAMESPACE_ROOTS.has(text);
+}
+
 function isGroupedMemberAccessText(text: string): boolean {
   return GROUPED_MEMBER_ACCESS_PATTERN.test(text);
 }
@@ -82,6 +87,10 @@ function isSplitEligibleGroupedMember(text: string): boolean {
     !isCustomCallText(text) &&
     getGroupedMemberRoot(text) !== 'zoho'
   );
+}
+
+function isSplitEligibleServiceNamespace(text: string): boolean {
+  return isGroupedMemberAccessText(text) && isServiceNamespaceRoot(getGroupedMemberRoot(text));
 }
 
 function getTokenText(token: Element | null): string {
@@ -146,6 +155,15 @@ function shouldSplitMemberAccessToken(token: Element): boolean {
   );
 }
 
+function shouldSplitServiceNamespaceToken(token: Element): boolean {
+  const text = getTokenText(token);
+  return (
+    token.classList.contains('cm-variable') &&
+    !isSplitTokenPart(token) &&
+    isSplitEligibleServiceNamespace(text)
+  );
+}
+
 function createSplitTokenPart(
   source: Element,
   text: string,
@@ -193,6 +211,35 @@ function splitMemberAccessToken(token: Element): void {
   token.insertAdjacentElement('beforebegin', baseToken);
   baseToken.insertAdjacentElement('afterend', memberToken);
   token.remove();
+}
+
+function splitServiceNamespaceToken(token: Element): void {
+  const text = token.textContent ?? '';
+  const firstDotIndex = text.indexOf('.');
+  if (firstDotIndex <= 0 || !token.parentElement) {
+    return;
+  }
+
+  splitGroupIdCounter += 1;
+  const groupId = `split-${splitGroupIdCounter}`;
+  const rootToken = createSplitTokenPart(token, text.slice(0, firstDotIndex), groupId, true);
+  const suffixToken = createSplitTokenPart(token, text.slice(firstDotIndex), groupId, false);
+
+  token.insertAdjacentElement('beforebegin', rootToken);
+  rootToken.insertAdjacentElement('afterend', suffixToken);
+  token.remove();
+}
+
+function splitServiceNamespaceTokens(editorSurface: Element): void {
+  const tokens = editorSurface.querySelectorAll(
+    '.CodeMirror-line span.cm-variable, .CodeMirror-line span.cm-variable-2, .CodeMirror-line span.cm-variable-3',
+  );
+
+  for (const token of tokens) {
+    if (shouldSplitServiceNamespaceToken(token)) {
+      splitServiceNamespaceToken(token);
+    }
+  }
 }
 
 function splitGroupedMemberAccessTokens(editorSurface: Element): void {
@@ -312,6 +359,10 @@ function getSemanticToken(token: Element): string | null {
     return 'namespace';
   }
 
+  if (isServiceNamespaceRoot(text)) {
+    return 'service-namespace';
+  }
+
   if (TYPE_WORDS.has(text)) {
     return 'type';
   }
@@ -363,6 +414,7 @@ function getSemanticToken(token: Element): string | null {
 }
 
 export function annotateSyntaxTokens(editorSurface: Element): void {
+  splitServiceNamespaceTokens(editorSurface);
   splitGroupedMemberAccessTokens(editorSurface);
   const tokens = editorSurface.querySelectorAll('.CodeMirror-line span[class]');
 

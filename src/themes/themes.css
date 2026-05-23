@@ -51,6 +51,7 @@ body.zcdt-theme-vscode-dark {
   --zcdt-theme-editor-block-key: #4fc1ff;
   --zcdt-theme-editor-http-method: #d7ba7d;
   --zcdt-theme-editor-namespace: #f14c4c;
+  --zcdt-theme-editor-service-namespace: var(--zcdt-theme-editor-namespace);
   --zcdt-theme-editor-type: #4ec9b0;
   --zcdt-theme-editor-matching-bracket-bg: rgba(255, 255, 255, 0.05);
   --zcdt-theme-editor-matching-bracket-border: rgba(215, 186, 125, 0.45);
@@ -114,6 +115,7 @@ body.zcdt-theme-vscode-light {
   --zcdt-theme-editor-block-key: #267f99;
   --zcdt-theme-editor-http-method: #af00db;
   --zcdt-theme-editor-namespace: #267f99;
+  --zcdt-theme-editor-service-namespace: var(--zcdt-theme-editor-namespace);
   --zcdt-theme-editor-type: #267f99;
   --zcdt-theme-editor-matching-bracket-bg: rgba(0, 0, 0, 0.06);
   --zcdt-theme-editor-matching-bracket-border: rgba(4, 49, 250, 0.35);
@@ -177,6 +179,7 @@ body.zcdt-theme-github-light {
   --zcdt-theme-editor-block-key: #0969da;
   --zcdt-theme-editor-http-method: #9a6700;
   --zcdt-theme-editor-namespace: #cf222e;
+  --zcdt-theme-editor-service-namespace: var(--zcdt-theme-editor-namespace);
   --zcdt-theme-editor-type: #0550ae;
   --zcdt-theme-editor-matching-bracket-bg: rgba(5, 80, 174, 0.04);
   --zcdt-theme-editor-matching-bracket-border: rgba(5, 80, 174, 0.2);
@@ -240,6 +243,7 @@ body.zcdt-theme-github-dark {
   --zcdt-theme-editor-block-key: #79c0ff;
   --zcdt-theme-editor-http-method: #ffa657;
   --zcdt-theme-editor-namespace: #ff7b72;
+  --zcdt-theme-editor-service-namespace: var(--zcdt-theme-editor-namespace);
   --zcdt-theme-editor-type: #79c0ff;
   --zcdt-theme-editor-matching-bracket-bg: rgba(255, 255, 255, 0.04);
   --zcdt-theme-editor-matching-bracket-border: rgba(145, 152, 161, 0.45);
@@ -303,6 +307,7 @@ body.zcdt-theme-one-dark-pro {
   --zcdt-theme-editor-block-key: #e5c07b;
   --zcdt-theme-editor-http-method: #d19a66;
   --zcdt-theme-editor-namespace: #e5c07b;
+  --zcdt-theme-editor-service-namespace: var(--zcdt-theme-editor-namespace);
   --zcdt-theme-editor-type: #e5c07b;
   --zcdt-theme-editor-matching-bracket-bg: rgba(81, 90, 107, 0.32);
   --zcdt-theme-editor-matching-bracket-border: rgba(81, 90, 107, 0.55);
@@ -366,6 +371,7 @@ body.zcdt-theme-monokai-pro {
   --zcdt-theme-editor-block-key: #fc9867;
   --zcdt-theme-editor-http-method: #fc9867;
   --zcdt-theme-editor-namespace: #ff6188;
+  --zcdt-theme-editor-service-namespace: var(--zcdt-theme-editor-namespace);
   --zcdt-theme-editor-type: #78dce8;
   --zcdt-theme-editor-matching-bracket-bg: rgba(255, 216, 102, 0.08);
   --zcdt-theme-editor-matching-bracket-border: rgba(255, 216, 102, 0.38);
@@ -429,6 +435,7 @@ body.zcdt-theme-tokyo-night {
   --zcdt-theme-editor-block-key: #7dcfff;
   --zcdt-theme-editor-http-method: #e0af68;
   --zcdt-theme-editor-namespace: #f7768e;
+  --zcdt-theme-editor-service-namespace: var(--zcdt-theme-editor-namespace);
   --zcdt-theme-editor-type: #7dcfff;
   --zcdt-theme-editor-matching-bracket-bg: rgba(224, 175, 104, 0.06);
   --zcdt-theme-editor-matching-bracket-border: rgba(224, 175, 104, 0.32);
@@ -463,6 +470,7 @@ body.zcdt-theme-tokyo-night {
   --zcdt-theme-editor-block-key: var(--dre-editor-variable-foreground, #5e57b5);
   --zcdt-theme-editor-http-method: var(--dre-editor-constant-foreground, #c6607c);
   --zcdt-theme-editor-namespace: #d8005c;
+  --zcdt-theme-editor-service-namespace: var(--zcdt-theme-editor-namespace);
   --zcdt-theme-editor-type: #2f8f5b;
   --zcdt-theme-editor-matching-bracket-bg: rgba(0, 0, 0, 0.08);
   --zcdt-theme-editor-matching-bracket-border: rgba(0, 0, 0, 0.35);
@@ -496,6 +504,7 @@ body.zcdt-theme-tokyo-night {
   --zcdt-theme-editor-block-key: var(--dre-editor-variable-2-foreground, #9cdcfe);
   --zcdt-theme-editor-http-method: var(--dre-editor-constant-foreground, #3dc9b0);
   --zcdt-theme-editor-namespace: #f87171;
+  --zcdt-theme-editor-service-namespace: var(--zcdt-theme-editor-namespace);
   --zcdt-theme-editor-type: #60c082;
   --zcdt-theme-editor-matching-bracket-bg: rgba(255, 255, 255, 0.04);
   --zcdt-theme-editor-matching-bracket-border: rgba(212, 212, 212, 0.45);

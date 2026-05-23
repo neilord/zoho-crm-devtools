@@ -18,6 +18,10 @@
     var(--zcdt-theme-editor-syntax, var(--dre-editor-syntax-foreground, #dcdcaa))
   );
   --zcdt-syntax-namespace: var(--zcdt-theme-editor-namespace, var(--zcdt-syntax-callable));
+  --zcdt-syntax-service-namespace: var(
+    --zcdt-theme-editor-service-namespace,
+    var(--zcdt-syntax-namespace)
+  );
   --zcdt-syntax-method: var(
     --zcdt-theme-editor-method,
     var(--zcdt-theme-editor-symbol, var(--dre-editor-link-foreground, #c586c0))
@@ -130,6 +134,12 @@
   .CodeMirror-line
   span[data-zcdt-token="namespace"] {
   color: var(--zcdt-syntax-namespace) !important;
+}
+
+.CodeMirror-deluge-edit-task[data-zcdt-syntax-enhancement="true"]
+  .CodeMirror-line
+  span[data-zcdt-token="service-namespace"] {
+  color: var(--zcdt-syntax-service-namespace) !important;
 }
 
 .CodeMirror-deluge-edit-task[data-zcdt-syntax-enhancement="true"]
@@ -332,6 +342,15 @@
   > span
   > span[data-zcdt-token="namespace"] {
   color: var(--zcdt-syntax-namespace) !important;
+}
+
+.CodeMirror-deluge-edit-task[data-zcdt-syntax-enhancement="true"]
+  .CodeMirror-lines
+  .CodeMirror-code
+  .CodeMirror-line
+  > span
+  > span[data-zcdt-token="service-namespace"] {
+  color: var(--zcdt-syntax-service-namespace) !important;
 }
 
 .CodeMirror-deluge-edit-task[data-zcdt-syntax-enhancement="true"]
