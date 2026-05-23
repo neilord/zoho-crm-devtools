@@ -147,8 +147,13 @@
 .CodeMirror-deluge-edit-task[data-zcdt-syntax-enhancement="true"]
   .CodeMirror-line
   span[data-zcdt-token="method"],
+.CodeMirror-deluge-edit-task[data-zcdt-syntax-enhancement="true"] .cm-zcdt-member-method,
 .CodeMirror-deluge-edit-task[data-zcdt-syntax-enhancement="true"] :is(.cm-property, .cm-attribute) {
   color: var(--zcdt-syntax-method) !important;
+}
+
+.CodeMirror-deluge-edit-task[data-zcdt-syntax-enhancement="true"] .cm-zcdt-member-property {
+  color: var(--zcdt-syntax-property) !important;
 }
 
 .CodeMirror-deluge-edit-task[data-zcdt-syntax-enhancement="true"]

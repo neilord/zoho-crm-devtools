@@ -49,6 +49,9 @@ The extension targets Zoho CRM only.
 - Advanced syntax highlighting is extension-owned and toggled by marking live editor hosts with
   `data-zcdt-syntax-enhancement="true"`. Keep syntax color rules scoped to
   `.CodeMirror-deluge-edit-task` and refine the existing CodeMirror spans instead of rewriting tokens.
+- Live browser debugging showed the CodeMirror instance is page-owned and not directly reachable from
+  the extension content-script world, so grouped member access such as `pLeadDetailFields.add` is
+  handled by splitting the rendered `cm-variable` span into variable and member segments in the DOM.
 - CSS-only adjacency is not enough for every Deluge token because CodeMirror emits both callable
   tokens like `ifnull(` and plain arguments like `recId_)` as `.cm-variable + .cm-brackets`. The MVP
   syntax layer therefore annotates existing spans with `data-zcdt-token` from token text and immediate

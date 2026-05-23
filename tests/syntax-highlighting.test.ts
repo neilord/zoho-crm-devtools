@@ -100,6 +100,78 @@ describe('syntax highlighting enhancement', () => {
     ]);
   });
 
+  it('supports grouped and pre-split member access shapes', () => {
+    document.body.innerHTML = `
+      <div class="CodeMirror-deluge-edit-task">
+        <pre class="CodeMirror-line">
+          <span>
+            <span class="cm-variable">pLeadDetailFields.add</span>
+            <span class="cm-brackets">(</span>
+            <span class="cm-string">"Lead_Brand"</span>
+            <span class="cm-brackets">)</span>
+            <span class="cm-semicolon">;</span>
+          </span>
+        </pre>
+        <pre class="CodeMirror-line">
+          <span>
+            <span class="cm-variable">pLeadDetailFields</span>
+            <span class="cm-zcdt-member-method">.add</span>
+            <span class="cm-brackets">(</span>
+            <span class="cm-string">"Lead_Origin"</span>
+            <span class="cm-brackets">)</span>
+            <span class="cm-semicolon">;</span>
+          </span>
+        </pre>
+        <pre class="CodeMirror-line">
+          <span>
+            <span class="cm-variable">obj</span>
+            <span class="cm-zcdt-member-property">.prop</span>
+            <span class="cm-semicolon">;</span>
+          </span>
+        </pre>
+      </div>`;
+
+    applySyntaxEnhancementPreference(true);
+
+    const tokens = [...document.querySelectorAll(`[${SYNTAX_TOKEN_ATTR}]`)].map((token) => ({
+      text: token.textContent,
+      semantic: token.getAttribute(SYNTAX_TOKEN_ATTR),
+    }));
+
+    expect(tokens).toContainEqual({ text: 'pLeadDetailFields', semantic: 'variable' });
+    expect(tokens).toContainEqual({ text: '.add', semantic: 'method' });
+    expect(tokens).toContainEqual({ text: 'obj', semantic: 'variable' });
+    expect(tokens).toContainEqual({ text: '.prop', semantic: 'property' });
+  });
+
+  it('restores grouped member spans when the preference is disabled', () => {
+    document.body.innerHTML = `
+      <div class="CodeMirror-deluge-edit-task">
+        <pre class="CodeMirror-line">
+          <span>
+            <span class="cm-variable">pLeadDetailFields.add</span>
+            <span class="cm-brackets">(</span>
+            <span class="cm-string">"Lead_Brand"</span>
+            <span class="cm-brackets">)</span>
+            <span class="cm-semicolon">;</span>
+          </span>
+        </pre>
+      </div>`;
+
+    applySyntaxEnhancementPreference(true);
+    applySyntaxEnhancementPreference(false);
+
+    const variableTokens = [
+      ...document.querySelectorAll(
+        '.CodeMirror-deluge-edit-task .CodeMirror-line span.cm-variable',
+      ),
+    ].map((token) => token.textContent);
+
+    expect(variableTokens).toEqual(['pLeadDetailFields.add']);
+    expect(document.querySelector('[data-zcdt-split-group]')).toBeNull();
+    expect(document.querySelector(`[${SYNTAX_TOKEN_ATTR}]`)).toBeNull();
+  });
+
   it('uses bracket direction to avoid coloring plain arguments as methods', () => {
     document.body.innerHTML = `
       <div class="CodeMirror-deluge-edit-task">
@@ -252,5 +324,30 @@ describe('syntax highlighting enhancement', () => {
     expect(tokens).toContainEqual({ text: '==', semantic: 'comparison-operator' });
     expect(tokens).toContainEqual({ text: '&&', semantic: 'logical-operator' });
     expect(tokens).toContainEqual({ text: '!', semantic: 'logical-operator' });
+  });
+
+  it('does not keep re-splitting already enhanced member access', () => {
+    document.body.innerHTML = `
+      <div class="CodeMirror-deluge-edit-task">
+        <pre class="CodeMirror-line">
+          <span>
+            <span class="cm-variable">pLeadDetailFields.add</span>
+            <span class="cm-brackets">(</span>
+            <span class="cm-string">"Lead_Brand"</span>
+            <span class="cm-brackets">)</span>
+          </span>
+        </pre>
+      </div>`;
+
+    applySyntaxEnhancementPreference(true);
+    applySyntaxEnhancementPreference(true);
+    applySyntaxEnhancementPreference(true);
+
+    expect(document.querySelectorAll('[data-zcdt-split-group-start="true"]')).toHaveLength(1);
+    expect(
+      [...document.querySelectorAll(`[${SYNTAX_TOKEN_ATTR}="method"]`)].map(
+        (token) => token.textContent,
+      ),
+    ).toEqual(['.add']);
   });
 });
