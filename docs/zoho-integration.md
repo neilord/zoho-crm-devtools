@@ -65,7 +65,10 @@ The extension targets Zoho CRM only.
   `.cm-variable` span before `.cm-brackets`.
 - Useful observed Deluge token classes include `.cm-comment`, `.cm-syntax`, `.cm-variable`,
   `.cm-string`, `.cm-constant`, `.cm-operator`, `.cm-relop`, `.cm-logicalOpr`, `.cm-tag`,
-  `.cm-separator`, `.cm-semicolon`, and `.cm-brackets`.
+  `.cm-separator`, `.cm-semicolon`, and `.cm-brackets`. Zoho reports comparison glyphs such as
+  `>` as `.cm-tag`, so the enhancement maps `.cm-tag` and `.cm-relop` to
+  `comparison-operator` while keeping boolean operators such as `&&` / `!` as
+  `logical-operator`.
 - Indent-guide styling can stay native and width-safe by decorating those existing `.cm-tab` spans
   instead of estimating grid columns across the whole editor surface. The older public extension used
   the same `.cm-tab` idea globally; this codebase scopes it to the live Deluge CodeMirror host.

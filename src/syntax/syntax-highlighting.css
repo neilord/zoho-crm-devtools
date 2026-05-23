@@ -51,6 +51,10 @@
     --zcdt-theme-editor-logical-operator,
     var(--zcdt-theme-editor-symbol, var(--dre-editor-logical-operator-foreground, #d7ba7d))
   );
+  --zcdt-syntax-comparison-operator: var(
+    --zcdt-theme-editor-comparison-operator,
+    var(--zcdt-syntax-logical-operator)
+  );
   --zcdt-syntax-punctuation: var(
     --zcdt-theme-editor-punctuation,
     var(--dre-editor-semicolon-foreground, var(--zcdt-syntax-foreground))
@@ -228,9 +232,14 @@
 
 .CodeMirror-deluge-edit-task[data-zcdt-syntax-enhancement="true"]
   [data-zcdt-token="logical-operator"],
-.CodeMirror-deluge-edit-task[data-zcdt-syntax-enhancement="true"]
-  :is(.cm-relop, .cm-logicalOpr, .cm-tag) {
+.CodeMirror-deluge-edit-task[data-zcdt-syntax-enhancement="true"] .cm-logicalOpr {
   color: var(--zcdt-syntax-logical-operator) !important;
+}
+
+.CodeMirror-deluge-edit-task[data-zcdt-syntax-enhancement="true"]
+  [data-zcdt-token="comparison-operator"],
+.CodeMirror-deluge-edit-task[data-zcdt-syntax-enhancement="true"] :is(.cm-relop, .cm-tag) {
+  color: var(--zcdt-syntax-comparison-operator) !important;
 }
 
 .CodeMirror-deluge-edit-task[data-zcdt-syntax-enhancement="true"]
@@ -399,6 +408,15 @@
   > span
   > span[data-zcdt-token="logical-operator"] {
   color: var(--zcdt-syntax-logical-operator) !important;
+}
+
+.CodeMirror-deluge-edit-task[data-zcdt-syntax-enhancement="true"]
+  .CodeMirror-lines
+  .CodeMirror-code
+  .CodeMirror-line
+  > span
+  > span[data-zcdt-token="comparison-operator"] {
+  color: var(--zcdt-syntax-comparison-operator) !important;
 }
 
 .CodeMirror-deluge-edit-task[data-zcdt-syntax-enhancement="true"]
