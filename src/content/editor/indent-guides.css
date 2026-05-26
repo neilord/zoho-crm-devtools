@@ -1,8 +1,7 @@
 .CodeMirror-deluge-edit-task[data-zcdt-indent-guides="true"] {
-  --zcdt-indent-guide-color: color-mix(
-    in srgb,
-    var(--dre-editor-linenumber-foreground, currentColor) 28%,
-    transparent
+  --zcdt-indent-guide-color: var(
+    --zcdt-theme-editor-indent-guide,
+    color-mix(in srgb, var(--dre-editor-linenumber-foreground, currentColor) 28%, transparent)
   );
 }
 

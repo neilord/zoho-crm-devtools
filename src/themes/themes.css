@@ -407,6 +407,7 @@ body.zcdt-theme-tokyo-night {
   --zcdt-theme-editor-surface: #1a1b26;
   --zcdt-theme-editor-fg: #c0caf5;
   --zcdt-theme-editor-muted-fg: #3b4261;
+  --zcdt-theme-editor-indent-guide: color-mix(in srgb, #565f89 44%, transparent);
   --zcdt-theme-editor-selection-bg: #283457;
   --zcdt-theme-editor-active-line-bg: #202331;
   --zcdt-theme-editor-search-match-bg: #3d59a180;
