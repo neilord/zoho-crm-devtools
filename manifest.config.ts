@@ -37,7 +37,7 @@ export function createManifest(mode: string): ManifestV3 {
   const manifest: ManifestV3 = {
     manifest_version: 3,
     name: 'Zoho CRM DevTools',
-    version: '0.1.0',
+    version: '2.0.0',
     description: 'Enhance the Zoho CRM Deluge editor with themes and editor improvements.',
     icons: extensionIcons,
     permissions: ['storage'],
