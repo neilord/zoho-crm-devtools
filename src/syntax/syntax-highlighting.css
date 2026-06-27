@@ -461,6 +461,26 @@
   color: var(--zcdt-syntax-bracket) !important;
 }
 
+.CodeMirror-deluge-edit-task[data-zcdt-syntax-enhancement="true"]
+  .CodeMirror-line
+  span[data-zcdt-split-highlight="true"],
+.CodeMirror-deluge-edit-task[data-zcdt-syntax-enhancement="true"]
+  .CodeMirror-lines
+  .CodeMirror-code
+  .CodeMirror-line
+  > span
+  > span[data-zcdt-split-highlight="true"] {
+  background-image: linear-gradient(
+    to right,
+    var(--zcdt-token-split-root-color) 0 var(--zcdt-token-split-offset),
+    var(--zcdt-token-split-suffix-color) var(--zcdt-token-split-offset) 100%
+  ) !important;
+  background-clip: text !important;
+  color: transparent !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+}
+
 .CodeMirror-deluge-edit-task[data-zcdt-syntax-enhancement="true"] .CodeMirror-matchingbracket {
   background: var(--zcdt-syntax-matching-bracket-bg) !important;
   color: var(--zcdt-syntax-bracket) !important;

@@ -100,7 +100,7 @@ describe('syntax highlighting enhancement', () => {
     ]);
   });
 
-  it('supports grouped and pre-split member access shapes', () => {
+  it('annotates grouped and pre-split member access without rewriting grouped tokens', () => {
     document.body.innerHTML = `
       <div class="CodeMirror-deluge-edit-task">
         <pre class="CodeMirror-line">
@@ -131,6 +131,11 @@ describe('syntax highlighting enhancement', () => {
         </pre>
       </div>`;
 
+    const groupedToken = document.querySelector(
+      '.CodeMirror-deluge-edit-task .CodeMirror-line span.cm-variable',
+    );
+    const groupedTextNode = groupedToken?.firstChild;
+
     applySyntaxEnhancementPreference(true);
 
     const tokens = [...document.querySelectorAll(`[${SYNTAX_TOKEN_ATTR}]`)].map((token) => ({
@@ -138,13 +143,22 @@ describe('syntax highlighting enhancement', () => {
       semantic: token.getAttribute(SYNTAX_TOKEN_ATTR),
     }));
 
+    expect(
+      document.querySelector('.CodeMirror-deluge-edit-task .CodeMirror-line span.cm-variable'),
+    ).toBe(groupedToken);
+    expect(groupedToken?.firstChild).toBe(groupedTextNode);
+    expect(groupedToken?.getAttribute('data-zcdt-split-highlight')).toBe('true');
+    expect(
+      (groupedToken as HTMLElement | null)?.style.getPropertyValue('--zcdt-token-split-offset'),
+    ).not.toBe('');
+    expect(tokens).toContainEqual({ text: 'pLeadDetailFields.add', semantic: 'method' });
     expect(tokens).toContainEqual({ text: 'pLeadDetailFields', semantic: 'variable' });
     expect(tokens).toContainEqual({ text: '.add', semantic: 'method' });
     expect(tokens).toContainEqual({ text: 'obj', semantic: 'variable' });
     expect(tokens).toContainEqual({ text: '.prop', semantic: 'property' });
   });
 
-  it('restores grouped member spans when the preference is disabled', () => {
+  it('removes grouped member annotations when the preference is disabled', () => {
     document.body.innerHTML = `
       <div class="CodeMirror-deluge-edit-task">
         <pre class="CodeMirror-line">
@@ -168,7 +182,7 @@ describe('syntax highlighting enhancement', () => {
     ].map((token) => token.textContent);
 
     expect(variableTokens).toEqual(['pLeadDetailFields.add']);
-    expect(document.querySelector('[data-zcdt-split-group]')).toBeNull();
+    expect(document.querySelector('[data-zcdt-split-highlight]')).toBeNull();
     expect(document.querySelector(`[${SYNTAX_TOKEN_ATTR}]`)).toBeNull();
   });
 
@@ -284,11 +298,18 @@ describe('syntax highlighting enhancement', () => {
       text: token.textContent,
       semantic: token.getAttribute(SYNTAX_TOKEN_ATTR),
     }));
+    const standaloneToken = document.querySelector(
+      '.CodeMirror-deluge-edit-task .CodeMirror-line span.cm-variable[data-zcdt-split-highlight]',
+    ) as HTMLElement | null;
 
-    expect(tokens).toContainEqual({ text: 'standalone', semantic: 'service-namespace' });
-    expect(tokens).toContainEqual({ text: '.variables', semantic: 'method' });
-    expect(tokens).toContainEqual({ text: 'automation', semantic: 'service-namespace' });
-    expect(tokens).toContainEqual({ text: '.runFlow', semantic: 'method' });
+    expect(tokens).toContainEqual({ text: 'standalone.variables', semantic: 'custom-call' });
+    expect(tokens).toContainEqual({ text: 'automation.runFlow', semantic: 'custom-call' });
+    expect(standaloneToken?.style.getPropertyValue('--zcdt-token-split-root-color')).toBe(
+      'var(--zcdt-syntax-service-namespace)',
+    );
+    expect(standaloneToken?.style.getPropertyValue('--zcdt-token-split-suffix-color')).toBe(
+      'var(--zcdt-syntax-method)',
+    );
     expect(tokens).toContainEqual({ text: 'invokeurl', semantic: 'special-form' });
     expect(tokens).toContainEqual({ text: 'url', semantic: 'block-key' });
     expect(tokens).toContainEqual({ text: 'type', semantic: 'block-key' });
@@ -298,7 +319,7 @@ describe('syntax highlighting enhancement', () => {
     expect(tokens).toContainEqual({ text: 'j', semantic: 'variable' });
   });
 
-  it('restores grouped service namespace spans when the preference is disabled', () => {
+  it('removes grouped service namespace annotations when the preference is disabled', () => {
     document.body.innerHTML = `
       <div class="CodeMirror-deluge-edit-task">
         <pre class="CodeMirror-line">
@@ -321,7 +342,7 @@ describe('syntax highlighting enhancement', () => {
     ].map((token) => token.textContent);
 
     expect(variableTokens).toEqual(['standalone.variables']);
-    expect(document.querySelector('[data-zcdt-split-group]')).toBeNull();
+    expect(document.querySelector('[data-zcdt-split-highlight]')).toBeNull();
     expect(document.querySelector(`[${SYNTAX_TOKEN_ATTR}]`)).toBeNull();
   });
 
@@ -365,7 +386,7 @@ describe('syntax highlighting enhancement', () => {
     expect(tokens).toContainEqual({ text: '!', semantic: 'logical-operator' });
   });
 
-  it('does not keep re-splitting already enhanced member access', () => {
+  it('keeps CodeMirror-owned grouped member text nodes stable across repeated annotation', () => {
     document.body.innerHTML = `
       <div class="CodeMirror-deluge-edit-task">
         <pre class="CodeMirror-line">
@@ -378,15 +399,25 @@ describe('syntax highlighting enhancement', () => {
         </pre>
       </div>`;
 
+    const groupedToken = document.querySelector(
+      '.CodeMirror-deluge-edit-task .CodeMirror-line span.cm-variable',
+    );
+    const groupedTextNode = groupedToken?.firstChild;
+
     applySyntaxEnhancementPreference(true);
     applySyntaxEnhancementPreference(true);
     applySyntaxEnhancementPreference(true);
 
-    expect(document.querySelectorAll('[data-zcdt-split-group-start="true"]')).toHaveLength(1);
+    expect(
+      document.querySelector('.CodeMirror-deluge-edit-task .CodeMirror-line span.cm-variable'),
+    ).toBe(groupedToken);
+    expect(groupedToken?.firstChild).toBe(groupedTextNode);
+    expect(document.querySelector('[data-zcdt-split-group]')).toBeNull();
+    expect(document.querySelectorAll('[data-zcdt-split-highlight]')).toHaveLength(1);
     expect(
       [...document.querySelectorAll(`[${SYNTAX_TOKEN_ATTR}="method"]`)].map(
         (token) => token.textContent,
       ),
-    ).toEqual(['.add']);
+    ).toEqual(['pLeadDetailFields.add']);
   });
 });
