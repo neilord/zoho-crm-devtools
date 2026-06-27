@@ -3,15 +3,21 @@ import { findEditorSurfaces } from '../content/zoho/selectors';
 export const SYNTAX_ENHANCEMENT_ENABLED_ATTR = 'data-zcdt-syntax-enhancement';
 export const SYNTAX_TOKEN_ATTR = 'data-zcdt-token';
 
-const MEMBER_METHOD_OVERLAY_STYLE = 'cm-zcdt-member-method';
-const MEMBER_PROPERTY_OVERLAY_STYLE = 'cm-zcdt-member-property';
-const SPLIT_GROUP_ATTR = 'data-zcdt-split-group';
-const SPLIT_GROUP_START_ATTR = 'data-zcdt-split-group-start';
-const SPLIT_ORIGINAL_CLASS_ATTR = 'data-zcdt-original-class';
+const SPLIT_HIGHLIGHT_ATTR = 'data-zcdt-split-highlight';
+const SPLIT_HIGHLIGHT_OFFSET_PROPERTY = '--zcdt-token-split-offset';
+const SPLIT_HIGHLIGHT_ROOT_COLOR_PROPERTY = '--zcdt-token-split-root-color';
+const SPLIT_HIGHLIGHT_SUFFIX_COLOR_PROPERTY = '--zcdt-token-split-suffix-color';
 const IDENTIFIER_PATTERN = '[A-Za-z_][A-Za-z0-9_]*';
 const GROUPED_MEMBER_ACCESS_PATTERN = new RegExp(
   `^${IDENTIFIER_PATTERN}(?:\\.${IDENTIFIER_PATTERN})+$`,
 );
+const TOKEN_COLOR_VARIABLES = {
+  method: 'var(--zcdt-syntax-method)',
+  namespace: 'var(--zcdt-syntax-namespace)',
+  property: 'var(--zcdt-syntax-property)',
+  'service-namespace': 'var(--zcdt-syntax-service-namespace)',
+  variable: 'var(--zcdt-syntax-variable)',
+} as const;
 const CONTROL_WORDS = new Set([
   'break',
   'catch',
@@ -63,8 +69,6 @@ const TYPE_WORDS = new Set([
   'void',
 ]);
 
-let splitGroupIdCounter = 0;
-
 function isCustomCallText(text: string): boolean {
   return CUSTOM_CALL_PREFIXES.some((prefix) => text.startsWith(prefix));
 }
@@ -79,18 +83,6 @@ function isGroupedMemberAccessText(text: string): boolean {
 
 function getGroupedMemberRoot(text: string): string {
   return text.split('.', 1)[0] ?? '';
-}
-
-function isSplitEligibleGroupedMember(text: string): boolean {
-  return (
-    isGroupedMemberAccessText(text) &&
-    !isCustomCallText(text) &&
-    getGroupedMemberRoot(text) !== 'zoho'
-  );
-}
-
-function isSplitEligibleServiceNamespace(text: string): boolean {
-  return isGroupedMemberAccessText(text) && isServiceNamespaceRoot(getGroupedMemberRoot(text));
 }
 
 function getTokenText(token: Element | null): string {
@@ -142,154 +134,78 @@ function hasNextText(token: Element, text: string): boolean {
   return getTokenText(getNextToken(token)) === text;
 }
 
-function isSplitTokenPart(token: Element): boolean {
-  return token.hasAttribute(SPLIT_GROUP_ATTR);
-}
+function getSplitRootSemanticToken(text: string): keyof typeof TOKEN_COLOR_VARIABLES {
+  const root = getGroupedMemberRoot(text);
 
-function shouldSplitMemberAccessToken(token: Element): boolean {
-  const text = getTokenText(token);
-  return (
-    token.classList.contains('cm-variable') &&
-    !isSplitTokenPart(token) &&
-    isSplitEligibleGroupedMember(text)
-  );
-}
-
-function shouldSplitServiceNamespaceToken(token: Element): boolean {
-  const text = getTokenText(token);
-  return (
-    token.classList.contains('cm-variable') &&
-    !isSplitTokenPart(token) &&
-    isSplitEligibleServiceNamespace(text)
-  );
-}
-
-function createSplitTokenPart(
-  source: Element,
-  text: string,
-  groupId: string,
-  start: boolean,
-  extraClass?: string,
-): Element {
-  const part = source.cloneNode(false) as Element;
-  part.removeAttribute(SYNTAX_TOKEN_ATTR);
-  part.setAttribute(SPLIT_GROUP_ATTR, groupId);
-  part.setAttribute(SPLIT_ORIGINAL_CLASS_ATTR, source.className);
-  if (start) {
-    part.setAttribute(SPLIT_GROUP_START_ATTR, 'true');
-  } else {
-    part.removeAttribute(SPLIT_GROUP_START_ATTR);
+  if (root === 'zoho') {
+    return 'namespace';
   }
-  if (extraClass) {
-    part.classList.add(extraClass);
-  }
-  part.textContent = text;
-  return part;
+
+  return isServiceNamespaceRoot(root) ? 'service-namespace' : 'variable';
 }
 
-function splitMemberAccessToken(token: Element): void {
-  const text = token.textContent ?? '';
+function clearSplitHighlight(token: Element): void {
+  token.removeAttribute(SPLIT_HIGHLIGHT_ATTR);
+  if (token instanceof HTMLElement) {
+    token.style.removeProperty(SPLIT_HIGHLIGHT_OFFSET_PROPERTY);
+    token.style.removeProperty(SPLIT_HIGHLIGHT_ROOT_COLOR_PROPERTY);
+    token.style.removeProperty(SPLIT_HIGHLIGHT_SUFFIX_COLOR_PROPERTY);
+  }
+}
+
+function getTokenTextNode(token: Element): Text | null {
+  const firstChild = token.firstChild;
+  return firstChild?.nodeType === Node.TEXT_NODE ? (firstChild as Text) : null;
+}
+
+function getTokenPrefixWidth(token: Element, endOffset: number): string {
+  const textNode = getTokenTextNode(token);
+  const textLength = textNode?.textContent?.length ?? 0;
+
+  if (!textNode || endOffset <= 0 || endOffset > textLength) {
+    return `${endOffset}ch`;
+  }
+
+  const range = token.ownerDocument.createRange();
+  range.setStart(textNode, 0);
+  range.setEnd(textNode, endOffset);
+  const width =
+    typeof range.getBoundingClientRect === 'function' ? range.getBoundingClientRect().width : 0;
+  range.detach();
+
+  return width > 0 ? `${width}px` : `${endOffset}ch`;
+}
+
+function syncSplitHighlight(token: Element): void {
+  const text = getTokenText(token);
   const firstDotIndex = text.indexOf('.');
-  if (firstDotIndex <= 0 || !token.parentElement) {
+
+  if (
+    !(token instanceof HTMLElement) ||
+    !token.classList.contains('cm-variable') ||
+    firstDotIndex <= 0 ||
+    !isGroupedMemberAccessText(text)
+  ) {
+    clearSplitHighlight(token);
     return;
   }
 
-  const semanticClass = hasOpeningCallBracket(token)
-    ? MEMBER_METHOD_OVERLAY_STYLE
-    : MEMBER_PROPERTY_OVERLAY_STYLE;
-  splitGroupIdCounter += 1;
-  const groupId = `split-${splitGroupIdCounter}`;
-  const baseToken = createSplitTokenPart(token, text.slice(0, firstDotIndex), groupId, true);
-  const memberToken = createSplitTokenPart(
-    token,
-    text.slice(firstDotIndex),
-    groupId,
-    false,
-    semanticClass,
+  const rootSemanticToken = getSplitRootSemanticToken(text);
+  const suffixSemanticToken = hasOpeningCallBracket(token) ? 'method' : 'property';
+
+  token.setAttribute(SPLIT_HIGHLIGHT_ATTR, 'true');
+  token.style.setProperty(
+    SPLIT_HIGHLIGHT_OFFSET_PROPERTY,
+    getTokenPrefixWidth(token, firstDotIndex),
   );
-
-  token.insertAdjacentElement('beforebegin', baseToken);
-  baseToken.insertAdjacentElement('afterend', memberToken);
-  token.remove();
-}
-
-function splitServiceNamespaceToken(token: Element): void {
-  const text = token.textContent ?? '';
-  const firstDotIndex = text.indexOf('.');
-  if (firstDotIndex <= 0 || !token.parentElement) {
-    return;
-  }
-
-  splitGroupIdCounter += 1;
-  const groupId = `split-${splitGroupIdCounter}`;
-  const rootToken = createSplitTokenPart(token, text.slice(0, firstDotIndex), groupId, true);
-  const suffixToken = createSplitTokenPart(token, text.slice(firstDotIndex), groupId, false);
-
-  token.insertAdjacentElement('beforebegin', rootToken);
-  rootToken.insertAdjacentElement('afterend', suffixToken);
-  token.remove();
-}
-
-function splitServiceNamespaceTokens(editorSurface: Element): void {
-  const tokens = editorSurface.querySelectorAll(
-    '.CodeMirror-line span.cm-variable, .CodeMirror-line span.cm-variable-2, .CodeMirror-line span.cm-variable-3',
+  token.style.setProperty(
+    SPLIT_HIGHLIGHT_ROOT_COLOR_PROPERTY,
+    TOKEN_COLOR_VARIABLES[rootSemanticToken],
   );
-
-  for (const token of tokens) {
-    if (shouldSplitServiceNamespaceToken(token)) {
-      splitServiceNamespaceToken(token);
-    }
-  }
-}
-
-function splitGroupedMemberAccessTokens(editorSurface: Element): void {
-  const tokens = editorSurface.querySelectorAll(
-    '.CodeMirror-line span.cm-variable, .CodeMirror-line span.cm-variable-2, .CodeMirror-line span.cm-variable-3',
+  token.style.setProperty(
+    SPLIT_HIGHLIGHT_SUFFIX_COLOR_PROPERTY,
+    TOKEN_COLOR_VARIABLES[suffixSemanticToken],
   );
-
-  for (const token of tokens) {
-    if (shouldSplitMemberAccessToken(token)) {
-      splitMemberAccessToken(token);
-    }
-  }
-}
-
-function restoreSplitTokens(editorSurface: Element): void {
-  const splitTokens = editorSurface.querySelectorAll(`[${SPLIT_GROUP_ATTR}]`);
-  const splitGroups = new Map<string, Element[]>();
-
-  for (const token of splitTokens) {
-    const groupId = token.getAttribute(SPLIT_GROUP_ATTR);
-    if (!groupId) {
-      continue;
-    }
-
-    const group = splitGroups.get(groupId) ?? [];
-    group.push(token);
-    splitGroups.set(groupId, group);
-  }
-
-  for (const group of splitGroups.values()) {
-    const startToken = group.find((token) => token.hasAttribute(SPLIT_GROUP_START_ATTR));
-    if (!startToken?.parentElement) {
-      continue;
-    }
-
-    const mergedToken = startToken.cloneNode(false) as Element;
-    mergedToken.className =
-      startToken.getAttribute(SPLIT_ORIGINAL_CLASS_ATTR) ?? startToken.className;
-    mergedToken.removeAttribute(SYNTAX_TOKEN_ATTR);
-    mergedToken.removeAttribute(SPLIT_GROUP_ATTR);
-    mergedToken.removeAttribute(SPLIT_GROUP_START_ATTR);
-    mergedToken.removeAttribute(SPLIT_ORIGINAL_CLASS_ATTR);
-    mergedToken.classList.remove(MEMBER_METHOD_OVERLAY_STYLE, MEMBER_PROPERTY_OVERLAY_STYLE);
-    mergedToken.textContent = group.map((token) => token.textContent ?? '').join('');
-
-    startToken.insertAdjacentElement('beforebegin', mergedToken);
-    for (const token of group) {
-      token.remove();
-    }
-  }
 }
 
 function isSignatureName(token: Element): boolean {
@@ -371,10 +287,7 @@ function getSemanticToken(token: Element): string | null {
     return hasOpeningCallBracket(token) ? 'method' : 'property';
   }
 
-  if (
-    CUSTOM_CALL_PREFIXES.some((prefix) => text.startsWith(prefix)) &&
-    hasOpeningCallBracket(token)
-  ) {
+  if (isCustomCallText(text) && hasOpeningCallBracket(token)) {
     return 'custom-call';
   }
 
@@ -414,8 +327,6 @@ function getSemanticToken(token: Element): string | null {
 }
 
 export function annotateSyntaxTokens(editorSurface: Element): void {
-  splitServiceNamespaceTokens(editorSurface);
-  splitGroupedMemberAccessTokens(editorSurface);
   const tokens = editorSurface.querySelectorAll('.CodeMirror-line span[class]');
 
   for (const token of tokens) {
@@ -425,12 +336,16 @@ export function annotateSyntaxTokens(editorSurface: Element): void {
     } else {
       token.removeAttribute(SYNTAX_TOKEN_ATTR);
     }
+    syncSplitHighlight(token);
   }
 }
 
 function clearSyntaxTokens(editorSurface: Element): void {
-  for (const token of editorSurface.querySelectorAll(`[${SYNTAX_TOKEN_ATTR}]`)) {
+  for (const token of editorSurface.querySelectorAll(
+    `[${SYNTAX_TOKEN_ATTR}], [${SPLIT_HIGHLIGHT_ATTR}]`,
+  )) {
     token.removeAttribute(SYNTAX_TOKEN_ATTR);
+    clearSplitHighlight(token);
   }
 }
 
@@ -446,7 +361,6 @@ export function applySyntaxEnhancementPreference(
       annotateSyntaxTokens(editorSurface);
     } else {
       editorSurface.removeAttribute(SYNTAX_ENHANCEMENT_ENABLED_ATTR);
-      restoreSplitTokens(editorSurface);
       clearSyntaxTokens(editorSurface);
     }
   }

@@ -1,6 +1,6 @@
 {
   "name": "zoho-crm-devtools",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Chrome extension that improves the Zoho CRM Deluge editor with themes, indent guides, and syntax highlighting.",
   "private": true,
   "license": "MIT",

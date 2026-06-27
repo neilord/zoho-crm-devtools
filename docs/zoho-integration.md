@@ -50,8 +50,12 @@ The extension targets Zoho CRM only.
   `data-zcdt-syntax-enhancement="true"`. Keep syntax color rules scoped to
   `.CodeMirror-deluge-edit-task` and refine the existing CodeMirror spans instead of rewriting tokens.
 - Live browser debugging showed the CodeMirror instance is page-owned and not directly reachable from
-  the extension content-script world, so grouped member access such as `pLeadDetailFields.add` is
-  handled by splitting the rendered `cm-variable` span into variable and member segments in the DOM.
+  the extension content-script world. Do not split rendered CodeMirror token spans or replace their
+  text nodes from the content script: CodeMirror caches a render-time line map for cursor and click
+  measurement, and post-render token rewrites can move or hide the caret. Grouped member access such
+  as `pLeadDetailFields.add` should be annotated on the original token unless a page-owned CodeMirror
+  integration can update the editor's own measurement state. Paint-only split coloring is acceptable
+  when it leaves the original element and text node in place.
 - CSS-only adjacency is not enough for every Deluge token because CodeMirror emits both callable
   tokens like `ifnull(` and plain arguments like `recId_)` as `.cm-variable + .cm-brackets`. The MVP
   syntax layer therefore annotates existing spans with `data-zcdt-token` from token text and immediate
