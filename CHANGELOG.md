@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.0.1 - 2026-06-27
+
+- Fixed a cursor positioning bug in highlighted Deluge code.
+
 ## 2.0.0 - 2026-05-27
 
 - Published the current Chrome Web Store release.
