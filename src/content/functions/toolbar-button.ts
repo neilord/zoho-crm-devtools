@@ -12,15 +12,16 @@ export const SEARCH_BUTTON_ID = 'zcdt-function-search-button';
 const BUTTON_STYLE: Partial<CSSStyleDeclaration> = {
   display: 'inline-flex',
   alignItems: 'center',
-  gap: '6px',
-  height: '32px',
-  margin: '0 8px 0 0',
-  padding: '0 14px',
+  justifyContent: 'center',
+  gap: '8px',
+  height: '38px',
+  margin: '0 10px 0 0',
+  padding: '0 18px',
   border: '1px solid #c7ccd6',
-  borderRadius: '4px',
+  borderRadius: '6px',
   background: '#ffffff',
   color: '#2b3a5b',
-  font: '600 13px/1 "Segoe UI", system-ui, sans-serif',
+  font: '600 14px/1 "Segoe UI", system-ui, sans-serif',
   cursor: 'pointer',
   verticalAlign: 'middle',
 };
@@ -32,7 +33,7 @@ function createSearchButton(onClick: () => void): HTMLButtonElement {
   button.title = 'Search across all CRM functions';
   Object.assign(button.style, BUTTON_STYLE);
 
-  const icon = searchIcon(16);
+  const icon = searchIcon(18);
   icon.style.flex = '0 0 auto';
   button.appendChild(icon);
   button.appendChild(document.createTextNode('Search Functions'));
