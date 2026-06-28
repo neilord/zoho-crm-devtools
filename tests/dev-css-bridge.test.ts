@@ -116,6 +116,8 @@ describe('development CSS bridge', () => {
     const productionManifest = createManifest('production');
     const developmentManifest = createManifest('development');
 
+    // Production ships only the isolated content script; the "Edit in CRM"
+    // bridge is a web-accessible resource, not a content script entrypoint.
     expect(productionManifest.content_scripts).toHaveLength(1);
     expect(
       productionManifest.content_scripts?.some((script) =>

@@ -10,11 +10,11 @@ describe('feature registry', () => {
     });
   });
 
-  it('keeps future search monetization separate from release state', () => {
+  it('ships cross-function search as a free feature', () => {
     expect(getFeature('functionSearch')).toEqual({
       id: 'functionSearch',
-      tier: 'premium',
-      status: 'planned',
+      tier: 'free',
+      status: 'beta',
     });
   });
 });

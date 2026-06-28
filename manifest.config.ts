@@ -53,6 +53,15 @@ export function createManifest(mode: string): ManifestV3 {
         run_at: 'document_idle',
       },
     ],
+    // The "Edit in CRM" bridge runs in the page's main world to reach Zoho
+    // globals. The content script injects it on demand as a page <script>;
+    // exposing it here lets that injected script bypass the page CSP.
+    web_accessible_resources: [
+      {
+        resources: ['zcdt-function-edit-bridge.js'],
+        matches: [...crmMatches],
+      },
+    ],
   };
 
   if (mode === 'development') {
