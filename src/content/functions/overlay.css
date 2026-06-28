@@ -23,8 +23,9 @@
   --fs-accent-text: #ffffff;
   --fs-ok: #2e9e5b;
   --fs-off: #c2c8d4;
-  --fs-code-bg: #1d2230;
-  --fs-code-text: #e7eaf3;
+  --fs-code-bg: #f6f8fb;
+  --fs-code-text: #1f2937;
+  --fs-highlight: #fde68a;
   --fs-radius: 10px;
   --fs-font: "Segoe UI", system-ui, -apple-system, sans-serif;
   --fs-mono: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
@@ -173,7 +174,7 @@
   border-radius: 8px;
   background: transparent;
   color: var(--fs-text);
-  font: 600 13px / 1.2 var(--fs-font);
+  font: 600 14px / 1.2 var(--fs-font);
   text-align: left;
   cursor: pointer;
 }
@@ -221,8 +222,10 @@
 .fs-row {
   display: flex;
   align-items: flex-start;
-  gap: 16px;
-  padding: 12px 14px;
+  gap: 24px;
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 14px 16px;
   border: 1px solid transparent;
   border-radius: 10px;
   cursor: pointer;
@@ -239,7 +242,7 @@
 }
 
 .fs-row-title {
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 600;
 }
 
@@ -247,13 +250,13 @@
   margin-left: 6px;
   color: var(--fs-muted);
   font-weight: 400;
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .fs-row-desc {
   margin-top: 4px;
   color: var(--fs-muted);
-  font-size: 12px;
+  font-size: 13px;
   font-style: italic;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -264,7 +267,8 @@
   flex: 0 0 auto;
   text-align: right;
   color: var(--fs-muted);
-  font-size: 12px;
+  font-size: 13px;
+  line-height: 1.45;
 }
 
 .fs-badge {
@@ -341,13 +345,20 @@
   flex: 1;
   min-width: 0;
   margin: 0;
-  padding: 16px;
+  padding: 16px 18px;
   overflow: auto;
   background: var(--fs-code-bg);
   color: var(--fs-code-text);
-  font: 13px / 1.6 var(--fs-mono);
+  font: 13.5px / 1.65 var(--fs-mono);
   white-space: pre;
   tab-size: 2;
+}
+
+.fs-code mark {
+  padding: 0 1px;
+  border-radius: 2px;
+  background: var(--fs-highlight);
+  color: inherit;
 }
 
 .fs-info {
@@ -368,7 +379,7 @@
 
 .fs-info-row {
   margin: 6px 0;
-  font-size: 13px;
+  font-size: 14px;
 }
 
 .fs-info-row .fs-muted {
@@ -377,7 +388,7 @@
 
 .fs-meta {
   color: var(--fs-muted);
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .fs-edit-button {
