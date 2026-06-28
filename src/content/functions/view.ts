@@ -102,40 +102,63 @@ export function renderEmptyState(message: string): HTMLElement {
   return el('div', { className: 'fs-empty', text: message });
 }
 
-function associationBlock(places: ZohoAssociatedPlace[]): HTMLElement {
-  const children = places.map((place) =>
-    el('div', { className: 'fs-info-row' }, [
-      el('span', { className: 'fs-dot', dataset: { on: String(Boolean(place.status)) } }),
-      el('span', { text: ` ${place.module ?? place.name ?? ''} ` }),
-      el('span', { className: 'fs-muted', text: place._type ? `(${place._type})` : '' }),
-    ]),
-  );
-  return el('div', {}, [el('h4', { text: 'Associations' }), ...children]);
+/** A titled block in the info panel. Returns null when it has no content. */
+function infoSection(title: string, children: Array<Node | null>): HTMLElement | null {
+  const present = children.filter((child): child is Node => child !== null);
+  if (present.length === 0) {
+    return null;
+  }
+  return el('section', { className: 'fs-info-section' }, [
+    el('h4', { className: 'fs-info-label', text: title }),
+    ...present,
+  ]);
 }
 
-function tasksBlock(tasks: ZohoFunctionTasks): HTMLElement | null {
+/** A label/value pair for the metadata section. */
+function metaRow(label: string, value: string): HTMLElement {
+  return el('div', { className: 'fs-meta-row' }, [
+    el('span', { className: 'fs-meta-label', text: label }),
+    el('span', { className: 'fs-meta-value', text: value }),
+  ]);
+}
+
+function associationList(places: ZohoAssociatedPlace[]): HTMLElement {
+  return el(
+    'div',
+    { className: 'fs-info-list' },
+    places.map((place) =>
+      el('div', { className: 'fs-info-item' }, [
+        el('span', { className: 'fs-dot', dataset: { on: String(Boolean(place.status)) } }),
+        el('span', { className: 'fs-info-item-text', text: place.module ?? place.name ?? '' }),
+        place._type ? el('span', { className: 'fs-muted', text: `(${place._type})` }) : null,
+      ]),
+    ),
+  );
+}
+
+function tasksList(tasks: ZohoFunctionTasks): HTMLElement | null {
   const rows: HTMLElement[] = [];
   for (const integration of tasks.integrations ?? []) {
     rows.push(
-      el('div', { className: 'fs-info-row' }, [
+      el('div', { className: 'fs-info-item' }, [
         el('span', { className: 'fs-muted', text: `${integration.service ?? 'integration'}: ` }),
-        el('span', { text: integration.function ?? '' }),
+        el('span', { className: 'fs-info-item-text', text: integration.function ?? '' }),
       ]),
     );
   }
   for (const webhook of tasks.webhooks ?? []) {
     rows.push(
-      el('div', { className: 'fs-info-row' }, [
+      el('div', { className: 'fs-info-item' }, [
         el('span', { className: 'fs-muted', text: 'webhook: ' }),
-        el('span', { text: webhook.method ?? '' }),
+        el('span', { className: 'fs-info-item-text', text: webhook.method ?? '' }),
       ]),
     );
   }
   for (const _ of tasks.sendmail ?? []) {
-    rows.push(el('div', { className: 'fs-info-row fs-muted', text: 'sendmail' }));
+    rows.push(el('div', { className: 'fs-info-item fs-muted', text: 'sendmail' }));
   }
 
-  return rows.length > 0 ? el('div', {}, [el('h4', { text: 'Integrations' }), ...rows]) : null;
+  return rows.length > 0 ? el('div', { className: 'fs-info-list' }, rows) : null;
 }
 
 export interface DetailHandlers {
@@ -178,74 +201,57 @@ function renderInfoPanel(record: FunctionRecord, handlers: DetailHandlers): HTML
   const created = formatTimestamp(summary.createdTime);
   const updated = formatTimestamp(summary.updatedTime);
 
-  const children: Array<Node | null> = [
-    el('div', { className: 'fs-info-row' }, [
-      el('span', {
-        className: 'fs-badge',
-        text: summary.source ? `${summary.source}: ${summary.category}` : summary.category,
-      }),
-    ]),
-  ];
+  const head = el('div', { className: 'fs-info-head' }, [
+    el('span', {
+      className: 'fs-badge',
+      text: summary.source ? `${summary.source}: ${summary.category}` : summary.category,
+    }),
+    summary.api_name ? el('div', { className: 'fs-info-apiname', text: summary.api_name }) : null,
+    summary.description ? el('p', { className: 'fs-info-desc', text: summary.description }) : null,
+  ]);
 
-  if (summary.api_name) {
-    children.push(el('div', { className: 'fs-info-row fs-muted', text: summary.api_name }));
-  }
-  if (summary.description) {
-    children.push(el('div', { className: 'fs-info-row', text: summary.description }));
-  }
-
-  if (summary.rest_api && summary.rest_api.length > 0) {
-    children.push(el('h4', { text: 'REST API' }));
-    for (const api of summary.rest_api) {
-      children.push(
-        el('div', { className: 'fs-info-row' }, [
-          el('span', { className: 'fs-dot', dataset: { on: String(Boolean(api.active)) } }),
-          el('span', { text: ` ${api.type ?? 'api'}` }),
-        ]),
-      );
-    }
-  }
-
+  const metaRows: Array<Node | null> = [];
   if (detail?.modified_by) {
-    children.push(
-      el('div', { className: 'fs-info-row fs-meta' }, [
-        el('span', { text: 'Last modified by ' }),
-        el('span', { text: detail.modified_by }),
-      ]),
-    );
+    metaRows.push(metaRow('Modified by', detail.modified_by));
   }
   if (created) {
-    children.push(
-      el('div', {
-        className: 'fs-info-row fs-meta',
-        text: `Created ${created.date} ${created.time}`,
-      }),
-    );
+    metaRows.push(metaRow('Created', `${created.date} · ${created.time}`));
   }
   if (updated) {
-    children.push(
-      el('div', {
-        className: 'fs-info-row fs-meta',
-        text: `Updated ${updated.date} ${updated.time}`,
-      }),
+    metaRows.push(metaRow('Updated', `${updated.date} · ${updated.time}`));
+  }
+
+  let restApiChips: HTMLElement | null = null;
+  if (summary.rest_api && summary.rest_api.length > 0) {
+    restApiChips = el(
+      'div',
+      { className: 'fs-chips' },
+      summary.rest_api.map((api) =>
+        el('span', { className: 'fs-chip' }, [
+          el('span', { className: 'fs-dot', dataset: { on: String(Boolean(api.active)) } }),
+          el('span', { text: api.type ?? 'api' }),
+        ]),
+      ),
     );
   }
 
   const places = detail?.associated_place ?? summary.associated_place;
-  if (places && places.length > 0) {
-    children.push(associationBlock(places));
-  }
-  if (summary.tasks) {
-    children.push(tasksBlock(summary.tasks));
-  }
 
-  children.push(
+  const scroll = el('div', { className: 'fs-info-scroll' }, [
+    head,
+    infoSection('Details', metaRows),
+    infoSection('REST API', [restApiChips]),
+    infoSection('Associations', [places && places.length > 0 ? associationList(places) : null]),
+    infoSection('Integrations', [summary.tasks ? tasksList(summary.tasks) : null]),
+  ]);
+
+  const footer = el('div', { className: 'fs-info-footer' }, [
     el(
       'button',
       { className: 'fs-edit-button', type: 'button', onClick: () => handlers.onEdit(record) },
       [editIcon(16), el('span', { text: 'Edit in CRM' })],
     ),
-  );
+  ]);
 
-  return el('div', { className: 'fs-info' }, children);
+  return el('div', { className: 'fs-info' }, [scroll, footer]);
 }
