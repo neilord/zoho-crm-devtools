@@ -354,7 +354,7 @@
   tab-size: 2;
 }
 
-.fs-code mark {
+mark {
   padding: 0 1px;
   border-radius: 2px;
   background: var(--fs-highlight);
