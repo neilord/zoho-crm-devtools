@@ -55,6 +55,43 @@ export function el<K extends keyof HTMLElementTagNameMap>(
   return node;
 }
 
+/**
+ * Splits `text` on case-insensitive occurrences of `query`, wrapping each match
+ * in a `<mark>`. Returns plain text nodes when there is nothing to highlight.
+ * Everything goes through `textContent`, so matched/unmatched text is never
+ * parsed as HTML.
+ */
+export function highlightNodes(text: string, query: string): Array<Text | HTMLElement> {
+  if (!query || !text) {
+    return [document.createTextNode(text)];
+  }
+
+  const haystack = text.toLowerCase();
+  const needle = query.toLowerCase();
+  const nodes: Array<Text | HTMLElement> = [];
+
+  let from = 0;
+  let index = haystack.indexOf(needle, from);
+  if (index === -1) {
+    return [document.createTextNode(text)];
+  }
+
+  while (index !== -1) {
+    if (index > from) {
+      nodes.push(document.createTextNode(text.slice(from, index)));
+    }
+    const mark = document.createElement('mark');
+    mark.textContent = text.slice(index, index + needle.length);
+    nodes.push(mark);
+    from = index + needle.length;
+    index = haystack.indexOf(needle, from);
+  }
+  if (from < text.length) {
+    nodes.push(document.createTextNode(text.slice(from)));
+  }
+  return nodes;
+}
+
 function svg(size: number, build: (root: SVGSVGElement) => void): SVGSVGElement {
   const root = document.createElementNS(SVG_NS, 'svg');
   root.setAttribute('viewBox', '0 0 20 20');

@@ -1,4 +1,4 @@
-import { backIcon, editIcon, el } from './dom';
+import { backIcon, editIcon, el, highlightNodes } from './dom';
 import { formatTimestamp } from './format';
 import { getCategoryLabel } from './search';
 import type { FunctionRecord, ZohoAssociatedPlace, ZohoFunctionTasks, ZohoRestApi } from './types';
@@ -38,17 +38,22 @@ function restApiFlag(api: ZohoRestApi): HTMLElement {
   ]);
 }
 
-/** A single function row in the list. */
+/** A single function row in the list. `highlight` marks matched search text. */
 export function renderFunctionRow(
   record: FunctionRecord,
   onOpen: (record: FunctionRecord) => void,
+  highlight = '',
 ): HTMLLIElement {
   const { summary } = record;
   const updated = formatTimestamp(summary.updatedTime);
 
-  const titleChildren: Array<Node | null> = [el('span', { text: summary.display_name })];
+  const titleChildren: Array<Node | null> = [
+    el('span', {}, highlightNodes(summary.display_name, highlight)),
+  ];
   if (summary.api_name) {
-    titleChildren.push(el('span', { className: 'fs-row-api', text: `(${summary.api_name})` }));
+    titleChildren.push(
+      el('span', { className: 'fs-row-api' }, highlightNodes(`(${summary.api_name})`, highlight)),
+    );
   }
 
   const mainChildren: Array<Node | null> = [
@@ -56,11 +61,11 @@ export function renderFunctionRow(
   ];
   if (summary.description) {
     mainChildren.push(
-      el('div', {
-        className: 'fs-row-desc',
-        title: summary.description,
-        text: summary.description,
-      }),
+      el(
+        'div',
+        { className: 'fs-row-desc', title: summary.description },
+        highlightNodes(summary.description, highlight),
+      ),
     );
   }
   mainChildren.push(
@@ -139,7 +144,11 @@ export interface DetailHandlers {
 }
 
 /** The detail view: source on the left, metadata + actions on the right. */
-export function renderDetail(record: FunctionRecord, handlers: DetailHandlers): HTMLElement {
+export function renderDetail(
+  record: FunctionRecord,
+  handlers: DetailHandlers,
+  highlight = '',
+): HTMLElement {
   const { summary, detail } = record;
 
   const bar = el('div', { className: 'fs-detail-bar' }, [
@@ -151,10 +160,10 @@ export function renderDetail(record: FunctionRecord, handlers: DetailHandlers): 
     el('span', { className: 'fs-detail-title', text: summary.display_name }),
   ]);
 
-  const code = el('pre', {
-    className: 'fs-code',
-    text: detail ? getFunctionSource(record) || '// No source available.' : '// Loading source…',
-  });
+  const source = detail
+    ? getFunctionSource(record) || '// No source available.'
+    : '// Loading source…';
+  const code = el('pre', { className: 'fs-code' }, highlightNodes(source, highlight));
 
   const info = renderInfoPanel(record, handlers);
 

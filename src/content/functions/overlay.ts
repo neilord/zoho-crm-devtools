@@ -3,7 +3,14 @@ import { closeIcon, el, searchIcon } from './dom';
 import { requestEditInCrm } from './edit-in-crm';
 import { loadFunctions } from './function-store';
 import overlayCss from './overlay.css?inline';
-import { filterRecords, getCategoryCounts, type SortOrder, sortByModified } from './search';
+import {
+  filterRecords,
+  getCategoryCounts,
+  MIN_QUERY_LENGTH,
+  normalizeQuery,
+  type SortOrder,
+  sortByModified,
+} from './search';
 import type { FunctionRecord } from './types';
 import { renderCategoryButton, renderDetail, renderEmptyState, renderFunctionRow } from './view';
 
@@ -50,6 +57,12 @@ function getVisibleRecords(): FunctionRecord[] {
   return sortByModified(filtered, state.sort);
 }
 
+/** The active query to highlight, or '' when it is too short to search on. */
+function getHighlightQuery(): string {
+  const normalized = normalizeQuery(state.query);
+  return normalized.length >= MIN_QUERY_LENGTH ? normalized : '';
+}
+
 function renderCategories(): void {
   if (!refs) {
     return;
@@ -83,7 +96,9 @@ function renderMain(): void {
     : null;
 
   if (selected) {
-    refs.main.replaceChildren(renderDetail(selected, { onBack: closeDetail, onEdit: editInCrm }));
+    refs.main.replaceChildren(
+      renderDetail(selected, { onBack: closeDetail, onEdit: editInCrm }, getHighlightQuery()),
+    );
     return;
   }
 
@@ -98,10 +113,11 @@ function renderMain(): void {
     return;
   }
 
+  const highlight = getHighlightQuery();
   const list = el(
     'ul',
     { className: 'fs-list' },
-    visible.map((record) => renderFunctionRow(record, openDetail)),
+    visible.map((record) => renderFunctionRow(record, openDetail, highlight)),
   );
   refs.main.replaceChildren(list);
 }
