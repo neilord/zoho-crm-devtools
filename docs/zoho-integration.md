@@ -144,12 +144,17 @@ anchor is selector-fragile.
   `script` holds the Deluge source for standalone functions; `workflow` holds it for automation
   functions. Details are fetched lazily in the background to make full-text (source) search progressive.
 
-### "Search Functions" anchor (fragile)
+### "Search All Functions" anchor (fragile)
 
-- The functions list lives under `/settings/functions`. Zoho's "Create Function" control has no stable
-  hook, so it is matched by visible text (`/create function/i`) over `button, a, lyte-button,
-  lyte-yield, [role="button"]`, choosing the smallest matching element. Our button is injected before
-  it and re-checked on DOM mutation because the page is a single-page app.
+- The functions list lives under `/settings/functions`. The preferred anchor is Zoho's native function
+  search control (`#functionSearch` / `data-zcqa="cfSearchFunctions"`), so "Search All Functions" sits
+  beside the built-in search box. Zoho wraps that Lyte input in `.search-function`; insert after the
+  wrapper rather than after the input itself, because the input is full-width inside the wrapper and
+  will push sibling content to the next line. If that control is missing, Zoho's "Create Function"
+  control is used as a fallback; it has no stable hook, so it is matched by visible text
+  (`/create function/i`) over `button, a, lyte-button, lyte-yield, [role="button"]`, choosing the
+  smallest matching element. The button is re-checked on DOM mutation because the page is a single-page
+  app.
 
 ### "Edit in CRM" (requires page globals)
 

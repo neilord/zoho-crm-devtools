@@ -1,6 +1,8 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import {
   findCreateFunctionButton,
+  findFunctionSearchButtonAnchor,
+  findFunctionSearchControl,
   isFunctionsListLocation,
 } from '../src/content/zoho/functions-page';
 
@@ -40,5 +42,34 @@ describe('create-function button discovery', () => {
       <section>This page lets you create function definitions and much more text here</section>
       <a role="button" id="link">Create Function</a>`;
     expect(findCreateFunctionButton()?.id).toBe('link');
+  });
+});
+
+describe('native function search discovery', () => {
+  beforeEach(() => {
+    document.body.innerHTML = '';
+  });
+
+  it('finds the built-in function search control by id', () => {
+    document.body.innerHTML = '<lyte-input id="functionSearch"></lyte-input>';
+    expect(findFunctionSearchControl()?.id).toBe('functionSearch');
+  });
+
+  it('finds the built-in function search control by qa attribute', () => {
+    document.body.innerHTML = '<lyte-input data-zcqa="cfSearchFunctions"></lyte-input>';
+    expect(findFunctionSearchControl()?.getAttribute('data-zcqa')).toBe('cfSearchFunctions');
+  });
+
+  it('uses the native search wrapper as the button placement anchor', () => {
+    document.body.innerHTML = `
+      <div class="search-function" id="searchWrapper">
+        <lyte-input id="functionSearch"></lyte-input>
+      </div>`;
+    expect(findFunctionSearchButtonAnchor()?.id).toBe('searchWrapper');
+  });
+
+  it('falls back to the search control when the wrapper is missing', () => {
+    document.body.innerHTML = '<lyte-input id="functionSearch"></lyte-input>';
+    expect(findFunctionSearchButtonAnchor()?.id).toBe('functionSearch');
   });
 });

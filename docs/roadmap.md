@@ -29,7 +29,7 @@
 
 ## Milestone 5: Cross-Function Search (free)
 
-- "Search Functions" control on the Zoho functions page
+- "Search All Functions" control on the Zoho functions page
 - Search overlay across all org Deluge functions, including source
 - Function detail view with "Edit in CRM" handoff to Zoho's native editor
 
@@ -39,4 +39,3 @@
 - Bulk import/export (function export/backup, potential premium home)
 - Client-script search and failure logs (deferred from the original tool)
 - Firefox support
-

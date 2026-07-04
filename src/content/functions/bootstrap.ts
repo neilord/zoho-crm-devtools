@@ -1,14 +1,18 @@
 import { loadSettings } from '../../settings/storage';
-import { findCreateFunctionButton, isFunctionsListLocation } from '../zoho/functions-page';
+import {
+  findCreateFunctionButton,
+  findFunctionSearchButtonAnchor,
+  isFunctionsListLocation,
+} from '../zoho/functions-page';
 import { resolveCrmContext } from './crm-context';
 import { openFunctionSearchOverlay } from './overlay';
-import { injectSearchButton, SEARCH_BUTTON_ID } from './toolbar-button';
+import { injectSearchButton } from './toolbar-button';
 
 /**
  * Wires the function-search feature into the functions list page: it keeps a
- * "Search Functions" button present next to Zoho's "Create Function" control and
- * opens the search overlay on click. Zoho is a single-page app, so we re-check on
- * DOM mutations rather than once at load.
+ * "Search All Functions" button present next to Zoho's native functions search
+ * control and opens the search overlay on click. Zoho is a single-page app, so
+ * we re-check on DOM mutations rather than once at load.
  */
 export async function bootstrapFunctionSearch(): Promise<void> {
   const settings = await loadSettings();
@@ -17,14 +21,20 @@ export async function bootstrapFunctionSearch(): Promise<void> {
   }
 
   const ensureButton = (): void => {
-    if (!isFunctionsListLocation() || document.getElementById(SEARCH_BUTTON_ID)) {
+    if (!isFunctionsListLocation()) {
       return;
     }
-    const anchor = findCreateFunctionButton();
-    if (!anchor) {
+
+    const searchAnchor = findFunctionSearchButtonAnchor();
+    if (searchAnchor) {
+      injectSearchButton(searchAnchor, openOverlay, 'after');
       return;
     }
-    injectSearchButton(anchor, openOverlay);
+
+    const createAnchor = findCreateFunctionButton();
+    if (createAnchor) {
+      injectSearchButton(createAnchor, openOverlay, 'before');
+    }
   };
 
   const openOverlay = (): void => {

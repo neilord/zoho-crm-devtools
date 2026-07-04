@@ -14,7 +14,7 @@ Zoho CRM DevTools improves the Zoho CRM Deluge editor while staying close to Zoh
 
 ## Post-MVP features
 
-- Cross-function search: a "Search Functions" control on the Zoho functions page
+- Cross-function search: a "Search All Functions" control on the Zoho functions page
   opens a search overlay across every Deluge function in the org, including their
   source, with an "Edit in CRM" handoff to Zoho's native editor. Shipped free.
 
@@ -32,4 +32,3 @@ The extension launches free, and cross-function search ships free as well: it is
 a growth feature meant to increase the user base rather than an early paywall.
 Any future paid features should be new premium features from their first release
 rather than existing free features moved behind a paywall.
-
