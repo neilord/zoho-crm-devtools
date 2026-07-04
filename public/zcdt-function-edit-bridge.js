@@ -31,7 +31,7 @@
       if (document.querySelector(EDITOR_WRAPPER_SELECTOR)) {
         customFunctions.leavePage('close');
       }
-      customFunctions.renderEditorView(detail, '', '', 'edit');
+      customFunctions.renderEditorView(JSON.stringify(detail), '', '', 'edit');
       return;
     }
 

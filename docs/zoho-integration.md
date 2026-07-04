@@ -168,9 +168,15 @@ anchor is selector-fragile.
   relative `import()` that resolves against the page origin (a 404) instead of the extension, so the
   bridge never runs. Self-injecting a stable-named web-accessible script avoids that.
 - The bridge calls `Lyte.Router.transitionTo('crm.settings.section.functions.myFunctions')`, then
-  `customFunctionsObj.renderEditorView(detail, '', '', 'edit')`, retrying until `customFunctionsObj`
-  exists. If an editor wrapper (`crm-deluge-editor-wrapper`) is already open it first calls
-  `customFunctionsObj.leavePage('close')`.
+  `customFunctionsObj.renderEditorView(JSON.stringify(detail), '', '', 'edit')`, retrying until
+  `customFunctionsObj` exists. If an editor wrapper (`crm-deluge-editor-wrapper`) is already open it
+  first calls `customFunctionsObj.leavePage('close')`.
+- Confirmed live: `renderEditorView` runs `JSON.parse` on its first argument internally, so it expects
+  a JSON **string**, not the already-parsed detail object our fetch layer produces
+  (`response.json()` in `src/content/functions/api.ts`). Passing the object directly makes
+  `JSON.parse` coerce it to the string `"[object Object]"` and throw
+  `SyntaxError: "[object Object]" is not valid JSON`, which silently aborted the editor open (the
+  overlay had already closed by then, making it look like the button did nothing).
 
 ## Known Open Questions
 
