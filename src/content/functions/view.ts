@@ -38,7 +38,12 @@ function restApiFlag(api: ZohoRestApi): HTMLElement {
   ]);
 }
 
-/** A single function row in the list. `highlight` marks matched search text. */
+/**
+ * A single function row in the list, rendered as one table-like line: name/api/tag
+ * on the left, full timestamp and REST status on the right. `highlight` marks
+ * matched search text. `title` carries the description as a tooltip since the
+ * row itself has no room for a second line.
+ */
 export function renderFunctionRow(
   record: FunctionRecord,
   onOpen: (record: FunctionRecord) => void,
@@ -48,51 +53,38 @@ export function renderFunctionRow(
   const updated = formatTimestamp(summary.updatedTime);
 
   const titleChildren: Array<Node | null> = [
-    el('span', {}, highlightNodes(summary.display_name, highlight)),
+    el('span', { className: 'fs-row-name' }, highlightNodes(summary.display_name, highlight)),
   ];
   if (summary.api_name) {
     titleChildren.push(
       el('span', { className: 'fs-row-api' }, highlightNodes(`(${summary.api_name})`, highlight)),
     );
   }
-
-  const mainChildren: Array<Node | null> = [
-    el('div', { className: 'fs-row-title' }, titleChildren),
-  ];
-  if (summary.description) {
-    mainChildren.push(
-      el(
-        'div',
-        { className: 'fs-row-desc', title: summary.description },
-        highlightNodes(summary.description, highlight),
-      ),
-    );
-  }
-  mainChildren.push(
-    el('div', { className: 'fs-row-badges' }, [
-      el('span', { className: 'fs-badge', text: getCategoryLabel(summary.category) }),
-    ]),
+  titleChildren.push(
+    el('span', { className: 'fs-badge fs-row-tag', text: getCategoryLabel(summary.category) }),
   );
 
   const sideChildren: Array<Node | null> = [];
   if (updated) {
-    sideChildren.push(el('div', { text: updated.date }));
-    sideChildren.push(el('div', { className: 'fs-meta', text: updated.time }));
+    sideChildren.push(
+      el('span', { className: 'fs-row-time', text: `${updated.date}, ${updated.time}` }),
+    );
   }
   if (summary.rest_api && summary.rest_api.length > 0) {
-    sideChildren.push(el('div', { className: 'fs-row-badges' }, summary.rest_api.map(restApiFlag)));
+    sideChildren.push(el('span', { className: 'fs-row-flags' }, summary.rest_api.map(restApiFlag)));
   }
 
   return el(
     'li',
     {
       className: 'fs-row',
+      title: summary.description || undefined,
       attrs: { role: 'button', tabindex: '0' },
       dataset: { id: summary.id },
       onClick: () => onOpen(record),
     },
     [
-      el('div', { className: 'fs-row-main' }, mainChildren),
+      el('div', { className: 'fs-row-main' }, titleChildren),
       el('div', { className: 'fs-row-side' }, sideChildren),
     ],
   );

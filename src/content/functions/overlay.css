@@ -26,6 +26,8 @@
   --fs-code-bg: #f6f8fb;
   --fs-code-text: #1f2937;
   --fs-highlight: #fde68a;
+  --fs-row-alt: #fafbfd;
+  --fs-row-hover: #eaf1fe;
   --fs-radius: 10px;
   --fs-font: "Segoe UI", system-ui, -apple-system, sans-serif;
   --fs-mono: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
@@ -214,61 +216,79 @@
 .fs-list {
   flex: 1;
   margin: 0;
-  padding: 8px;
+  padding: 4px 8px;
   list-style: none;
   overflow-y: auto;
 }
 
 .fs-row {
   display: flex;
-  align-items: flex-start;
-  gap: 24px;
-  max-width: 1040px;
-  margin: 0 auto;
-  padding: 14px 16px;
-  border: 1px solid transparent;
-  border-radius: 10px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 14px;
+  border-left: 2px solid transparent;
+  border-radius: 6px;
   cursor: pointer;
 }
 
+.fs-row:nth-child(odd) {
+  background: var(--fs-row-alt);
+}
+
 .fs-row:hover {
-  background: var(--fs-surface);
-  border-color: var(--fs-border);
+  background: var(--fs-row-hover);
+  border-left-color: var(--fs-accent);
 }
 
 .fs-row-main {
   flex: 1;
   min-width: 0;
-}
-
-.fs-row-title {
+  display: flex;
+  align-items: baseline;
+  gap: 9px;
+  overflow: hidden;
+  white-space: nowrap;
   font-size: 15px;
   font-weight: 600;
 }
 
-.fs-row-api {
-  margin-left: 6px;
-  color: var(--fs-muted);
-  font-weight: 400;
-  font-size: 13px;
-}
-
-.fs-row-desc {
-  margin-top: 4px;
-  color: var(--fs-muted);
-  font-size: 13px;
-  font-style: italic;
+.fs-row-name {
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
+}
+
+.fs-row-api {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--fs-muted);
+  font-weight: 400;
+  font-size: 13.5px;
+}
+
+.fs-row-tag {
+  flex: 0 0 auto;
 }
 
 .fs-row-side {
   flex: 0 0 auto;
-  text-align: right;
+  display: flex;
+  align-items: center;
+  gap: 14px;
   color: var(--fs-muted);
-  font-size: 13px;
-  line-height: 1.45;
+  font-size: 13.5px;
+  white-space: nowrap;
+}
+
+.fs-row-time {
+  min-width: 150px;
+  text-align: right;
+}
+
+.fs-row-flags {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .fs-badge {
@@ -284,15 +304,10 @@
   letter-spacing: 0.02em;
 }
 
-.fs-row-badges {
-  margin-top: 6px;
-}
-
 .fs-api-flag {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  margin-left: 10px;
   font-size: 11px;
 }
 
@@ -470,11 +485,6 @@ mark {
   padding: 14px 18px;
   border-top: 1px solid var(--fs-border);
   background: var(--fs-surface);
-}
-
-.fs-meta {
-  color: var(--fs-muted);
-  font-size: 13px;
 }
 
 .fs-edit-button {
