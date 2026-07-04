@@ -1,3 +1,4 @@
+import { fetchFunctionDetail } from './api';
 import type { CrmContext } from './crm-context';
 import { closeIcon, el, refreshIcon, searchIcon } from './dom';
 import { requestEditInCrm } from './edit-in-crm';
@@ -42,6 +43,8 @@ interface OverlayState {
   loading: boolean;
   errorMessage: string | null;
   listScrollTop: number;
+  /** Id of the record whose fresh detail is being re-fetched before handing off to Zoho's editor. */
+  openingId: string | null;
 }
 
 let refs: OverlayRefs | null = null;
@@ -60,6 +63,7 @@ function createInitialState(): OverlayState {
     loading: true,
     errorMessage: null,
     listScrollTop: 0,
+    openingId: null,
   };
 }
 
@@ -116,6 +120,7 @@ function renderMain(): void {
         { onBack: closeDetail, onEdit: editInCrm },
         getHighlightQuery(),
         state.loading,
+        state.openingId === selected.summary.id,
       ),
     );
     return;
@@ -192,23 +197,52 @@ function closeDetail(): void {
   renderMain();
 }
 
+/**
+ * Re-fetches this function's detail live before opening Zoho's editor, rather than
+ * trusting `record.detail`: that value can come from the persisted cache and still
+ * reflect the version from before a recent edit, since the list request that would
+ * catch the staleness (comparing `updatedTime`) may not have resolved yet. Opening
+ * Zoho's editor with a stale detail lets it be saved back over the newer version,
+ * silently discarding the user's most recent edit — so the extra round trip here
+ * happens unconditionally rather than only when we suspect the cache is stale.
+ */
 function editInCrm(record: FunctionRecord): void {
-  if (!record.detail) {
+  if (!record.detail || !activeContext || state.openingId) {
     return;
   }
-  // Wait for confirmation before closing: closing unconditionally right after
-  // firing the request meant a failed request (e.g. an invalidated extension
-  // context from a stale tab) looked like the overlay just closing with
-  // nothing happening, since the failure surfaced only in the console after
-  // the overlay was already gone.
-  void requestEditInCrm(record.detail).then((opened) => {
-    if (opened) {
-      closeOverlay();
-      return;
-    }
-    state.errorMessage = 'Could not reach the extension. Reload this tab and try again.';
-    renderMain();
-  });
+
+  const context = activeContext;
+  state.openingId = record.summary.id;
+  renderMain();
+
+  void fetchFunctionDetail(context, record.summary)
+    .then((freshDetail) => {
+      if (!freshDetail) {
+        throw new Error('Function detail request returned nothing');
+      }
+      record.detail = freshDetail;
+      // Wait for confirmation before closing: closing unconditionally right after
+      // firing the request meant a failed request (e.g. an invalidated extension
+      // context from a stale tab) looked like the overlay just closing with
+      // nothing happening, since the failure surfaced only in the console after
+      // the overlay was already gone.
+      return requestEditInCrm(freshDetail);
+    })
+    .then((opened) => {
+      state.openingId = null;
+      if (opened) {
+        closeOverlay();
+        return;
+      }
+      state.errorMessage = 'Could not reach the extension. Reload this tab and try again.';
+      renderMain();
+    })
+    .catch((error: unknown) => {
+      console.error('Zoho CRM DevTools: failed to refresh function detail before editing', error);
+      state.openingId = null;
+      state.errorMessage = 'Could not load the latest version of this function. Try again.';
+      renderMain();
+    });
 }
 
 function onSearchInput(value: string): void {

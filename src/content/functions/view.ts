@@ -172,6 +172,7 @@ export function renderDetail(
   handlers: DetailHandlers,
   highlight = '',
   loading = false,
+  opening = false,
 ): HTMLElement {
   const { summary, detail } = record;
 
@@ -191,7 +192,7 @@ export function renderDetail(
       : '// No source available.';
   const code = el('pre', { className: 'fs-code' }, highlightNodes(source, highlight));
 
-  const info = renderInfoPanel(record, handlers, loading);
+  const info = renderInfoPanel(record, handlers, loading, opening);
 
   return el('div', { className: 'fs-detail' }, [
     bar,
@@ -203,6 +204,7 @@ function renderInfoPanel(
   record: FunctionRecord,
   handlers: DetailHandlers,
   loading: boolean,
+  opening: boolean,
 ): HTMLElement {
   const { summary, detail } = record;
   const created = formatTimestamp(summary.createdTime);
@@ -256,13 +258,15 @@ function renderInfoPanel(
   // `script`/`workflow` body (e.g. deprecated or orphaned entries) with its own
   // "Function files are not loaded" error, so there is nothing to edit for them.
   const hasSource = detail ? Boolean(getFunctionSource(record)) : false;
-  const editTitle = !detail
-    ? loading
-      ? 'Waiting for the function source to finish loading…'
-      : 'No source available for this function.'
-    : !hasSource
-      ? 'No source available for this function.'
-      : undefined;
+  const editTitle = opening
+    ? 'Fetching the latest version before opening…'
+    : !detail
+      ? loading
+        ? 'Waiting for the function source to finish loading…'
+        : 'No source available for this function.'
+      : !hasSource
+        ? 'No source available for this function.'
+        : undefined;
 
   const footer = el('div', { className: 'fs-info-footer' }, [
     el(
@@ -270,11 +274,13 @@ function renderInfoPanel(
       {
         className: 'fs-edit-button',
         type: 'button',
-        disabled: !detail || !hasSource,
+        disabled: !detail || !hasSource || opening,
         title: editTitle,
         onClick: () => handlers.onEdit(record),
       },
-      [editIcon(16), el('span', { text: 'Edit in CRM' })],
+      opening
+        ? [spinnerIcon(14), el('span', { text: 'Opening…' })]
+        : [editIcon(16), el('span', { text: 'Edit in CRM' })],
     ),
   ]);
 
