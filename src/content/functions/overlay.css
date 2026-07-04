@@ -537,3 +537,13 @@ mark {
 .fs-edit-button:hover {
   filter: brightness(1.05);
 }
+
+.fs-edit-button:disabled {
+  background: var(--fs-border);
+  color: var(--fs-muted);
+  cursor: default;
+}
+
+.fs-edit-button:disabled:hover {
+  filter: none;
+}

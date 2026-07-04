@@ -245,10 +245,26 @@ function renderInfoPanel(record: FunctionRecord, handlers: DetailHandlers): HTML
     infoSection('Integrations', [summary.tasks ? tasksList(summary.tasks) : null]),
   ]);
 
+  // Zoho's own editor rejects functions whose detail loaded but carried no
+  // `script`/`workflow` body (e.g. deprecated or orphaned entries) with its own
+  // "Function files are not loaded" error, so there is nothing to edit for them.
+  const hasSource = detail ? Boolean(getFunctionSource(record)) : false;
+  const editTitle = !detail
+    ? 'Waiting for the function source to finish loading…'
+    : !hasSource
+      ? 'No source available for this function.'
+      : undefined;
+
   const footer = el('div', { className: 'fs-info-footer' }, [
     el(
       'button',
-      { className: 'fs-edit-button', type: 'button', onClick: () => handlers.onEdit(record) },
+      {
+        className: 'fs-edit-button',
+        type: 'button',
+        disabled: !detail || !hasSource,
+        title: editTitle,
+        onClick: () => handlers.onEdit(record),
+      },
       [editIcon(16), el('span', { text: 'Edit in CRM' })],
     ),
   ]);

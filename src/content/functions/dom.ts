@@ -11,6 +11,7 @@ export interface ElementOptions {
   text?: string;
   title?: string;
   type?: string;
+  disabled?: boolean;
   attrs?: Record<string, string>;
   dataset?: Record<string, string>;
   onClick?: (event: Event) => void;
@@ -33,6 +34,9 @@ export function el<K extends keyof HTMLElementTagNameMap>(
   }
   if (options.type && node instanceof HTMLButtonElement) {
     node.type = options.type as HTMLButtonElement['type'];
+  }
+  if (options.disabled && node instanceof HTMLButtonElement) {
+    node.disabled = true;
   }
   if (options.attrs) {
     for (const [key, value] of Object.entries(options.attrs)) {
