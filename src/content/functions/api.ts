@@ -96,6 +96,13 @@ export async function fetchFunctionDetail(
   fetchImpl: FetchLike = fetch,
 ): Promise<ZohoFunctionDetail | null> {
   const response = await request(context, buildFunctionDetailUrl(context, summary), fetchImpl);
+  // Zoho sometimes answers a detail request with a bodyless 204, the same signal
+  // `fetchAllFunctions` treats as "nothing here" for the list endpoint. `response.ok`
+  // is true for 204 too, so without this check `response.json()` below throws
+  // `SyntaxError: Unexpected end of JSON input` on the empty body.
+  if (response.status === 204) {
+    return null;
+  }
   if (!response.ok) {
     throw new Error(`Zoho function detail request failed with status ${response.status}`);
   }

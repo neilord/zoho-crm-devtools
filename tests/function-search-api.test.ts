@@ -92,4 +92,9 @@ describe('fetchFunctionDetail', () => {
     const fetchImpl = vi.fn<FetchLike>().mockResolvedValue(jsonResponse({ functions: [] }));
     expect(await fetchFunctionDetail(context, summary('7'), fetchImpl)).toBeNull();
   });
+
+  it('returns null on a bodyless 204 instead of throwing on the empty body', async () => {
+    const fetchImpl = vi.fn<FetchLike>().mockResolvedValue(jsonResponse(null, 204));
+    expect(await fetchFunctionDetail(context, summary('7'), fetchImpl)).toBeNull();
+  });
 });
