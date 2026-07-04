@@ -2,7 +2,8 @@
 
 ## Branches
 
-- Use short-lived feature branches with the `codex/` prefix.
+- Use short-lived feature branches named `<type>/<short-description>`, where `<type>` matches the
+  Conventional Commit type that dominates the branch (`feat`, `fix`, `chore`, `style`, `docs`, etc.).
 - Keep one concern per branch whenever practical.
 - Merge completed feature branches into `main` with an explicit no-fast-forward merge so the branch
   boundary remains visible in history alongside the smaller logical commits inside it.
@@ -13,7 +14,7 @@
 - Use merge commits for substantial feature branches.
 - Prefer `merge: <feature outcome>` for merge commit messages, such as `merge: add editor themes`.
 - Include the source branch only when it adds useful traceability, such as
-  `merge: add editor themes from codex/add-editor-themes`.
+  `merge: add editor themes from feat/add-editor-themes`.
 - Avoid squash merges by default when the commits inside the branch are already meaningful.
 - Avoid Git's default `Merge branch ...` messages.
 
