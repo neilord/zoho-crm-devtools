@@ -161,6 +161,15 @@ export function refreshIcon(size = 16): SVGSVGElement {
   });
 }
 
+/** Indeterminate loading spinner. Rotation comes from the `fs-spinner` CSS class. */
+export function spinnerIcon(size = 28): SVGSVGElement {
+  const root = svg(size, (node) => {
+    node.appendChild(path('M10 2 A8 8 0 1 1 2 10'));
+  });
+  root.classList.add('fs-spinner');
+  return root;
+}
+
 export function editIcon(size = 16): SVGSVGElement {
   return svg(size, (root) => {
     root.appendChild(path('M4 14 L4 16 L6 16 L15 7 L13 5 Z'));

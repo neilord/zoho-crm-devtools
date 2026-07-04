@@ -81,6 +81,14 @@ async function getOrgCache(
 }
 
 export interface LoadHandlers {
+  /**
+   * Called synchronously with whatever is already cached (this page load or a
+   * past one, via `chrome.storage.local`) before the network list request
+   * starts. Lets the UI render instantly instead of blocking on the network;
+   * `onListLoaded` still follows with the authoritative list once it resolves.
+   * Skipped when nothing is cached yet.
+   */
+  onCacheLoaded(records: FunctionRecord[]): void;
   /** Called once with all summaries, before any detail has loaded. */
   onListLoaded(records: FunctionRecord[]): void;
   /** Called as each detail resolves, with running progress counts. */
@@ -116,6 +124,10 @@ export async function loadFunctions(
   storage: StorageArea = browser.storage.local,
 ): Promise<void> {
   const recordCache = await getOrgCache(context.orgId, storage);
+
+  if (recordCache.size > 0) {
+    handlers.onCacheLoaded(Array.from(recordCache.values()));
+  }
 
   let summaries: ZohoFunctionSummary[];
   try {

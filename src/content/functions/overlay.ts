@@ -12,7 +12,13 @@ import {
   sortByModified,
 } from './search';
 import type { FunctionRecord } from './types';
-import { renderCategoryButton, renderDetail, renderEmptyState, renderFunctionRow } from './view';
+import {
+  renderCategoryButton,
+  renderDetail,
+  renderEmptyState,
+  renderFunctionRow,
+  renderLoadingState,
+} from './view';
 
 const HOST_ID = 'zcdt-function-search-overlay';
 
@@ -110,12 +116,15 @@ function renderMain(): void {
 
   const visible = getVisibleRecords();
   if (visible.length === 0) {
-    const message = state.loading
-      ? 'Loading functions…'
-      : state.records.length === 0
-        ? 'No functions found in this org.'
-        : 'No functions match your search.';
-    refs.main.replaceChildren(renderEmptyState(message));
+    if (state.loading) {
+      refs.main.replaceChildren(renderLoadingState('Loading functions…'));
+    } else {
+      const message =
+        state.records.length === 0
+          ? 'No functions found in this org.'
+          : 'No functions match your search.';
+      refs.main.replaceChildren(renderEmptyState(message));
+    }
     return;
   }
 
@@ -183,6 +192,14 @@ function toggleSort(): void {
  */
 function startLoad(context: CrmContext): void {
   void loadFunctions(context, {
+    onCacheLoaded(records) {
+      // Renders whatever was cached from a past visit before the network list
+      // request even starts, so a slow/first-ever fetch never shows a blank
+      // "Loading functions…" screen when we already have something to show.
+      state.records = records;
+      renderCategories();
+      renderMain();
+    },
     onListLoaded(records) {
       state.records = records;
       renderCategories();

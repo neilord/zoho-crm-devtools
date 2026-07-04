@@ -1,4 +1,4 @@
-import { backIcon, editIcon, el, highlightNodes } from './dom';
+import { backIcon, editIcon, el, highlightNodes, spinnerIcon } from './dom';
 import { formatTimestamp } from './format';
 import { getCategoryLabel } from './search';
 import type { FunctionRecord, ZohoAssociatedPlace, ZohoFunctionTasks, ZohoRestApi } from './types';
@@ -92,6 +92,14 @@ export function renderFunctionRow(
 
 export function renderEmptyState(message: string): HTMLElement {
   return el('div', { className: 'fs-empty', text: message });
+}
+
+/** Shown while nothing has rendered yet (no cache, first-ever load), so a slow list request reads as active rather than broken. */
+export function renderLoadingState(message: string): HTMLElement {
+  return el('div', { className: 'fs-empty fs-loading' }, [
+    spinnerIcon(28),
+    el('p', { className: 'fs-loading-text', text: message }),
+  ]);
 }
 
 /** A titled block in the info panel. Returns null when it has no content. */

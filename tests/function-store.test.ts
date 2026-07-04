@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { CrmContext } from '../src/content/functions/crm-context';
 import { clearFunctionCache, loadFunctions } from '../src/content/functions/function-store';
+import type { FunctionRecord } from '../src/content/functions/types';
 import type { StorageArea } from '../src/shared/browser';
 
 const context: CrmContext = {
@@ -51,6 +52,7 @@ async function collect(storage: StorageArea): Promise<void> {
   await loadFunctions(
     context,
     {
+      onCacheLoaded: () => {},
       onListLoaded: () => {},
       onDetailProgress: () => {},
       onComplete: () => {},
@@ -100,5 +102,67 @@ describe('loadFunctions persistence', () => {
     await collect(storage);
 
     expect(detailCallCount(fetchImplV2)).toBe(1);
+  });
+});
+
+describe('loadFunctions onCacheLoaded', () => {
+  afterEach(() => {
+    clearFunctionCache();
+    vi.unstubAllGlobals();
+  });
+
+  it('skips onCacheLoaded when nothing is cached yet', async () => {
+    const storage = createFakeStorage();
+    vi.stubGlobal('fetch', mockFetch('2026-01-01'));
+    const onCacheLoaded = vi.fn();
+
+    await loadFunctions(
+      context,
+      {
+        onCacheLoaded,
+        onListLoaded: () => {},
+        onDetailProgress: () => {},
+        onComplete: () => {},
+        onError: (error) => {
+          throw error;
+        },
+      },
+      storage,
+    );
+
+    expect(onCacheLoaded).not.toHaveBeenCalled();
+  });
+
+  it('calls onCacheLoaded synchronously with the warm cache, before the list resolves', async () => {
+    const storage = createFakeStorage();
+    vi.stubGlobal('fetch', mockFetch('2026-01-01'));
+    await collect(storage);
+    clearFunctionCache();
+
+    const cacheLoadedRecords: FunctionRecord[][] = [];
+    let listLoadedBeforeCache = false;
+
+    await loadFunctions(
+      context,
+      {
+        onCacheLoaded: (records) => {
+          cacheLoadedRecords.push(records);
+        },
+        onListLoaded: () => {
+          listLoadedBeforeCache = cacheLoadedRecords.length === 0;
+        },
+        onDetailProgress: () => {},
+        onComplete: () => {},
+        onError: (error) => {
+          throw error;
+        },
+      },
+      storage,
+    );
+
+    expect(cacheLoadedRecords).toHaveLength(1);
+    expect(cacheLoadedRecords[0]).toHaveLength(1);
+    expect(cacheLoadedRecords[0][0].summary.id).toBe('1');
+    expect(listLoadedBeforeCache).toBe(false);
   });
 });
