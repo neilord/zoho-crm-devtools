@@ -28,10 +28,19 @@ export function parseOrgId(pathname: string): string | null {
 /** Reads a single cookie value from a `document.cookie` string. */
 export function readCookie(name: string, cookieString: string): string | null {
   const target = `${name}=`;
-  for (const part of decodeURIComponent(cookieString).split(';')) {
+  // Split the raw string first, then decode only the matched value. Decoding the
+  // whole jar up front is unsafe: a malformed percent-escape in any unrelated
+  // cookie makes `decodeURIComponent` throw (which would abort context
+  // resolution), and an encoded `;`/`=` elsewhere could corrupt the split.
+  for (const part of cookieString.split(';')) {
     const trimmed = part.trimStart();
     if (trimmed.startsWith(target)) {
-      return trimmed.slice(target.length);
+      const raw = trimmed.slice(target.length);
+      try {
+        return decodeURIComponent(raw);
+      } catch {
+        return raw;
+      }
     }
   }
   return null;
