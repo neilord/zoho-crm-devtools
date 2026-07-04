@@ -132,6 +132,16 @@
   color: var(--fs-accent);
 }
 
+.fs-icon-button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.fs-icon-button:disabled:hover {
+  border-color: var(--fs-border);
+  color: var(--fs-muted);
+}
+
 /* Progress bar */
 .fs-progress {
   height: 2px;

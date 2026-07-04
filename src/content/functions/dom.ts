@@ -152,6 +152,15 @@ export function backIcon(size = 18): SVGSVGElement {
   });
 }
 
+export function refreshIcon(size = 16): SVGSVGElement {
+  return svg(size, (root) => {
+    root.appendChild(path('M4 9 A6 6 0 0 1 14.5 5.5'));
+    root.appendChild(path('M14.5 2.5 L14.5 6 L11 6'));
+    root.appendChild(path('M16 11 A6 6 0 0 1 5.5 14.5'));
+    root.appendChild(path('M5.5 17.5 L5.5 14 L9 14'));
+  });
+}
+
 export function editIcon(size = 16): SVGSVGElement {
   return svg(size, (root) => {
     root.appendChild(path('M4 14 L4 16 L6 16 L15 7 L13 5 Z'));

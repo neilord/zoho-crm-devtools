@@ -1,5 +1,5 @@
 import type { CrmContext } from './crm-context';
-import { closeIcon, el, searchIcon } from './dom';
+import { closeIcon, el, refreshIcon, searchIcon } from './dom';
 import { requestEditInCrm } from './edit-in-crm';
 import { loadFunctions } from './function-store';
 import overlayCss from './overlay.css?inline';
@@ -20,6 +20,7 @@ interface OverlayRefs {
   host: HTMLDivElement;
   searchInput: HTMLInputElement;
   sortButton: HTMLButtonElement;
+  reloadButton: HTMLButtonElement;
   progress: HTMLDivElement;
   progressFill: HTMLDivElement;
   categories: HTMLElement;
@@ -37,6 +38,7 @@ interface OverlayState {
 }
 
 let refs: OverlayRefs | null = null;
+let activeContext: CrmContext | null = null;
 let state: OverlayState = createInitialState();
 let keydownHandler: ((event: KeyboardEvent) => void) | null = null;
 let stopPropagationHandler: ((event: KeyboardEvent) => void) | null = null;
@@ -86,6 +88,8 @@ function renderMain(): void {
   if (!refs) {
     return;
   }
+
+  refs.reloadButton.disabled = state.loading;
 
   if (state.errorMessage) {
     refs.main.replaceChildren(renderEmptyState(state.errorMessage));
@@ -170,113 +174,12 @@ function toggleSort(): void {
   renderMain();
 }
 
-function buildOverlay(): OverlayRefs {
-  const host = document.createElement('div');
-  host.id = HOST_ID;
-  const shadow = host.attachShadow({ mode: 'open' });
-
-  const style = document.createElement('style');
-  style.textContent = overlayCss;
-  shadow.appendChild(style);
-
-  const searchInput = el('input', {
-    attrs: {
-      type: 'search',
-      placeholder: 'Search functions and source…',
-      'aria-label': 'Search functions',
-    },
-  }) as HTMLInputElement;
-  searchInput.addEventListener('input', () => onSearchInput(searchInput.value));
-
-  const sortButton = el('button', {
-    className: 'fs-sort',
-    type: 'button',
-    title: 'Sort by last modified',
-    text: 'Newest',
-    onClick: toggleSort,
-  });
-
-  const closeButton = el(
-    'button',
-    { className: 'fs-icon-button', type: 'button', title: 'Close', onClick: closeOverlay },
-    [closeIcon(18)],
-  );
-
-  const header = el('div', { className: 'fs-header' }, [
-    el('span', { className: 'fs-brand', text: 'Function Search' }),
-    el('label', { className: 'fs-search' }, [searchIcon(16), searchInput]),
-    el('span', { className: 'fs-header-spacer' }),
-    sortButton,
-    closeButton,
-  ]);
-
-  const progressFill = el('div', { className: 'fs-progress-fill' });
-  const progress = el('div', { className: 'fs-progress' }, [progressFill]);
-  const categories = el('aside', { className: 'fs-categories' });
-  const main = el('section', { className: 'fs-main' });
-
-  const panel = el('div', { className: 'fs-panel' }, [
-    header,
-    progress,
-    el('div', { className: 'fs-body' }, [categories, main]),
-  ]);
-
-  const overlay = el('div', { className: 'fs-overlay' }, [panel]);
-  overlay.addEventListener('mousedown', (event) => {
-    if (event.target === overlay) {
-      closeOverlay();
-    }
-  });
-  shadow.appendChild(overlay);
-
-  return {
-    host,
-    searchInput,
-    sortButton,
-    progress,
-    progressFill,
-    categories,
-    main,
-  };
-}
-
-export function isOverlayOpen(): boolean {
-  return refs !== null;
-}
-
-export function openFunctionSearchOverlay(context: CrmContext): void {
-  if (refs) {
-    refs.searchInput.focus();
-    return;
-  }
-
-  state = createInitialState();
-  refs = buildOverlay();
-  document.body.appendChild(refs.host);
-
-  // The overlay lives in an open shadow root, so `document.activeElement` resolves to
-  // the shadow host rather than the focused search input. Zoho's own global keyboard
-  // shortcuts key off `document.activeElement` to decide whether typing should be
-  // treated as a shortcut, so without this it thinks nothing is focused and hijacks
-  // keystrokes typed into the search box (e.g. "st" navigates to the Tasks tab).
-  // Keyboard events are `composed: true` and cross the shadow boundary, so handle
-  // Escape and stop propagation here, at the host, before the event can bubble past
-  // it to Zoho's document-level listeners.
-  keydownHandler = (event: KeyboardEvent) => {
-    if (event.key === 'Escape') {
-      closeOverlay();
-    }
-    event.stopPropagation();
-  };
-  stopPropagationHandler = (event: KeyboardEvent) => event.stopPropagation();
-  refs.host.addEventListener('keydown', keydownHandler);
-  refs.host.addEventListener('keyup', stopPropagationHandler);
-  refs.host.addEventListener('keypress', stopPropagationHandler);
-
-  renderCategories();
-  renderMain();
-  refs.searchInput.focus();
-
+/**
+ * Kicks off (or re-kicks off) loading. The function-store cache means a
+ * reload is cheap: the summary list is refetched, but only new or changed
+ * functions (by `updatedTime`) trigger a detail request.
+ */
+function startLoad(context: CrmContext): void {
   void loadFunctions(context, {
     onListLoaded(records) {
       state.records = records;
@@ -305,6 +208,135 @@ export function openFunctionSearchOverlay(context: CrmContext): void {
   });
 }
 
+function reload(): void {
+  if (!activeContext || state.loading) {
+    return;
+  }
+  state.loading = true;
+  state.errorMessage = null;
+  renderMain();
+  startLoad(activeContext);
+}
+
+function buildOverlay(): OverlayRefs {
+  const host = document.createElement('div');
+  host.id = HOST_ID;
+  const shadow = host.attachShadow({ mode: 'open' });
+
+  const style = document.createElement('style');
+  style.textContent = overlayCss;
+  shadow.appendChild(style);
+
+  const searchInput = el('input', {
+    attrs: {
+      type: 'search',
+      placeholder: 'Search functions and source…',
+      'aria-label': 'Search functions',
+    },
+  }) as HTMLInputElement;
+  searchInput.addEventListener('input', () => onSearchInput(searchInput.value));
+
+  const sortButton = el('button', {
+    className: 'fs-sort',
+    type: 'button',
+    title: 'Sort by last modified',
+    text: 'Newest',
+    onClick: toggleSort,
+  });
+
+  const reloadButton = el(
+    'button',
+    { className: 'fs-icon-button', type: 'button', title: 'Reload functions', onClick: reload },
+    [refreshIcon(16)],
+  );
+
+  const closeButton = el(
+    'button',
+    { className: 'fs-icon-button', type: 'button', title: 'Close', onClick: closeOverlay },
+    [closeIcon(18)],
+  );
+
+  const header = el('div', { className: 'fs-header' }, [
+    el('span', { className: 'fs-brand', text: 'Function Search' }),
+    el('label', { className: 'fs-search' }, [searchIcon(16), searchInput]),
+    el('span', { className: 'fs-header-spacer' }),
+    sortButton,
+    reloadButton,
+    closeButton,
+  ]);
+
+  const progressFill = el('div', { className: 'fs-progress-fill' });
+  const progress = el('div', { className: 'fs-progress' }, [progressFill]);
+  const categories = el('aside', { className: 'fs-categories' });
+  const main = el('section', { className: 'fs-main' });
+
+  const panel = el('div', { className: 'fs-panel' }, [
+    header,
+    progress,
+    el('div', { className: 'fs-body' }, [categories, main]),
+  ]);
+
+  const overlay = el('div', { className: 'fs-overlay' }, [panel]);
+  overlay.addEventListener('mousedown', (event) => {
+    if (event.target === overlay) {
+      closeOverlay();
+    }
+  });
+  shadow.appendChild(overlay);
+
+  return {
+    host,
+    searchInput,
+    sortButton,
+    reloadButton,
+    progress,
+    progressFill,
+    categories,
+    main,
+  };
+}
+
+export function isOverlayOpen(): boolean {
+  return refs !== null;
+}
+
+export function openFunctionSearchOverlay(context: CrmContext): void {
+  if (refs) {
+    refs.searchInput.focus();
+    return;
+  }
+
+  activeContext = context;
+  state = createInitialState();
+  refs = buildOverlay();
+  document.body.appendChild(refs.host);
+
+  // The overlay lives in an open shadow root, so `document.activeElement` resolves to
+  // the shadow host rather than the focused search input. Zoho's own global keyboard
+  // shortcuts key off `document.activeElement` to decide whether typing should be
+  // treated as a shortcut, so without this it thinks nothing is focused and hijacks
+  // keystrokes typed into the search box (e.g. "st" navigates to the Tasks tab).
+  // Keyboard events are `composed: true` and cross the shadow boundary, so handle
+  // Escape and stop propagation here, at the host, before the event can bubble past
+  // it to Zoho's document-level listeners.
+  keydownHandler = (event: KeyboardEvent) => {
+    if (event.key === 'Escape') {
+      closeOverlay();
+    }
+    event.stopPropagation();
+  };
+  stopPropagationHandler = (event: KeyboardEvent) => event.stopPropagation();
+  refs.host.addEventListener('keydown', keydownHandler);
+  refs.host.addEventListener('keyup', stopPropagationHandler);
+  refs.host.addEventListener('keypress', stopPropagationHandler);
+
+  renderCategories();
+  renderMain();
+  refs.searchInput.focus();
+
+  startLoad(context);
+}
+
 export function closeOverlay(): void {
   if (refs && keydownHandler) {
     refs.host.removeEventListener('keydown', keydownHandler);
@@ -317,4 +349,5 @@ export function closeOverlay(): void {
   stopPropagationHandler = null;
   refs?.host.remove();
   refs = null;
+  activeContext = null;
 }
