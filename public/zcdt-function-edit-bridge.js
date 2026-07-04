@@ -24,15 +24,38 @@
   var MAX_EDITOR_WAIT_ATTEMPTS = 10;
   var EDITOR_WAIT_INTERVAL_MS = 1000;
 
+  // Waits for both `Lyte.Router` and `customFunctionsObj` together, then
+  // transitions and renders in the same attempt. Zoho may still be bootstrapping
+  // right after a fresh install or page load, so treating the transition as a
+  // one-shot fired up front (independent of this retry loop) risks navigating
+  // before the route is ready and then rendering the editor into whatever is
+  // on screen once `customFunctionsObj` shows up seconds later, leaving a blank
+  // screen instead of the functions view.
   function openEditor(detail, attempt) {
     attempt = attempt || 0;
+    var router = window.Lyte && window.Lyte.Router;
     var customFunctions = window.customFunctionsObj;
-    if (customFunctions) {
-      if (document.querySelector(EDITOR_WRAPPER_SELECTOR)) {
-        customFunctions.leavePage('close');
+
+    if (router && typeof router.transitionTo === 'function' && customFunctions) {
+      try {
+        router.transitionTo(FUNCTIONS_ROUTE);
+        if (document.querySelector(EDITOR_WRAPPER_SELECTOR)) {
+          customFunctions.leavePage('close');
+        }
+        customFunctions.renderEditorView(JSON.stringify(detail), '', '', 'edit');
+        return;
+      } catch (error) {
+        // `Lyte.Router`/`customFunctionsObj` existing doesn't mean everything
+        // they depend on has finished loading: Zoho's dashboard bootstrap can
+        // still be missing internal pieces (its own router-transition hooks,
+        // its CodeMirror chunk) this early, which throws deep inside Zoho's
+        // own code instead of signaling not-ready the way a missing
+        // `customFunctionsObj` does. There is no fixed list of these internal
+        // globals to check for up front, so treat any failed attempt the same
+        // as not-ready and retry, rather than leaving a half-rendered editor
+        // stuck once Zoho's own code throws.
+        console.warn('Zoho CRM DevTools: editor attempt failed, retrying', error);
       }
-      customFunctions.renderEditorView(JSON.stringify(detail), '', '', 'edit');
-      return;
     }
 
     if (attempt < MAX_EDITOR_WAIT_ATTEMPTS) {
@@ -53,10 +76,6 @@
       return;
     }
 
-    var router = window.Lyte && window.Lyte.Router;
-    if (router && typeof router.transitionTo === 'function') {
-      router.transitionTo(FUNCTIONS_ROUTE);
-    }
     openEditor(data.detail);
   });
 })();
