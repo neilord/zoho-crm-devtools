@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.1.0 - 2026-07-04
+
+- Added cross-function search: a "Search All Functions" control on the Zoho functions
+  page opens an overlay to search every Deluge function in the org, including source,
+  with an "Edit in CRM" handoff to Zoho's native editor.
+
 ## 2.0.1 - 2026-06-27
 
 - Fixed a cursor positioning bug in highlighted Deluge code.
