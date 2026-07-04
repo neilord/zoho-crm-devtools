@@ -171,6 +171,7 @@ export function renderDetail(
   record: FunctionRecord,
   handlers: DetailHandlers,
   highlight = '',
+  loading = false,
 ): HTMLElement {
   const { summary, detail } = record;
 
@@ -185,10 +186,12 @@ export function renderDetail(
 
   const source = detail
     ? getFunctionSource(record) || '// No source available.'
-    : '// Loading source…';
+    : loading
+      ? '// Loading source…'
+      : '// No source available.';
   const code = el('pre', { className: 'fs-code' }, highlightNodes(source, highlight));
 
-  const info = renderInfoPanel(record, handlers);
+  const info = renderInfoPanel(record, handlers, loading);
 
   return el('div', { className: 'fs-detail' }, [
     bar,
@@ -196,7 +199,11 @@ export function renderDetail(
   ]);
 }
 
-function renderInfoPanel(record: FunctionRecord, handlers: DetailHandlers): HTMLElement {
+function renderInfoPanel(
+  record: FunctionRecord,
+  handlers: DetailHandlers,
+  loading: boolean,
+): HTMLElement {
   const { summary, detail } = record;
   const created = formatTimestamp(summary.createdTime);
   const updated = formatTimestamp(summary.updatedTime);
@@ -250,7 +257,9 @@ function renderInfoPanel(record: FunctionRecord, handlers: DetailHandlers): HTML
   // "Function files are not loaded" error, so there is nothing to edit for them.
   const hasSource = detail ? Boolean(getFunctionSource(record)) : false;
   const editTitle = !detail
-    ? 'Waiting for the function source to finish loading…'
+    ? loading
+      ? 'Waiting for the function source to finish loading…'
+      : 'No source available for this function.'
     : !hasSource
       ? 'No source available for this function.'
       : undefined;

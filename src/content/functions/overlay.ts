@@ -109,7 +109,12 @@ function renderMain(): void {
 
   if (selected) {
     refs.main.replaceChildren(
-      renderDetail(selected, { onBack: closeDetail, onEdit: editInCrm }, getHighlightQuery()),
+      renderDetail(
+        selected,
+        { onBack: closeDetail, onEdit: editInCrm },
+        getHighlightQuery(),
+        state.loading,
+      ),
     );
     return;
   }
