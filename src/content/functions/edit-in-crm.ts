@@ -42,13 +42,27 @@ function ensureBridge(): Promise<void> {
   return bridgeReady;
 }
 
-export function requestEditInCrm(detail: ZohoFunctionDetail): void {
+/**
+ * Resolves `true` once the message is actually posted, `false` if the bridge
+ * could not be reached. `chrome.runtime.getURL` throws "Extension context
+ * invalidated" when this content script instance predates the currently
+ * loaded extension (e.g. a tab left open across a reload/update) — that
+ * throw happens inside the `ensureBridge` promise executor, so it surfaces
+ * here as a rejection rather than an exception the caller can catch directly.
+ */
+export function requestEditInCrm(detail: ZohoFunctionDetail): Promise<boolean> {
   const message: EditInCrmMessage = {
     source: FUNCTION_SEARCH_MESSAGE_SOURCE,
     action: 'editInCrm',
     detail,
   };
-  void ensureBridge().then(() => {
-    window.postMessage(message, window.location.origin);
-  });
+  return ensureBridge()
+    .then(() => {
+      window.postMessage(message, window.location.origin);
+      return true;
+    })
+    .catch((error: unknown) => {
+      console.error('Zoho CRM DevTools: failed to reach the extension to open the editor', error);
+      return false;
+    });
 }

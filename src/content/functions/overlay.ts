@@ -172,10 +172,22 @@ function closeDetail(): void {
 }
 
 function editInCrm(record: FunctionRecord): void {
-  if (record.detail) {
-    requestEditInCrm(record.detail);
+  if (!record.detail) {
+    return;
   }
-  closeOverlay();
+  // Wait for confirmation before closing: closing unconditionally right after
+  // firing the request meant a failed request (e.g. an invalidated extension
+  // context from a stale tab) looked like the overlay just closing with
+  // nothing happening, since the failure surfaced only in the console after
+  // the overlay was already gone.
+  void requestEditInCrm(record.detail).then((opened) => {
+    if (opened) {
+      closeOverlay();
+      return;
+    }
+    state.errorMessage = 'Could not reach the extension. Reload this tab and try again.';
+    renderMain();
+  });
 }
 
 function onSearchInput(value: string): void {
