@@ -128,6 +128,17 @@ export function searchIcon(size = 18): SVGSVGElement {
   });
 }
 
+/** Search-glass-over-globe icon distinguishing the org-wide search button from Zoho's own search box. */
+export function searchAllFunctionsIcon(size = 18): SVGSVGElement {
+  return svg(size, (root) => {
+    root.appendChild(circle(8, 8, 5.75));
+    root.appendChild(path('M2.25 8 H13.75'));
+    root.appendChild(path('M8 2.25 C10.5 2.25 10.5 13.75 8 13.75'));
+    root.appendChild(path('M8 2.25 C5.5 2.25 5.5 13.75 8 13.75'));
+    root.appendChild(path('M12.07 12.07 L17 17'));
+  });
+}
+
 export function closeIcon(size = 18): SVGSVGElement {
   return svg(size, (root) => {
     root.appendChild(path('M5 5 L15 15'));
