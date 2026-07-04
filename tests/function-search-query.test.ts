@@ -48,6 +48,20 @@ describe('category grouping', () => {
       { key: 'Standalone', label: 'Standalone', count: 1 },
     ]);
   });
+
+  it('counts a separate record list while keeping every category from the full list', () => {
+    const all = [
+      record({ id: '1', display_name: 'Alpha', category: 'Standalone' }),
+      record({ id: '2', display_name: 'Beta', category: 'Automation' }),
+      record({ id: '3', display_name: 'Gamma', category: 'Automation' }),
+    ];
+    const matches = [record({ id: '2', display_name: 'Beta', category: 'Automation' })];
+
+    expect(getCategoryCounts(all, matches)).toEqual([
+      { key: 'Automation', label: 'Automation', count: 1 },
+      { key: 'Standalone', label: 'Standalone', count: 0 },
+    ]);
+  });
 });
 
 describe('query normalization and matching', () => {

@@ -58,16 +58,29 @@ export interface CategoryCount {
   count: number;
 }
 
-/** Category counts in stable, alphabetical-by-label order for the filter rail. */
-export function getCategoryCounts(records: FunctionRecord[]): CategoryCount[] {
-  const counts = new Map<string, number>();
+/**
+ * Category counts in stable, alphabetical-by-label order for the filter rail.
+ * `records` determines which categories appear; `countRecords` (defaulting to
+ * the same list) determines the number shown next to each, so callers can keep
+ * every category visible while counting only the records matching a search.
+ */
+export function getCategoryCounts(
+  records: FunctionRecord[],
+  countRecords: FunctionRecord[] = records,
+): CategoryCount[] {
+  const keys = new Set<string>();
   for (const record of records) {
+    keys.add(getCategoryKey(record.summary));
+  }
+
+  const counts = new Map<string, number>();
+  for (const record of countRecords) {
     const key = getCategoryKey(record.summary);
     counts.set(key, (counts.get(key) ?? 0) + 1);
   }
 
-  return [...counts.entries()]
-    .map(([key, count]) => ({ key, label: getCategoryLabel(key), count }))
+  return [...keys]
+    .map((key) => ({ key, label: getCategoryLabel(key), count: counts.get(key) ?? 0 }))
     .sort((a, b) => a.label.localeCompare(b.label));
 }
 

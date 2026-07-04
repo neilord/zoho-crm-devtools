@@ -70,10 +70,11 @@ function renderCategories(): void {
   if (!refs) {
     return;
   }
-  const counts = getCategoryCounts(state.records);
+  const matches = filterRecords(state.records, { category: null, query: state.query });
+  const counts = getCategoryCounts(state.records, matches);
   const buttons: HTMLElement[] = [
     renderCategoryButton(
-      { key: null, label: 'All', count: state.records.length },
+      { key: null, label: 'All', count: matches.length },
       state.category === null,
       selectCategory,
     ),
@@ -161,6 +162,7 @@ function editInCrm(record: FunctionRecord): void {
 
 function onSearchInput(value: string): void {
   state.query = value;
+  renderCategories();
   if (!state.selectedId) {
     renderMain();
   }
