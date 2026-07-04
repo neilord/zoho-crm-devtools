@@ -41,6 +41,7 @@ interface OverlayState {
   selectedId: string | null;
   loading: boolean;
   errorMessage: string | null;
+  listScrollTop: number;
 }
 
 let refs: OverlayRefs | null = null;
@@ -58,6 +59,7 @@ function createInitialState(): OverlayState {
     selectedId: null,
     loading: true,
     errorMessage: null,
+    listScrollTop: 0,
   };
 }
 
@@ -139,7 +141,16 @@ function renderMain(): void {
     { className: 'fs-list' },
     visible.map((record) => renderFunctionRow(record, openDetail, highlight)),
   );
+  // Background loading (cache/list/detail progress, completion) re-renders the list
+  // as data trickles in, which rebuilds this `<ul>` from scratch each time and would
+  // otherwise reset scroll to the top mid-browse. Track scroll continuously and
+  // reapply it on every rebuild; explicit filter/sort changes reset listScrollTop to
+  // 0 themselves so those still land at the top.
+  list.addEventListener('scroll', () => {
+    state.listScrollTop = list.scrollTop;
+  });
   refs.main.replaceChildren(list);
+  list.scrollTop = state.listScrollTop;
 }
 
 function updateProgress(loaded: number, total: number): void {
@@ -153,6 +164,11 @@ function updateProgress(loaded: number, total: number): void {
 
 function selectCategory(key: string | null): void {
   state.category = key;
+  // Switching categories while a function's source is open would otherwise leave the
+  // detail view showing over a now-irrelevant filter; closing it surfaces the
+  // (re-filtered) list instead, matching what the user just asked to see.
+  state.selectedId = null;
+  state.listScrollTop = 0;
   renderCategories();
   renderMain();
 }
@@ -197,6 +213,7 @@ function editInCrm(record: FunctionRecord): void {
 
 function onSearchInput(value: string): void {
   state.query = value;
+  state.listScrollTop = 0;
   renderCategories();
   if (!state.selectedId) {
     renderMain();
@@ -205,6 +222,7 @@ function onSearchInput(value: string): void {
 
 function toggleSort(): void {
   state.sort = state.sort === 'newest' ? 'oldest' : 'newest';
+  state.listScrollTop = 0;
   if (refs) {
     refs.sortButton.textContent = state.sort === 'newest' ? 'Newest' : 'Oldest';
   }
