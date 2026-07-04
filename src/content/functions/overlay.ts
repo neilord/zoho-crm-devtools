@@ -152,8 +152,17 @@ function selectCategory(key: string | null): void {
   renderMain();
 }
 
+/**
+ * Whether the currently selected record had a loaded `detail` the last time the
+ * detail view was rendered. Lets background detail-loading progress skip
+ * re-rendering the open detail view except on the one tick where the selected
+ * record's own detail actually arrives.
+ */
+let selectedHadDetail = false;
+
 function openDetail(record: FunctionRecord): void {
   state.selectedId = record.summary.id;
+  selectedHadDetail = Boolean(record.detail);
   renderMain();
 }
 
@@ -208,7 +217,16 @@ function startLoad(context: CrmContext): void {
     onDetailProgress(loaded, total) {
       updateProgress(loaded, total);
       if (state.selectedId) {
-        renderMain();
+        // Re-rendering the open detail view on every tick recreates its back
+        // button while the pool is warming other functions' details, which can
+        // drop a click that lands mid-teardown. Only re-render when the
+        // selected record's own detail is the one that just arrived.
+        const selected = state.records.find((record) => record.summary.id === state.selectedId);
+        const hasDetail = Boolean(selected?.detail);
+        if (hasDetail !== selectedHadDetail) {
+          selectedHadDetail = hasDetail;
+          renderMain();
+        }
       } else if (state.query.length >= 3 && (loaded === total || loaded % 10 === 0)) {
         renderMain();
       }
