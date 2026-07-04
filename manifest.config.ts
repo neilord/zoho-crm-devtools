@@ -37,7 +37,7 @@ export function createManifest(mode: string): ManifestV3 {
   const manifest: ManifestV3 = {
     manifest_version: 3,
     name: 'Zoho CRM DevTools',
-    version: '2.0.1',
+    version: '2.1.0',
     description: 'Enhance the Zoho CRM Deluge editor with themes and editor improvements.',
     icons: extensionIcons,
     permissions: ['storage'],
@@ -51,6 +51,15 @@ export function createManifest(mode: string): ManifestV3 {
         matches: [...crmMatches],
         js: ['src/content/index.ts'],
         run_at: 'document_idle',
+      },
+    ],
+    // The "Edit in CRM" bridge runs in the page's main world to reach Zoho
+    // globals. The content script injects it on demand as a page <script>;
+    // exposing it here lets that injected script bypass the page CSP.
+    web_accessible_resources: [
+      {
+        resources: ['zcdt-function-edit-bridge.js'],
+        matches: [...crmMatches],
       },
     ],
   };

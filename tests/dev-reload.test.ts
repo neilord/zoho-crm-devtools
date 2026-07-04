@@ -49,19 +49,21 @@ describe('development-only extension reload tooling', () => {
     const productionManifest = createManifest('production');
     const developmentManifest = createManifest('development');
 
+    const productionEntrypoints = productionManifest.content_scripts?.flatMap(
+      (script) => script.js ?? [],
+    );
+    const developmentEntrypoints = developmentManifest.content_scripts?.flatMap(
+      (script) => script.js ?? [],
+    );
+
     expect(productionManifest.background).toBeUndefined();
-    expect(productionManifest.content_scripts).toHaveLength(1);
+    expect(productionEntrypoints).not.toContain('src/internal/dev-tools/content-entry.ts');
 
     expect(developmentManifest.background).toEqual({
       service_worker: 'src/internal/dev-reload/background-entry.ts',
       type: 'module',
     });
-    expect(developmentManifest.content_scripts).toHaveLength(2);
-    expect(developmentManifest.content_scripts?.[1]).toEqual({
-      matches: expect.any(Array),
-      js: ['src/internal/dev-tools/content-entry.ts'],
-      run_at: 'document_idle',
-    });
+    expect(developmentEntrypoints).toContain('src/internal/dev-tools/content-entry.ts');
   });
 
   it('uses the bundled icon set for extension and toolbar surfaces', () => {

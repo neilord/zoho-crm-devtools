@@ -116,8 +116,74 @@ When a new untouched island appears, first inspect whether it already resolves t
 Zoho variable. Only add a selector fallback after confirming that the compiled rule bypasses the
 usable variable layer.
 
+## Cross-function search
+
+The cross-function search feature (`src/content/functions`) reads Zoho's own internal CRM REST API
+from the isolated content script. It is a clean reimplementation of a third-party tool; the durable
+Zoho knowledge it depends on is recorded here because those endpoints are undocumented and the page
+anchor is selector-fragile.
+
+### Request context
+
+- The content script shares the page origin, so same-origin `fetch` with `credentials: 'include'`
+  carries the session cookies automatically. We only add the headers Zoho's own UI sends.
+- Org id (`X-Crm-Org`): parsed from the URL path segment `/org<digits>/` rather than a page global,
+  so the data path needs no main-world access. This equals `Crm.currentZgid`.
+- CSRF (`X-Zcsrf-Token`): the `CSRF_TOKEN` cookie, sent as `crmcsrfparam=<token>`. The cookie is not
+  HttpOnly, so the content script can read it via `document.cookie`.
+
+### Endpoints (internal, `v2`, undocumented — read defensively)
+
+- List: `GET /crm/v2/settings/functions?type=org&start=<n>&limit=200`. Paginated; page forward by 200
+  until a short page or HTTP 204. Each item ("summary") carries `id`, `display_name`, `api_name`,
+  `category` (e.g. `Standalone`, `Automation`, `Dynamic`, `ExtensionAction`), `language`, `source`,
+  `description`, `createdTime`, `updatedTime`, optional `workflow.namespace` (used as the finer
+  category for extension functions), `associated_place[]`, `rest_api[]`, and `tasks`.
+- Detail: `GET /crm/v2/settings/functions/<id>?language=<language>&source=<source>`. Returns
+  `{ functions: [ { id, script | workflow, name, modified_by, params, associated_place, ... } ] }`.
+  `script` holds the Deluge source for standalone functions; `workflow` holds it for automation
+  functions. Details are fetched lazily in the background to make full-text (source) search progressive.
+
+### "Search All Functions" anchor (fragile)
+
+- The functions list lives under `/settings/functions`. The preferred anchor is Zoho's native function
+  search control (`#functionSearch` / `data-zcqa="cfSearchFunctions"`), so "Search All Functions" sits
+  beside the built-in search box. Zoho wraps that Lyte input in `.search-function`; insert after the
+  wrapper rather than after the input itself, because the input is full-width inside the wrapper and
+  will push sibling content to the next line. If that control is missing, Zoho's "Create Function"
+  control is used as a fallback; it has no stable hook, so it is matched by visible text
+  (`/create function/i`) over `button, a, lyte-button, lyte-yield, [role="button"]`, choosing the
+  smallest matching element. The button is re-checked on DOM mutation because the page is a single-page
+  app.
+
+### "Edit in CRM" (requires page globals)
+
+- Opening Zoho's native editor needs page globals the isolated world cannot reach. The bridge lives in
+  `public/zcdt-function-edit-bridge.js` (plain JS) and is listed in the manifest
+  `web_accessible_resources`. The content script injects it on demand as a page `<script>` element
+  (`src/content/functions/edit-in-crm.ts`); a web-accessible script bypasses the page CSP, while an
+  inline script would not. The overlay hands off via `window.postMessage` (namespaced
+  `zcdt-function-search`); the bridge never touches `chrome.*`.
+- Note: the bundler's `world: "MAIN"` content-script loader is **not** usable here — it emits a
+  relative `import()` that resolves against the page origin (a 404) instead of the extension, so the
+  bridge never runs. Self-injecting a stable-named web-accessible script avoids that.
+- The bridge calls `Lyte.Router.transitionTo('crm.settings.section.functions.myFunctions')`, then
+  `customFunctionsObj.renderEditorView(JSON.stringify(detail), '', '', 'edit')`, retrying until
+  `customFunctionsObj` exists. If an editor wrapper (`crm-deluge-editor-wrapper`) is already open it
+  first calls `customFunctionsObj.leavePage('close')`.
+- Confirmed live: `renderEditorView` runs `JSON.parse` on its first argument internally, so it expects
+  a JSON **string**, not the already-parsed detail object our fetch layer produces
+  (`response.json()` in `src/content/functions/api.ts`). Passing the object directly makes
+  `JSON.parse` coerce it to the string `"[object Object]"` and throw
+  `SyntaxError: "[object Object]" is not valid JSON`, which silently aborted the editor open (the
+  overlay had already closed by then, making it look like the button did nothing).
+
 ## Known Open Questions
 
 - Durable selectors for the current editor mount and settings trigger
 - Which less common editor-owned overlays outside the current audit states still bypass variables,
   especially rare error and helper popovers
+- Live verification of the cross-function search feature is still pending: the "Create Function"
+  text-matched anchor, the internal endpoint shapes, and the "Edit in CRM" globals were ported from a
+  working third-party tool but not yet confirmed against a live org in this codebase. Verify via
+  `npm run build:dev` and the dev-reload loop.

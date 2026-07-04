@@ -19,7 +19,7 @@ export const features: readonly FeatureDefinition[] = [
   { id: 'fontControls', tier: 'free', status: 'planned' },
   { id: 'indentGuides', tier: 'free', status: 'planned' },
   { id: 'syntaxEnhancement', tier: 'free', status: 'planned' },
-  { id: 'functionSearch', tier: 'premium', status: 'planned' },
+  { id: 'functionSearch', tier: 'free', status: 'beta' },
   { id: 'githubSync', tier: 'premium', status: 'planned' },
   { id: 'bulkImportExport', tier: 'premium', status: 'planned' },
 ] as const;

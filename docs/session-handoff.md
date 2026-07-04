@@ -24,7 +24,7 @@ polish.
 
 ## Current Branch
 
-`codex/theme-surface-polish`
+`feat/theme-surface-polish`
 
 ## What Works
 
