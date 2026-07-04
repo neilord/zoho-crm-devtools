@@ -39,6 +39,7 @@ interface OverlayState {
 let refs: OverlayRefs | null = null;
 let state: OverlayState = createInitialState();
 let keydownHandler: ((event: KeyboardEvent) => void) | null = null;
+let stopPropagationHandler: ((event: KeyboardEvent) => void) | null = null;
 
 function createInitialState(): OverlayState {
   return {
@@ -253,12 +254,24 @@ export function openFunctionSearchOverlay(context: CrmContext): void {
   refs = buildOverlay();
   document.body.appendChild(refs.host);
 
+  // The overlay lives in an open shadow root, so `document.activeElement` resolves to
+  // the shadow host rather than the focused search input. Zoho's own global keyboard
+  // shortcuts key off `document.activeElement` to decide whether typing should be
+  // treated as a shortcut, so without this it thinks nothing is focused and hijacks
+  // keystrokes typed into the search box (e.g. "st" navigates to the Tasks tab).
+  // Keyboard events are `composed: true` and cross the shadow boundary, so handle
+  // Escape and stop propagation here, at the host, before the event can bubble past
+  // it to Zoho's document-level listeners.
   keydownHandler = (event: KeyboardEvent) => {
     if (event.key === 'Escape') {
       closeOverlay();
     }
+    event.stopPropagation();
   };
-  document.addEventListener('keydown', keydownHandler);
+  stopPropagationHandler = (event: KeyboardEvent) => event.stopPropagation();
+  refs.host.addEventListener('keydown', keydownHandler);
+  refs.host.addEventListener('keyup', stopPropagationHandler);
+  refs.host.addEventListener('keypress', stopPropagationHandler);
 
   renderCategories();
   renderMain();
@@ -293,10 +306,15 @@ export function openFunctionSearchOverlay(context: CrmContext): void {
 }
 
 export function closeOverlay(): void {
-  if (keydownHandler) {
-    document.removeEventListener('keydown', keydownHandler);
-    keydownHandler = null;
+  if (refs && keydownHandler) {
+    refs.host.removeEventListener('keydown', keydownHandler);
   }
+  if (refs && stopPropagationHandler) {
+    refs.host.removeEventListener('keyup', stopPropagationHandler);
+    refs.host.removeEventListener('keypress', stopPropagationHandler);
+  }
+  keydownHandler = null;
+  stopPropagationHandler = null;
   refs?.host.remove();
   refs = null;
 }
