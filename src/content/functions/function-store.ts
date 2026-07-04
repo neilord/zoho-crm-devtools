@@ -1,3 +1,4 @@
+import { browser, type StorageArea } from '../../shared/browser';
 import { fetchAllFunctions, fetchFunctionDetail } from './api';
 import type { CrmContext } from './crm-context';
 import type { FunctionRecord, ZohoFunctionSummary } from './types';
@@ -5,16 +6,78 @@ import type { FunctionRecord, ZohoFunctionSummary } from './types';
 /** Number of detail requests in flight at once while warming the source cache. */
 const DETAIL_CONCURRENCY = 6;
 
+const CACHE_KEY_PREFIX = 'zcdt-function-cache:';
+const CACHE_VERSION = 1;
+
+interface PersistedCache {
+  version: number;
+  records: FunctionRecord[];
+}
+
 /**
- * Per-tab cache keyed by function id. Details are expensive (one request each)
- * so we keep them for the life of the page and only refetch when a function's
- * `updatedTime` changes. This is intentionally in-memory; persistence can come
- * later if large orgs need it.
+ * In-memory caches keyed by org id, keyed again by function id. Details are
+ * expensive (one request each) so we keep them for the life of the page and
+ * only refetch when a function's `updatedTime` changes. Each org's cache is
+ * lazily hydrated once from `chrome.storage.local` (see `getOrgCache`) so the
+ * warm cache also survives page reloads and new tabs, not just repeat opens
+ * within the same page.
  */
-const recordCache = new Map<string, FunctionRecord>();
+const cachesByOrg = new Map<string, Map<string, FunctionRecord>>();
+const hydratedOrgs = new Set<string>();
 
 function sameVersion(a: ZohoFunctionSummary, b: ZohoFunctionSummary): boolean {
   return a.updatedTime === b.updatedTime;
+}
+
+function cacheKey(orgId: string): string {
+  return `${CACHE_KEY_PREFIX}${orgId}`;
+}
+
+async function readPersistedCache(orgId: string, storage: StorageArea): Promise<FunctionRecord[]> {
+  try {
+    const stored = await storage.get<Record<string, PersistedCache>>([cacheKey(orgId)]);
+    const cache = stored[cacheKey(orgId)];
+    return cache && cache.version === CACHE_VERSION && Array.isArray(cache.records)
+      ? cache.records
+      : [];
+  } catch (error) {
+    console.warn('Zoho CRM DevTools: failed to read persisted function cache', error);
+    return [];
+  }
+}
+
+async function writePersistedCache(
+  orgId: string,
+  records: FunctionRecord[],
+  storage: StorageArea,
+): Promise<void> {
+  try {
+    const payload: PersistedCache = { version: CACHE_VERSION, records };
+    await storage.set({ [cacheKey(orgId)]: payload });
+  } catch (error) {
+    console.warn('Zoho CRM DevTools: failed to persist function cache', error);
+  }
+}
+
+/** Returns the in-memory cache for an org, hydrating it from storage on first use. */
+async function getOrgCache(
+  orgId: string,
+  storage: StorageArea,
+): Promise<Map<string, FunctionRecord>> {
+  let cache = cachesByOrg.get(orgId);
+  if (!cache) {
+    cache = new Map();
+    cachesByOrg.set(orgId, cache);
+  }
+
+  if (!hydratedOrgs.has(orgId)) {
+    hydratedOrgs.add(orgId);
+    for (const record of await readPersistedCache(orgId, storage)) {
+      cache.set(record.summary.id, record);
+    }
+  }
+
+  return cache;
 }
 
 export interface LoadHandlers {
@@ -47,7 +110,13 @@ async function runPool<T>(
  * Loads the function list immediately, then warms each function's detail/source
  * in the background so full-text search becomes available progressively.
  */
-export async function loadFunctions(context: CrmContext, handlers: LoadHandlers): Promise<void> {
+export async function loadFunctions(
+  context: CrmContext,
+  handlers: LoadHandlers,
+  storage: StorageArea = browser.storage.local,
+): Promise<void> {
+  const recordCache = await getOrgCache(context.orgId, storage);
+
   let summaries: ZohoFunctionSummary[];
   try {
     summaries = await fetchAllFunctions(context);
@@ -64,7 +133,19 @@ export async function loadFunctions(context: CrmContext, handlers: LoadHandlers)
     return record;
   });
 
+  // Drop entries for functions that no longer exist in the org so the cache
+  // (and what we persist) doesn't grow stale forever.
+  const currentIds = new Set(records.map((record) => record.summary.id));
+  for (const id of Array.from(recordCache.keys())) {
+    if (!currentIds.has(id)) {
+      recordCache.delete(id);
+    }
+  }
+
   handlers.onListLoaded(records);
+  // Persist immediately: even before details finish warming, this snapshot
+  // already reuses everything unchanged since the last visit.
+  void writePersistedCache(context.orgId, records, storage);
 
   const pending = records.filter((record) => record.detail === null);
   const total = records.length;
@@ -83,10 +164,12 @@ export async function loadFunctions(context: CrmContext, handlers: LoadHandlers)
     }
   });
 
+  void writePersistedCache(context.orgId, records, storage);
   handlers.onComplete();
 }
 
 /** Test-only helper to clear the per-tab cache. */
 export function clearFunctionCache(): void {
-  recordCache.clear();
+  cachesByOrg.clear();
+  hydratedOrgs.clear();
 }
