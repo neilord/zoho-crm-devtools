@@ -1,5 +1,8 @@
 # Testing
 
+Reference for test layers and evidence requirements. The command gate lives only in
+[`conventions.md`](conventions.md) §5.
+
 ## Test Layers
 
 - Unit tests for settings, feature metadata, theme metadata, and browser adapters
@@ -27,9 +30,14 @@ Real-site checks are required for:
 - Visual alignment
 - Selector drift after Zoho UI changes
 
-For repeated local browser checks after rebuilding the unpacked extension, prefer the
-development-only self-reload flow documented in `docs/development-workflow.md`, then reload the Zoho
-tab before verifying the changed behavior.
+For repeated local browser checks after rebuilding the unpacked extension, use the development-only
+self-reload flow in [`architecture.md`](architecture.md) §7, then reload the Zoho tab before
+verifying the changed behavior.
+
+Any hard-won integration fix keeps a focused regression test. In particular, tests must continue to
+protect cursor measurement without rewriting CodeMirror text nodes, idempotent mutation
+reconciliation, cookie parsing, API pagination/error handling, and the JSON-string handoff expected
+by Zoho's native editor bridge.
 
 ## Fixture Capture
 

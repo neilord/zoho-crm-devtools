@@ -34,6 +34,9 @@ Install the published extension from the [Chrome Web Store](https://chromewebsto
 
 ## Development
 
+Agents and maintainers should start with [AGENTS.md](AGENTS.md), which routes work through the
+repository's conventions, living state, reference docs, and decision records.
+
 Requirements:
 
 - Node.js 20+
@@ -69,7 +72,8 @@ For local browser testing, build the extension and load the generated `dist/` di
 npm run build:dev
 ```
 
-See [docs/development-workflow.md](docs/development-workflow.md) for the live Zoho verification workflow.
+See [docs/conventions.md](docs/conventions.md) for the working and verification rules, and
+[docs/architecture.md](docs/architecture.md) for the local development-build workflow.
 
 ## Project Structure
 
@@ -80,7 +84,7 @@ See [docs/development-workflow.md](docs/development-workflow.md) for the live Zo
 - `src/settings`: typed settings and storage
 - `src/popup`: extension popup
 - `tests`: unit and DOM fixture tests
-- `docs`: architecture notes, testing notes, roadmap, and store listing assets
+- `docs`: governed project memory, reference material, decisions, and store listing assets
 
 ## Roadmap
 

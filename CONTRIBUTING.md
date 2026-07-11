@@ -2,6 +2,10 @@
 
 Thanks for considering a contribution to Zoho CRM DevTools.
 
+The authoritative branch, commit, verification, debugging, and release rules live in
+[`docs/conventions.md`](docs/conventions.md). Current project state is in
+[`docs/STATE.md`](docs/STATE.md).
+
 ## Setup
 
 ```sh
@@ -9,15 +13,8 @@ npm ci
 npm run verify
 ```
 
-`npm run verify` runs formatting/lint checks, TypeScript, unit tests, and a production build.
-
-## Development Notes
-
-- Keep Zoho-specific selectors inside `src/content/zoho`.
-- Keep browser APIs behind `src/shared/browser.ts`.
-- Keep feature behavior covered by focused unit or DOM fixture tests when possible.
-- Run real Zoho verification for UI behavior that depends on live Zoho pages.
-- Do not commit generated build output, `node_modules`, packaged zip files, or local test artifacts.
+The command's contents and any additional live Zoho checks are defined in the conventions rather
+than duplicated here.
 
 ## Privacy Rules
 
@@ -29,9 +26,8 @@ When a fixture is needed, reduce it to the smallest relevant HTML fragment and r
 
 Before opening a pull request:
 
-- Run `npm run verify`.
 - Explain the user-facing behavior change.
-- Mention whether real Zoho verification was completed.
 - Call out any permission, privacy, or data-flow changes.
+- Complete the repository's pull-request checklist.
 
 Permission changes should be treated as product changes, not incidental implementation details.

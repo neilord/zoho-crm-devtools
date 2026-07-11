@@ -1,4 +1,7 @@
-# 0001 Tooling
+# 0001 — Tooling
+
+- **Status:** Accepted
+- **Date:** 2026-05-15
 
 ## Decision
 
@@ -11,3 +14,8 @@ Use TypeScript, Vite, CRXJS, Biome, Vitest, and Playwright.
 - Biome provides one formatter/linter surface for a fresh repo.
 - Vitest and Playwright cover fast unit work and real browser flows respectively.
 
+## Consequences
+
+- `npm run verify` is the common local and CI quality gate.
+- Browser-extension behavior stays framework-light and Chrome-first.
+- A replacement for any part of this stack requires a superseding ADR.

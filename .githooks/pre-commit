@@ -1,0 +1,14 @@
+#!/bin/sh
+# Non-blocking reminder to keep the repository's living state current.
+
+staged=$(git diff --cached --name-only)
+[ -z "$staged" ] && exit 0
+
+echo "$staged" | grep -q '^docs/STATE\.md$' && exit 0
+
+code_changes=$(printf '%s\n' "$staged" | grep -vE '^(docs/|\.github/|\.githooks/|AGENTS\.md$|CLAUDE\.md$|README\.md$|CONTRIBUTING\.md$|CHANGELOG\.md$|PRIVACY\.md$|SECURITY\.md$|TRADEMARKS\.md$|LICENSE$|\.gitignore$)')
+if [ -n "$code_changes" ]; then
+  echo "reminder: docs/STATE.md is not staged — update it if this changes project state."
+fi
+
+exit 0

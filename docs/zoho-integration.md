@@ -6,10 +6,9 @@ The extension targets Zoho CRM only.
 
 ## Discovery Notes
 
-- Inspect how Zoho handles a behavior natively before adding custom code.
-- Prefer cloning or extending native controls when Zoho can manage state for us.
-- Keep selector knowledge in `src/content/zoho`.
-- Record unstable selectors and fallback strategies here when they are discovered.
+This document records observed external contracts: Zoho's DOM, selectors, variables, endpoints, and
+page globals. The rules for investigating those contracts and where integration code belongs live
+in [`conventions.md`](conventions.md) §7.
 
 ## Live Findings
 
@@ -34,6 +33,9 @@ The extension targets Zoho CRM only.
   the matching native option.
 - Because Zoho mutates dropdown DOM and selected-state attributes after interaction, custom options
   need lightweight reconciliation for injected nodes, visible labels, and checkmarks.
+- Reconciliation must mutate only when the selected state is actually wrong. Unconditional class
+  or attribute rewrites feed the observer's own mutation loop and can crash the tab; preserve the
+  hover guard before moving `lyteDropdownSelection` away from the native alias.
 - When more than one custom theme exists, reconciliation must clear selected-state attributes from
   the inactive custom options; otherwise previously chosen custom entries can remain selected beside
   the current one in Zoho's cloned dropdown body.
@@ -178,12 +180,10 @@ anchor is selector-fragile.
   `SyntaxError: "[object Object]" is not valid JSON`, which silently aborted the editor open (the
   overlay had already closed by then, making it look like the button did nothing).
 
-## Known Open Questions
+## Known fragile boundaries
 
 - Durable selectors for the current editor mount and settings trigger
 - Which less common editor-owned overlays outside the current audit states still bypass variables,
   especially rare error and helper popovers
-- Live verification of the cross-function search feature is still pending: the "Create Function"
-  text-matched anchor, the internal endpoint shapes, and the "Edit in CRM" globals were ported from a
-  working third-party tool but not yet confirmed against a live org in this codebase. Verify via
-  `npm run build:dev` and the dev-reload loop.
+- The cross-function search fallback anchor, endpoint shapes, and editor globals are undocumented;
+  they require a live regression check whenever that integration changes.
