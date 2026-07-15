@@ -1,4 +1,13 @@
 import { findEditorSurfaces } from '../content/zoho/selectors';
+import {
+  CONTROL_WORDS,
+  getGroupedMemberRoot,
+  HTTP_METHOD_WORDS,
+  isCustomCallText,
+  isGroupedMemberAccessText,
+  isServiceNamespaceRoot,
+  TYPE_WORDS,
+} from './deluge-vocabulary';
 
 export const SYNTAX_ENHANCEMENT_ENABLED_ATTR = 'data-zcdt-syntax-enhancement';
 export const SYNTAX_TOKEN_ATTR = 'data-zcdt-token';
@@ -7,10 +16,6 @@ const SPLIT_HIGHLIGHT_ATTR = 'data-zcdt-split-highlight';
 const SPLIT_HIGHLIGHT_OFFSET_PROPERTY = '--zcdt-token-split-offset';
 const SPLIT_HIGHLIGHT_ROOT_COLOR_PROPERTY = '--zcdt-token-split-root-color';
 const SPLIT_HIGHLIGHT_SUFFIX_COLOR_PROPERTY = '--zcdt-token-split-suffix-color';
-const IDENTIFIER_PATTERN = '[A-Za-z_][A-Za-z0-9_]*';
-const GROUPED_MEMBER_ACCESS_PATTERN = new RegExp(
-  `^${IDENTIFIER_PATTERN}(?:\\.${IDENTIFIER_PATTERN})+$`,
-);
 const TOKEN_COLOR_VARIABLES = {
   method: 'var(--zcdt-syntax-method)',
   namespace: 'var(--zcdt-syntax-namespace)',
@@ -18,72 +23,6 @@ const TOKEN_COLOR_VARIABLES = {
   'service-namespace': 'var(--zcdt-syntax-service-namespace)',
   variable: 'var(--zcdt-syntax-variable)',
 } as const;
-const CONTROL_WORDS = new Set([
-  'break',
-  'catch',
-  'continue',
-  'each',
-  'else',
-  'else if',
-  'finally',
-  'for',
-  'for each',
-  'if',
-  'info',
-  'return',
-  'throw',
-  'try',
-  'while',
-]);
-const CUSTOM_CALL_PREFIXES = ['automation.', 'standalone.'];
-const SERVICE_NAMESPACE_ROOTS = new Set(['automation', 'standalone']);
-const HTTP_METHOD_WORDS = new Set(['DELETE', 'GET', 'PATCH', 'POST', 'PUT']);
-const TYPE_WORDS = new Set([
-  'bool',
-  'boolean',
-  'Boolean',
-  'collection',
-  'Collection',
-  'date',
-  'Date',
-  'datetime',
-  'DateTime',
-  'decimal',
-  'Decimal',
-  'double',
-  'Double',
-  'float',
-  'Float',
-  'int',
-  'Int',
-  'list',
-  'List',
-  'long',
-  'Long',
-  'map',
-  'Map',
-  'string',
-  'String',
-  'time',
-  'Time',
-  'void',
-]);
-
-function isCustomCallText(text: string): boolean {
-  return CUSTOM_CALL_PREFIXES.some((prefix) => text.startsWith(prefix));
-}
-
-function isServiceNamespaceRoot(text: string): boolean {
-  return SERVICE_NAMESPACE_ROOTS.has(text);
-}
-
-function isGroupedMemberAccessText(text: string): boolean {
-  return GROUPED_MEMBER_ACCESS_PATTERN.test(text);
-}
-
-function getGroupedMemberRoot(text: string): string {
-  return text.split('.', 1)[0] ?? '';
-}
 
 function getTokenText(token: Element | null): string {
   return token?.textContent?.trim() ?? '';

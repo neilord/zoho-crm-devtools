@@ -1,5 +1,6 @@
 import { backIcon, editIcon, el, highlightNodes, spinnerIcon } from './dom';
 import { formatTimestamp } from './format';
+import { highlightSource } from './highlight-source';
 import { getCategoryLabel } from './search';
 import type { FunctionRecord, ZohoAssociatedPlace, ZohoFunctionTasks, ZohoRestApi } from './types';
 import { getFunctionSource } from './types';
@@ -190,7 +191,11 @@ export function renderDetail(
     : loading
       ? '// Loading source…'
       : '// No source available.';
-  const code = el('pre', { className: 'fs-code' }, highlightNodes(source, highlight));
+  const code = el(
+    'pre',
+    { className: 'fs-code', attrs: { 'data-zcdt-syntax-enhancement': 'true' } },
+    highlightSource(source, highlight),
+  );
 
   const info = renderInfoPanel(record, handlers, loading, opening);
 

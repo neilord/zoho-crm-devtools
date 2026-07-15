@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.2.0 - 2026-07-15
+
+- Added Deluge syntax highlighting to the Search All Functions code preview, colored to match
+  Zoho's native light Deluge editor. The searched term stays highlighted on top of the coloring.
+
 ## 2.1.0 - 2026-07-04
 
 - Added cross-function search: a "Search All Functions" control on the Zoho functions

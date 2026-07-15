@@ -22,3 +22,6 @@ renumbers.
   Zoho Forum topic per update.
 - [`0004-docs-and-agent-workflow.md`](0004-docs-and-agent-workflow.md) — closed docs taxonomy and
   persistent agent-context pipeline.
+- [`0005-dashboard-deluge-tokenizer.md`](0005-dashboard-deluge-tokenizer.md) — own hand-rolled
+  Deluge tokenizer (not tree-sitter/CodeMirror) for the dashboard preview, sharing only the token
+  colour vocabulary with the live editor.

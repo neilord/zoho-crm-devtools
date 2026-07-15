@@ -408,6 +408,128 @@ mark {
   color: inherit;
 }
 
+/*
+ * Deluge syntax palette for the preview, hardcoded to Zoho's native LIGHT Deluge
+ * editor colours (mirroring themes.css' `:root[deluge-theme="light"]` mapping),
+ * NOT VS-Light. The preview surface is always light for this release.
+ *
+ * The token → colour indirection (`data-zcdt-token` → `--zcdt-syntax-*`) is the
+ * shared vocabulary with the editor. A future release can make the preview
+ * follow the user's active editor theme by sourcing these variables from
+ * `--zcdt-theme-editor-*` instead of these literals — the rest of the pipeline
+ * (tokenizer, renderer) is unchanged by that swap. The mapping is restated here
+ * because the editor cascade and this shadow-root preview are disjoint CSS
+ * scopes; the shared contract is the token vocabulary, not the rules.
+ */
+.fs-code[data-zcdt-syntax-enhancement="true"] {
+  --zcdt-syntax-foreground: var(--fs-code-text);
+  --zcdt-syntax-comment: #75715e;
+  --zcdt-syntax-string: #d10000;
+  --zcdt-syntax-number: #116644;
+  --zcdt-syntax-constant: #c6607c;
+  --zcdt-syntax-http-method: #c6607c;
+  --zcdt-syntax-control: #9b00b2;
+  --zcdt-syntax-special-form: #d8005c;
+  --zcdt-syntax-callable: #c69060;
+  --zcdt-syntax-method: #c69060;
+  --zcdt-syntax-custom-call: #6a55a8;
+  --zcdt-syntax-namespace: #d8005c;
+  --zcdt-syntax-service-namespace: #d8005c;
+  --zcdt-syntax-block-key: #5e57b5;
+  --zcdt-syntax-type: #2f8f5b;
+  --zcdt-syntax-property: #5e57b5;
+  --zcdt-syntax-variable: #5e57b5;
+  --zcdt-syntax-operator: #7e7d7c;
+  --zcdt-syntax-logical-operator: #000000;
+  --zcdt-syntax-comparison-operator: #000000;
+  --zcdt-syntax-punctuation: #7e7d7c;
+  --zcdt-syntax-bracket: #7e7d7c;
+}
+
+.fs-code[data-zcdt-syntax-enhancement="true"] [data-zcdt-token="comment"] {
+  color: var(--zcdt-syntax-comment);
+}
+
+.fs-code[data-zcdt-syntax-enhancement="true"] [data-zcdt-token="string"] {
+  color: var(--zcdt-syntax-string);
+}
+
+.fs-code[data-zcdt-syntax-enhancement="true"] [data-zcdt-token="number"] {
+  color: var(--zcdt-syntax-number);
+}
+
+.fs-code[data-zcdt-syntax-enhancement="true"] [data-zcdt-token="constant"] {
+  color: var(--zcdt-syntax-constant);
+}
+
+.fs-code[data-zcdt-syntax-enhancement="true"] [data-zcdt-token="http-method"] {
+  color: var(--zcdt-syntax-http-method);
+}
+
+.fs-code[data-zcdt-syntax-enhancement="true"] [data-zcdt-token="control"] {
+  color: var(--zcdt-syntax-control);
+}
+
+.fs-code[data-zcdt-syntax-enhancement="true"] [data-zcdt-token="special-form"] {
+  color: var(--zcdt-syntax-special-form);
+}
+
+.fs-code[data-zcdt-syntax-enhancement="true"] [data-zcdt-token="callable"] {
+  color: var(--zcdt-syntax-callable);
+}
+
+.fs-code[data-zcdt-syntax-enhancement="true"] [data-zcdt-token="method"] {
+  color: var(--zcdt-syntax-method);
+}
+
+.fs-code[data-zcdt-syntax-enhancement="true"] [data-zcdt-token="custom-call"] {
+  color: var(--zcdt-syntax-custom-call);
+}
+
+.fs-code[data-zcdt-syntax-enhancement="true"] [data-zcdt-token="namespace"] {
+  color: var(--zcdt-syntax-namespace);
+}
+
+.fs-code[data-zcdt-syntax-enhancement="true"] [data-zcdt-token="service-namespace"] {
+  color: var(--zcdt-syntax-service-namespace);
+}
+
+.fs-code[data-zcdt-syntax-enhancement="true"] [data-zcdt-token="block-key"] {
+  color: var(--zcdt-syntax-block-key);
+}
+
+.fs-code[data-zcdt-syntax-enhancement="true"] [data-zcdt-token="type"] {
+  color: var(--zcdt-syntax-type);
+}
+
+.fs-code[data-zcdt-syntax-enhancement="true"] [data-zcdt-token="property"] {
+  color: var(--zcdt-syntax-property);
+}
+
+.fs-code[data-zcdt-syntax-enhancement="true"] [data-zcdt-token="variable"] {
+  color: var(--zcdt-syntax-variable);
+}
+
+.fs-code[data-zcdt-syntax-enhancement="true"] [data-zcdt-token="operator"] {
+  color: var(--zcdt-syntax-operator);
+}
+
+.fs-code[data-zcdt-syntax-enhancement="true"] [data-zcdt-token="logical-operator"] {
+  color: var(--zcdt-syntax-logical-operator);
+}
+
+.fs-code[data-zcdt-syntax-enhancement="true"] [data-zcdt-token="comparison-operator"] {
+  color: var(--zcdt-syntax-comparison-operator);
+}
+
+.fs-code[data-zcdt-syntax-enhancement="true"] [data-zcdt-token="punctuation"] {
+  color: var(--zcdt-syntax-punctuation);
+}
+
+.fs-code[data-zcdt-syntax-enhancement="true"] [data-zcdt-token="bracket"] {
+  color: var(--zcdt-syntax-bracket);
+}
+
 .fs-info {
   width: 340px;
   flex: 0 0 auto;
