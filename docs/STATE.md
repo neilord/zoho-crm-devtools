@@ -3,14 +3,14 @@
 The single living state document for this repository. It is a snapshot, not a changelog; completed
 history lives in git and durable reasoning lives in ADRs.
 
-_Last updated: 2026-07-15 — 2.2.0 (preview syntax highlighting) merged to `main` and submitted to the Chrome Web Store._
+_Last updated: 2026-09-10 — Admins ZUG introduction published; Developers ZUG draft ready._
 
 ## Current status
 
-Version 2.2.0 is merged to `main` and submitted to the Chrome Web Store (pending review): the
+Version 2.2.0 is merged to `main` and published on the Chrome Web Store (listing checked September 8): the
 function-search dashboard preview renders Deluge with syntax highlighting via an own
 dependency-free tokenizer (see ADR 0005), using Zoho's native light palette; verified live in an
-authenticated org. Once the store approves, 2.2.0 supersedes the published 2.1.0. No product
+authenticated org. It supersedes 2.1.0. No product
 implementation is in flight.
 
 ## Status table
@@ -25,7 +25,11 @@ implementation is in flight.
 
 ## In flight
 
-- Nothing in flight.
+- Community outreach: the [Admins ZUG introduction](posts/2026-09-09-admins-zug-search-all-functions.md)
+  was published September 9. A Developers ZUG draft is ready in
+  [the working plan](plans/community-introductions.md), with its tracked link placed before the
+  fold. ADR 0003 still applies to per-release Forum topics; these are resource introductions
+  following a community invitation.
 
 ## Blocked
 
