@@ -3,7 +3,7 @@
 The single living state document for this repository. It is a snapshot, not a changelog; completed
 history lives in git and durable reasoning lives in ADRs.
 
-_Last updated: 2026-09-10 — acquisition assessment completed; growth experiments proposed._
+_Last updated: 2026-09-10 — community editorial follow-up drafted and channels researched._
 
 ## Current status
 
@@ -36,8 +36,11 @@ implementation is in flight.
 - Community outreach: the [Admins ZUG introduction](posts/2026-09-09-admins-zug-search-all-functions.md)
   was published September 9. A Developers ZUG draft is ready in
   [the working plan](plans/community-introductions.md), with its tracked link placed before the
-  fold. ADR 0003 still applies to per-release Forum topics; these are resource introductions
-  following a community invitation.
+  fold. A follow-up to Janaki requesting introductions to the weekly Zoho Community Digest and
+  monthly Zoho Developer Community Digest editors is also drafted there, together with researched
+  follow-on channels including Developer Hangout and Developer Voices. No email has been sent.
+  ADR 0003 still applies to per-release Forum topics; these are resource introductions following a
+  community invitation.
 
 ## Blocked
 

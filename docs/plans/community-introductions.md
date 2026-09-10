@@ -13,6 +13,12 @@ near the end. There is no evidence that a fixed amount of prior activity guarant
 digest/newsletter feature. The supplied correspondence encourages joining, sharing experiences,
 and contributing; a requested editorial introduction is not a confirmed feature.
 
+The September 4–7 email thread confirms that Janaki invited the team to join and contribute to the
+Developer Community, then met with Andrew for a demonstration. The digest/newsletter contact offer
+was made verbally during that meeting rather than in Janaki's written reply. Frame the follow-up as
+a polite reminder and request for an introduction, not as an outstanding commitment or an agreed
+placement.
+
 The user's LeadFilter reference is style inspiration, not instructions to run that campaign.
 Carry over short paragraphs, a concrete problem first, plain language, clear builder disclosure,
 and a useful question. Do not carry over its waitlist, product claims, old target threads, or
@@ -88,6 +94,72 @@ If you use it and find something missing, let us know.
 Published September 9, 2026: [Search all functions in Zoho CRM](https://www.zohocommunity.com/zcs/stream/93270000012102033).
 The final text is retained in
 [the published post record](../posts/2026-09-09-admins-zug-search-all-functions.md).
+
+## Draft — editorial contact follow-up
+
+Recommended subject: `Follow-up: Zoho CRM DevTools community digest contacts`
+
+Hi Janaki,
+
+Thank you again for meeting with us and for suggesting that we become more active in the Zoho
+community.
+
+We've started sharing Zoho CRM DevTools in the CommunitySpaces groups you recommended. Our first
+introduction is now live in the Admins Zoho User Group:
+https://www.zohocommunity.com/zcs/stream/93270000012102033
+
+We've also prepared a developer-focused introduction for the Developers Zoho User Group, and we
+plan to keep participating and sharing practical resources with the community.
+
+During our call, you mentioned that it may be possible for the extension to be considered for the
+weekly Zoho Community Digest and the monthly Zoho Developer Community Digest or newsletter, and
+that you could connect us with the teams responsible for those channels. When convenient, could
+you please share their contact details or introduce us to the appropriate people?
+
+If there are any other Zoho community channels that would be a good fit for a free, open-source
+developer utility like this, we'd be grateful for your guidance. We can provide a short editorial
+summary, screenshots, or a brief demonstration in whatever format is most useful.
+
+Thank you again for your help.
+
+Best regards,
+Andrew Shostak
+ZSetup
+
+Do not attach a full press kit to this reminder. The live community post gives Janaki concrete
+evidence that the requested participation has begun. Supply the store listing, a short blurb, and
+screenshots only when an editor or Janaki asks for them.
+
+## Additional Zoho-owned channels researched
+
+Prioritize channels by editorial fit rather than nominal audience size:
+
+| Priority | Channel | Fit and next ask |
+|---|---|---|
+| 1 | [Zoho Developer Community Monthly Digest](https://help.zoho.com/portal/en/community/topic/zoho-developer-community-monthly-digest) | Strongest fit. It curates community discussions, resources, feature spotlights, and community contributors. Ask for the editor and submission timing; pitch the extension as a practical developer resource. |
+| 2 | [Weekly Zoho Community Digest](https://help.zoho.com/portal/en/community/zoho-community-whiteboard) | Broad reach across the Zoho ecosystem. Current editions round up announcements from Community Forums, so ask whether a CommunitySpaces resource or a linked forum introduction is eligible. Do not assume acceptance. |
+| 3 | [Zoho Developer Hangout](https://community.zoho.com/developer/zohodeveloperhangout/) | Strong demonstration format led by community members and product experts. Propose a practical session about auditing and maintaining Deluge functions, with the extension demonstrated as the workflow. The page explicitly invites prospective presenters. |
+| 4 | [Developer Voices and developer video library](https://community.zoho.com/developer/videos/) | Useful second-life distribution for a short tutorial or Hangout recording. Ask whether community-built tools and workflows are eligible for Developer Voices or another recorded segment. |
+| 5 | Developers and Admins ZUG CommunitySpaces | Already underway. Publish distinct audience-specific introductions and contribute useful replies between product posts; this is also the participation pattern the monthly digest says can lead to inclusion. |
+| 6 | [Zoho CRM extensions forum / App Spotlight](https://help.zoho.com/portal/en/community/zoho-crm/using-zoho-crm-extensions) | App Spotlight is a real Zoho editorial format, but observed features point readers to Zoho Marketplace. Ask about eligibility only after the digest conversation because DevTools is distributed through the Chrome Web Store. |
+| 7 | [Zoho Marketplace newsletter and featured-app surfaces](https://marketplace.zoho.com/) | Low current fit: the newsletter promotes useful Marketplace apps and the extension is not a Marketplace listing. Revisit only if Zoho confirms an applicable listing path. |
+
+The monthly Developer Community Digest explicitly tells members to participate in forums and the
+community discussion channel to be considered for future editions. Recent editions include
+Developer ZUG conversations and external community-created Zoho resources, which makes a useful,
+well-received DevTools discussion a credible editorial candidate. The weekly Community Digest is
+announcement-oriented and broader; it should be a separate editorial ask, not described as the
+same newsletter.
+
+Recommended pitch order after the contact introduction:
+
+1. Send the editor a 75–100 word resource blurb centered on Search All Functions, the live Admins
+   discussion, the Chrome Web Store link, and one sanitized screenshot.
+2. Offer a practical Developer Hangout topic: how to trace field, service, and endpoint references
+   across a Zoho CRM function library before maintenance or refactoring.
+3. Ask whether the resulting walkthrough can also be included in the developer video library.
+4. Ask about App Spotlight only if the CRM or Marketplace team confirms that non-Marketplace
+   Chrome extensions are eligible.
 
 ## Screenshot and claim checks
 
