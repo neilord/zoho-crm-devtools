@@ -3,7 +3,7 @@
 The single living state document for this repository. It is a snapshot, not a changelog; completed
 history lives in git and durable reasoning lives in ADRs.
 
-_Last updated: 2026-09-10 — Admins ZUG introduction published; Developers ZUG draft ready._
+_Last updated: 2026-09-10 — acquisition assessment completed; growth experiments proposed._
 
 ## Current status
 
@@ -25,6 +25,14 @@ implementation is in flight.
 
 ## In flight
 
+- Growth planning: reviewed the authenticated GA4 listing-acquisition reports and Chrome Web
+  Store developer metrics. A private task report proposes search-led positioning, partner/trainer
+  distribution, practical tutorials, and a capped paid experiment toward 1,000 store users.
+  Detailed account analytics remain outside the public repository. Recommendations are not an
+  accepted channel-policy change; no ads, outreach, listing edits, or product telemetry were launched.
+  Next: agree the deadline and weekly capacity, reconcile install counts with the installed-user
+  trend, then prioritize the first distribution experiment. Store visitors, reported installs,
+  installed users, and actual feature usage must remain separate measures.
 - Community outreach: the [Admins ZUG introduction](posts/2026-09-09-admins-zug-search-all-functions.md)
   was published September 9. A Developers ZUG draft is ready in
   [the working plan](plans/community-introductions.md), with its tracked link placed before the
