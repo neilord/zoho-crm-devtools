@@ -97,7 +97,8 @@ The final text is retained in
 
 ## Draft — editorial contact follow-up
 
-Recommended subject: `Follow-up: Zoho CRM DevTools community digest contacts`
+Recommended delivery: reply in the existing thread so Janaki has the meeting context; retain its
+subject, `Re: Community Resource: Free & open-source utility (Zoho CRM DevTools)`.
 
 Hi Janaki,
 
