@@ -3,7 +3,7 @@
 The single living state document for this repository. It is a snapshot, not a changelog; completed
 history lives in git and durable reasoning lives in ADRs.
 
-_Last updated: 2026-09-10 — community editorial follow-up drafted and channels researched._
+_Last updated: 2026-09-11 — both ZUG introductions published; digest request closed._
 
 ## Current status
 
@@ -33,14 +33,14 @@ implementation is in flight.
   Next: agree the deadline and weekly capacity, reconcile install counts with the installed-user
   trend, then prioritize the first distribution experiment. Store visitors, reported installs,
   installed users, and actual feature usage must remain separate measures.
-- Community outreach: the [Admins ZUG introduction](posts/2026-09-09-admins-zug-search-all-functions.md)
-  was published September 9. A Developers ZUG draft is ready in
-  [the working plan](plans/community-introductions.md), with its tracked link placed before the
-  fold. A follow-up to Janaki requesting introductions to the weekly Zoho Community Digest and
-  monthly Zoho Developer Community Digest editors is also drafted there, together with researched
-  follow-on channels including Developer Hangout and Developer Voices. No email has been sent.
-  ADR 0003 still applies to per-release Forum topics; these are resource introductions following a
-  community invitation.
+- Community outreach: introductions are published in both the Admins and Developers ZUG spaces.
+  The [Admins post](posts/2026-09-09-admins-zug-search-all-functions.md) is retained locally; the
+  Developers post URL/final copy has not yet been recorded. Zoho confirmed that its weekly
+  Community Digest and monthly Developer Community Digest exclude third-party tools, including
+  free and Marketplace-approved tools. Continue relevant disclosed participation under ADR 0006.
+  Next Zoho-owned opportunities to validate are an educational Developer Hangout, ZUG meetup
+  sponsorship, and eligibility for Zoho One's browser-extension catalog. ADR 0003 still prohibits
+  per-release Forum topics.
 
 ## Blocked
 

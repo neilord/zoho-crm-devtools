@@ -25,3 +25,6 @@ renumbers.
 - [`0005-dashboard-deluge-tokenizer.md`](0005-dashboard-deluge-tokenizer.md) — own hand-rolled
   Deluge tokenizer (not tree-sitter/CodeMirror) for the dashboard preview, sharing only the token
   colour vocabulary with the live editor.
+- [`0006-zoho-community-distribution.md`](0006-zoho-community-distribution.md) — Zoho Community
+  digests exclude third-party tools; use relevant disclosed participation and evaluate explicit
+  speaker or sponsor programs separately.
