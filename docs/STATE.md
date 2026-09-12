@@ -3,7 +3,7 @@
 The single living state document for this repository. It is a snapshot, not a changelog; completed
 history lives in git and durable reasoning lives in ADRs.
 
-_Last updated: 2026-09-11 — early ZUG campaign analytics reviewed; digest request closed._
+_Last updated: 2026-09-13 — settled ZUG campaign analytics reviewed; digest request closed._
 
 ## Current status
 
@@ -28,12 +28,13 @@ implementation is in flight.
 - Growth planning: reviewed the authenticated GA4 listing-acquisition reports and Chrome Web
   Store developer metrics. A private task report proposes search-led positioning, partner/trainer
   distribution, practical tutorials, and a capped paid experiment toward 1,000 store users.
-  Detailed account analytics remain outside the public repository. The September 9–10 ZUG campaign
-  produced a clear listing-visitor spike and one directly attributed install event; the result is
-  preliminary until the attribution window settles. The developer-dashboard session required fresh
-  authentication, so installed-user growth remains unverified. Next: recheck the completed campaign
-  window and installed-user trend, then prioritize the first distribution experiment. Store
-  visitors, reported installs, installed users, and actual feature usage remain separate measures.
+  Detailed account analytics remain outside the public repository. The settled September 6–12
+  read confirms the ZUG CommunitySpaces source was the week's largest acquisition channel and
+  directly produced three install events. The live public installed-user count increased, but the
+  developer-dashboard session still requires fresh authentication, so uninstall and weekly-user
+  detail remain unverified. Next: use the observed community conversion as evidence for the next
+  distribution experiment while keeping store visitors, reported installs, installed users, and
+  actual feature usage as separate measures.
 - Community outreach: introductions are published in both the Admins and Developers ZUG spaces.
   The [Admins post](posts/2026-09-09-admins-zug-search-all-functions.md) is retained locally; the
   Developers post URL/final copy has not yet been recorded. Zoho confirmed that its weekly
