@@ -1,7 +1,7 @@
 Zoho CRM DevTools enhances the default Zoho CRM Deluge Function Editor with polished themes and practical editor improvements.
 
 ✪ What's New
-July 15, 2026 – the Search All Functions preview now shows Deluge with syntax highlighting, so function source is easy to read at a glance.
+September 16, 2026 – Search All Functions now appears right beside Zoho's native Search field in the new Functions layout, so it stays easy to find.
 
 ✪ Editor Themes
 Choose from a selection of handpicked themes to give the editor a cleaner, more modern look.

@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.2.1 - 2026-09-16
+
+- Kept Search All Functions easy to find in Zoho's new Functions layout by placing it immediately
+  beside the native Search field. The existing placement remains unchanged in the previous layout.
+
 ## 2.2.0 - 2026-07-15
 
 - Added Deluge syntax highlighting to the Search All Functions code preview, colored to match

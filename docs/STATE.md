@@ -3,16 +3,14 @@
 The single living state document for this repository. It is a snapshot, not a changelog; completed
 history lives in git and durable reasoning lives in ADRs.
 
-_Last updated: 2026-09-16 — new Functions UI search placement implemented and verified live._
+_Last updated: 2026-09-16 — version 2.2.1 packaged for Chrome Web Store submission._
 
 ## Current status
 
-Version 2.2.0 is merged to `main` and published on the Chrome Web Store (listing checked September 8): the
-function-search dashboard preview renders Deluge with syntax highlighting via an own
-dependency-free tokenizer (see ADR 0005), using Zoho's native light palette; verified live in an
-authenticated org. It supersedes 2.1.0. No product
-implementation is in flight. The new Functions toolbar compatibility fix is implemented for the
-next release; the Chrome Web Store remains on 2.2.0.
+Version 2.2.0 remains published on the Chrome Web Store (listing checked September 8). Version
+2.2.1 is built and packaged for submission with the new Functions toolbar compatibility fix; its
+Chrome Web Store publication remains pending. The release zip contains only the current production
+build and the store-listing description is ready. No product implementation is in flight.
 
 ## Status table
 
@@ -20,7 +18,7 @@ next release; the Chrome Web Store remains on 2.2.0.
 |---|---|---|
 | Editor enhancements | done | Themes, indent guides, and syntax highlighting are shipped. |
 | Cross-function search | done | Search and native-editor handoff shipped in 2.1.0. |
-| New Functions toolbar | done, unreleased | Search All Functions sits beside the new native Search field. Legacy placement is unchanged (ADR 0007). Verified with the development build in both versions of an authenticated EU org, including version switches, reloads, dashboard opening, and a 1280px viewport. |
+| New Functions toolbar | release ready | Search All Functions sits beside the new native Search field. Legacy placement is unchanged (ADR 0007). Version 2.2.1 is verified and packaged; Chrome Web Store publication is pending. Live checks covered both versions of an authenticated EU org, version switches, reloads, dashboard opening, and a 1280px viewport. |
 | Dashboard preview highlighting | done | Own Deluge tokenizer highlights the `fs-code` preview using Zoho's native light palette (ADR 0005). Shipping in 2.2.0. Theme-following deferred to a later release (needs the observed editor theme persisted first). |
 | Agent context | done | Closed docs taxonomy, ADR log, living state, and guardrails are installed. |
 | Rare Zoho surfaces | in-progress | Editor mount/settings selectors and less common overlays still need observation as they appear. |
