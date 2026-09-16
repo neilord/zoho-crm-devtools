@@ -13,6 +13,7 @@ in [`conventions.md`](conventions.md) §7.
 ## Live Findings
 
 - The functions list is available at `/settings/functions/myFunctions`.
+- The September 2026 Functions UI also serves the list directly at `/settings/functions`.
 - Editable rows can expose a `Function Details` dialog with an `Edit Function` action.
 - The current editor opens in-place with a left rail, editor canvas, and right metadata panel.
 - The bottom-left gear opens a native `Settings` dialog.
@@ -148,6 +149,11 @@ anchor is selector-fragile.
 
 ### "Search All Functions" anchor (fragile)
 
+- The September 2026 UI exposes `[data-zcqa="fxn_lv_search"]` inside
+  `[data-zcqa="fxn_lv_search_parent"]` in the flex toolbar beside Sort and Filter. Insert after
+  that wrapper to keep Search All Functions immediately to the right of native Search, outside
+  the Lyte input. These hooks take precedence over legacy search hooks. Observed in an
+  authenticated EU org; `tests/functions-page.test.ts` contains a sanitized minimal fragment.
 - The functions list lives under `/settings/functions`. The preferred anchor is Zoho's native function
   search control (`#functionSearch` / `data-zcqa="cfSearchFunctions"`), so "Search All Functions" sits
   beside the built-in search box. Zoho wraps that Lyte input in `.search-function`; insert after the

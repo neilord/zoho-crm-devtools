@@ -11,6 +11,8 @@ const CREATE_BUTTON_SELECTOR = 'button, a, lyte-button, lyte-yield, [role="butto
 const FUNCTION_SEARCH_SELECTOR =
   'lyte-input#functionSearch, lyte-input[data-zcqa="cfSearchFunctions"], #functionSearch, [data-zcqa="cfSearchFunctions"]';
 const FUNCTION_SEARCH_WRAPPER_SELECTOR = '.search-function';
+const NEW_FUNCTION_SEARCH_SELECTOR = '[data-zcqa="fxn_lv_search"]';
+const NEW_FUNCTION_SEARCH_WRAPPER_SELECTOR = '[data-zcqa="fxn_lv_search_parent"]';
 const MAX_BUTTON_TEXT_LENGTH = 40;
 
 /** Whether the current location is the Zoho functions settings area. */
@@ -41,18 +43,26 @@ export function findCreateFunctionButton(root: ParentNode = document): HTMLEleme
  * search can sit beside it instead of in the create-function button cluster.
  */
 export function findFunctionSearchControl(root: ParentNode = document): HTMLElement | null {
-  return root.querySelector<HTMLElement>(FUNCTION_SEARCH_SELECTOR);
+  return (
+    root.querySelector<HTMLElement>(NEW_FUNCTION_SEARCH_SELECTOR) ??
+    root.querySelector<HTMLElement>(FUNCTION_SEARCH_SELECTOR)
+  );
 }
 
 /**
  * Finds the row-level anchor for the native search box. Zoho renders the Lyte
- * input as a full-width child inside `.search-function`, so our button must sit
- * after that wrapper rather than inside it.
+ * input inside a search wrapper in both versions, so our button must sit after
+ * that wrapper rather than inside it. The new toolbar has dedicated QA hooks;
+ * keep the legacy wrapper path intact for organizations still using the old UI.
  */
 export function findFunctionSearchButtonAnchor(root: ParentNode = document): HTMLElement | null {
   const control = findFunctionSearchControl(root);
   if (!control) {
     return null;
   }
-  return control.closest<HTMLElement>(FUNCTION_SEARCH_WRAPPER_SELECTOR) ?? control;
+  return (
+    control.closest<HTMLElement>(NEW_FUNCTION_SEARCH_WRAPPER_SELECTOR) ??
+    control.closest<HTMLElement>(FUNCTION_SEARCH_WRAPPER_SELECTOR) ??
+    control
+  );
 }

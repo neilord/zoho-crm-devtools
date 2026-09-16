@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
+import { injectSearchButton, SEARCH_BUTTON_ID } from '../src/content/functions/toolbar-button';
 import {
   findCreateFunctionButton,
   findFunctionSearchButtonAnchor,
@@ -71,5 +72,40 @@ describe('native function search discovery', () => {
   it('falls back to the search control when the wrapper is missing', () => {
     document.body.innerHTML = '<lyte-input id="functionSearch"></lyte-input>';
     expect(findFunctionSearchButtonAnchor()?.id).toBe('functionSearch');
+  });
+
+  it('places one button outside the new toolbar search wrapper after a rerender', () => {
+    // Minimal sanitized structure observed in the September 2026 Functions UI.
+    const toolbar = `
+      <div class="flexAlignCenter">
+        <div id="filters">Sort Filter</div>
+        <div data-zcqa="fxn_lv_search_parent" class="fShrink0 fg1 mL15">
+          <lyte-input data-zcqa="fxn_lv_search" class="w225" role="search">
+            <div class="lyteField lyteInputBoxSearch"><input placeholder="Search"></div>
+          </lyte-input>
+        </div>
+      </div>`;
+    document.body.innerHTML = '<button id="create">Create Function</button>';
+    const button = injectSearchButton(
+      findCreateFunctionButton() as HTMLElement,
+      () => {},
+      'before',
+    );
+
+    for (let render = 0; render < 2; render++) {
+      document.querySelector('.flexAlignCenter')?.remove();
+      document.body.insertAdjacentHTML('beforeend', toolbar);
+      const anchor = findFunctionSearchButtonAnchor() as HTMLElement;
+      expect(findFunctionSearchControl()?.dataset.zcqa).toBe('fxn_lv_search');
+      expect(anchor.dataset.zcqa).toBe('fxn_lv_search_parent');
+      injectSearchButton(anchor, () => {});
+      injectSearchButton(anchor, () => {});
+      expect(anchor.nextElementSibling?.id).toBe(SEARCH_BUTTON_ID);
+      if (render === 0) {
+        expect(anchor.nextElementSibling).toBe(button);
+      }
+      expect(anchor.querySelector('button')).toBeNull();
+      expect(document.querySelectorAll(`#${SEARCH_BUTTON_ID}`)).toHaveLength(1);
+    }
   });
 });

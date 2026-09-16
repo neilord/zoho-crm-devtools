@@ -15,6 +15,8 @@ renumbers.
 
 ## Log
 
+- [`0007-functions-toolbar-versions.md`](0007-functions-toolbar-versions.md) — keep cross-function
+  search beside native search in both Functions layouts, detected through DOM hooks.
 - [`0001-tooling.md`](0001-tooling.md) — TypeScript/Vite/CRXJS build and Biome/Vitest/Playwright
   quality stack.
 - [`0002-monetization.md`](0002-monetization.md) — free MVP and additive future premium features.
