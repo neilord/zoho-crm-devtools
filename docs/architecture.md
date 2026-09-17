@@ -20,6 +20,7 @@ backend.
 
 - `src/content/zoho`: selectors and DOM adapters for Zoho CRM
 - `src/content/editor`: editor lifecycle and injected integrations
+- `src/content/promo`: the one-time Zoho CRM AI Assistant promo card and its show/snooze policy
 - `src/settings`: setting schema, defaults, storage, and migrations
 - `src/themes`: theme metadata, theme-local palette variables, and the shared Zoho variable mapping
 - `src/syntax`: syntax-enhancement styles and toggles
@@ -36,7 +37,8 @@ helpers under `src/internal` are compiled only for development mode and are not 
 ## 4. Data and ownership
 
 - User preferences are typed by `src/settings/schema.ts` and persisted through Chrome extension
-  storage. There is no project database or backend.
+  storage. There is no project database or backend. The promo card keeps its own `promoAiAssistant`
+  sync-storage record, separate from `settings`, so a settings reset does not resurrect it.
 - Zoho CRM remains the source of truth for Deluge functions. Cross-function search reads Zoho's
   same-origin internal endpoints but does not persist function content.
 - `src/features/registry.ts` owns stable feature identifiers and tier metadata.

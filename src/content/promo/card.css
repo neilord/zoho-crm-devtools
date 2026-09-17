@@ -1,0 +1,171 @@
+/*
+ * Styles for the AI Assistant promo card. Applied inside a shadow root, so the
+ * selectors never touch Zoho's page. The palette mirrors the function-search
+ * overlay so both extension surfaces read as one product.
+ */
+
+:host {
+  all: initial;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.promo-card {
+  --promo-bg: #ffffff;
+  --promo-border: #e2e6ee;
+  --promo-text: #1d2638;
+  --promo-body: #3d4657;
+  --promo-muted: #6b7488;
+  --promo-accent: #2f6df0;
+  --promo-accent-hover: #2458c9;
+  --promo-accent-text: #ffffff;
+  --promo-surface: #f7f9fc;
+  --promo-font: "Segoe UI", system-ui, -apple-system, sans-serif;
+
+  position: fixed;
+  right: 20px;
+  /* Clears Zoho's bottom utility bar (My Pins, Chats, Help) instead of covering it. */
+  bottom: 56px;
+  /* Below the search overlay (2147483000) so the overlay always wins. */
+  z-index: 2147482000;
+  width: 344px;
+  max-width: calc(100vw - 40px);
+  padding: 16px 16px 14px;
+  background: var(--promo-bg);
+  border: 1px solid var(--promo-border);
+  border-radius: 10px;
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.18);
+  color: var(--promo-text);
+  font-family: var(--promo-font);
+  font-size: 13px;
+  line-height: 1.5;
+  animation: promo-slide-in 240ms ease-out;
+}
+
+@keyframes promo-slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .promo-card {
+    animation: none;
+  }
+}
+
+.promo-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.promo-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
+  background: var(--promo-accent);
+  color: var(--promo-accent-text);
+}
+
+.promo-eyebrow {
+  flex: 1;
+  min-width: 0;
+  font-size: 11px;
+  letter-spacing: 0.02em;
+  color: var(--promo-muted);
+}
+
+.promo-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 28px;
+  height: 28px;
+  margin: -4px -6px -4px 0;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--promo-muted);
+  cursor: pointer;
+}
+
+.promo-close:hover,
+.promo-close:focus-visible {
+  background: var(--promo-surface);
+  color: var(--promo-text);
+  outline: 0;
+}
+
+.promo-title {
+  margin: 0 0 6px;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.promo-body {
+  margin: 0 0 14px;
+  color: var(--promo-body);
+}
+
+.promo-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.promo-install,
+.promo-later {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 14px;
+  border-radius: 8px;
+  font: 600 13px / 1 var(--promo-font);
+  cursor: pointer;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.promo-install {
+  border: 1px solid var(--promo-accent);
+  background: var(--promo-accent);
+  color: var(--promo-accent-text);
+}
+
+.promo-install:hover,
+.promo-install:focus-visible {
+  border-color: var(--promo-accent-hover);
+  background: var(--promo-accent-hover);
+  outline: 0;
+}
+
+.promo-later {
+  padding: 0 12px;
+  border: 1px solid var(--promo-border);
+  background: var(--promo-bg);
+  color: var(--promo-muted);
+  font-weight: 500;
+}
+
+.promo-later:hover,
+.promo-later:focus-visible {
+  border-color: var(--promo-accent);
+  color: var(--promo-accent);
+  outline: 0;
+}

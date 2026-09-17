@@ -15,6 +15,8 @@ renumbers.
 
 ## Log
 
+- [`0008-ai-assistant-cross-promotion.md`](0008-ai-assistant-cross-promotion.md) — sibling products
+  may be promoted in-extension only as a one-time, capped, attributed, non-blocking corner card.
 - [`0007-functions-toolbar-versions.md`](0007-functions-toolbar-versions.md) — keep cross-function
   search beside native search in both Functions layouts, detected through DOM hooks.
 - [`0001-tooling.md`](0001-tooling.md) — TypeScript/Vite/CRXJS build and Biome/Vitest/Playwright
