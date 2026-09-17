@@ -2,8 +2,8 @@
 
 ## 2.3.0 - 2026-09-18
 
-- Added a one-time corner card introducing Zoho CRM AI Assistant, our new companion extension.
-  It appears once on a Zoho CRM page, can be snoozed for three days a single time, and never
+- Added a one-time corner card introducing Zoho CRM AI Assistant, our new companion extension,
+  with its icon and a small preview of the side panel. It appears once on a Zoho CRM page, can be snoozed for three days a single time, and never
   returns after Install or Close. No new permissions.
 
 ## 2.2.1 - 2026-09-16
