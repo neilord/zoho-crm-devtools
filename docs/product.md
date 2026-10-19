@@ -22,7 +22,6 @@ Zoho CRM DevTools improves the Zoho CRM Deluge editor while staying close to Zoh
 
 - GitHub sync
 - Bulk import/export (a future home for function export/backup)
-- Billing, login, or locked features
 - Zoho products outside CRM
 - Firefox support
 
@@ -30,5 +29,8 @@ Zoho CRM DevTools improves the Zoho CRM Deluge editor while staying close to Zoh
 
 The extension launches free, and cross-function search ships free as well: it is
 a growth feature meant to increase the user base rather than an early paywall.
-Any future paid features should be new premium features from their first release
-rather than existing free features moved behind a paywall.
+Accounts, billing, and premium gates are in scope for additive paid capabilities
+([ADR 0009](decisions/0009-additive-paid-tier.md)), superseding the former non-goal.
+Nothing already free becomes paid. Premium features are additive and premium from
+their first release; free use requires no account or subscription.
+[ADR 0002](decisions/0002-monetization.md) remains in force.

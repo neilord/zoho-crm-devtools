@@ -3,7 +3,7 @@
 The single living state document for this repository. It is a snapshot, not a changelog; completed
 history lives in git and durable reasoning lives in ADRs.
 
-_Last updated: 2026-09-18 — version 2.3.0 adds the AI Assistant promo card and is packaged for submission._
+_Last updated: 2026-10-20 — Pro trial decision recorded; billing work remains in flight._
 
 ## Current status
 
@@ -26,6 +26,20 @@ submission is the next manual step. No product implementation is in flight.
 | Rare Zoho surfaces | in-progress | Editor mount/settings selectors and less common overlays still need observation as they appear. |
 
 ## In flight
+
+- Paid-tier work: ADRs 0009–0016 and the product-scope update are recorded on
+  `docs/billing-decisions`, based on `main`, pending review; no implementation has begun.
+  The new-account trial is settled: 14 days of Pro, no card required (ADR 0016).
+  The separate working plan remains at `docs/plans/billing.md` on `docs/billing-plan`;
+  retain it while implementation and its open owner choices remain outstanding.
+  Next: select the premium feature and resolve its product non-goals versus registry mismatch
+  (ADR 0013), then implement the private backend and extension client under these decisions.
+  `PRIVACY.md` remains unchanged because it describes shipped behavior. Its rewrite and the
+  Chrome Web Store declaration changes must land with the implementation branch, including
+  the first plumbing release, not ahead of it. Update the plan's earlier privacy-update sequence
+  when that branch is resumed. Live signed-out Zoho checks, CORS checks for published and pinned
+  development ids, and Extension Update Testing Tool validation remain implementation release
+  gates; this documentation-only branch changes no runtime behavior.
 
 - Growth planning: reviewed the authenticated GA4 listing-acquisition reports and Chrome Web
   Store developer metrics. A private task report proposes search-led positioning, partner/trainer
