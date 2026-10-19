@@ -3,7 +3,7 @@
 The single living state document for this repository. It is a snapshot, not a changelog; completed
 history lives in git and durable reasoning lives in ADRs.
 
-_Last updated: 2026-10-20 — Pro trial decision recorded; billing work remains in flight._
+_Last updated: 2026-10-20 — paid-tier decisions landed on `main`; implementation not started._
 
 ## Current status
 
@@ -27,8 +27,8 @@ submission is the next manual step. No product implementation is in flight.
 
 ## In flight
 
-- Paid-tier work: ADRs 0009–0016 and the product-scope update are recorded on
-  `docs/billing-decisions`, based on `main`, pending review; no implementation has begun.
+- Paid-tier work: ADRs 0009–0016 and the product-scope update are **landed on `main`**; no
+  implementation has begun.
   The new-account trial is settled: 14 days of Pro, no card required (ADR 0016).
   The separate working plan remains at `docs/plans/billing.md` on `docs/billing-plan`;
   retain it while implementation and its open owner choices remain outstanding.
