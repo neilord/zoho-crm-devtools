@@ -40,6 +40,10 @@ submission is the next manual step. No product implementation is in flight.
   when that branch is resumed. Live signed-out Zoho checks, CORS checks for published and pinned
   development ids, and Extension Update Testing Tool validation remain implementation release
   gates; this documentation-only branch changes no runtime behavior.
+  Public Chrome Web Store transfer/trader research is complete; the task report is saved outside
+  the repository. It recommends verifying the actual legal trader on the existing publisher;
+  no transfer or dashboard change was made, and the owner has not adopted a new decision.
+  Next account check: existing publisher verification/profile controls and paid-tier disclosures.
 
 - Growth planning: reviewed the authenticated GA4 listing-acquisition reports and Chrome Web
   Store developer metrics. A private task report proposes search-led positioning, partner/trainer
