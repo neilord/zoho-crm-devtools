@@ -61,6 +61,11 @@ Listing copy and paste-ready dashboard/privacy/reviewer/What's new fields are in
   permission warning. Terms and Privacy on the website are drafts pending owner/legal review.
   Next export work (selection-based export inside the Search All Functions dashboard, cleaner
   Markdown) is a separate effort. The broader billing plan remains on `docs/billing-plan`.
+  Preflight on 2026-10-21: another session landed three-tier billing as `0581c44` while release
+  checks were running; the regenerated ZIP includes that commit. Chrome Web Store dashboard
+  access through Aside requires fresh Google verification. No dashboard fields were changed
+  and nothing was uploaded or submitted. The published-build permission-update test and the
+  changed modal's authenticated Zoho check remain outstanding.
 
 - Growth planning: reviewed the authenticated GA4 listing-acquisition reports and Chrome Web
   Store developer metrics. A private task report proposes search-led positioning, partner/trainer
