@@ -1,5 +1,6 @@
-import { contract } from '../../billing/config';
+import { contract, WEBSITE_BASE } from '../../billing/config';
 import { resolvedPlan } from '../../billing/entitlement';
+import { planName, trialPriceCopy } from '../../billing/plans';
 import type { BillingAction, BillingResults } from '../../billing/protocol';
 import { billingMessage } from '../../shared/browser';
 import { checkIcon, closeIcon, downloadIcon, el, spinnerIcon } from '../functions/dom';
@@ -13,7 +14,7 @@ import modalCss from './upgrade-modal.css?inline';
 export const UPGRADE_REQUIRED_EVENT = 'billing:upgradeRequired';
 export interface UpgradeRequiredDetail {
   featureId: 'exportFunctions';
-  reason: 'pro-required';
+  reason: 'paid-required';
 }
 
 type AccountState = BillingResults['billing:getEntitlement'];
@@ -40,12 +41,11 @@ const STYLE_ID = 'zcdt-upgrade-modal-style';
 
 /** Plan facts come from the shared contract; never restate them here. */
 function planFacts() {
-  const pro = contract.plans.find((plan) => plan.key === 'pro');
-  return { price: pro?.priceUsdMonthly ?? null, trialDays: contract.trial.days };
+  return { trialName: planName(contract.trial.plan), trialDays: contract.trial.days };
 }
 
-function isPro(account: AccountState): boolean {
-  return account.signedIn && resolvedPlan(account.entitlement) === 'pro';
+function isPaid(account: AccountState): boolean {
+  return account.signedIn && resolvedPlan(account.entitlement) !== 'free';
 }
 
 /** Cancelled windows are a normal outcome, not a failure. */
@@ -143,9 +143,9 @@ export function mountUpgradeHook(
 
   function render(): void {
     const { view, error } = state;
-    const { price, trialDays } = planFacts();
+    const { trialName, trialDays } = planFacts();
     const children: Node[] = [closeButton()];
-    const proPill = el('span', { className: 'zx-pro', text: 'PRO' });
+    const proPill = el('span', { className: 'zx-pro', text: 'PAID' });
     const mark = el('div', { className: 'zx-mark', attrs: { 'aria-hidden': 'true' } }, [
       downloadIcon(22),
     ]);
@@ -184,10 +184,10 @@ export function mountUpgradeHook(
       const waiting = view === 'awaiting-checkout';
       children.push(
         ...heading(
-          waiting ? 'Almost there' : 'Export is a Pro feature',
+          waiting ? 'Almost there' : 'Export is a paid feature',
           waiting
             ? 'Finish upgrading in the tab that just opened, then check again here.'
-            : 'Your account is on the Free plan. Upgrade to export every function as a local file. The search and editor tools you use today stay free.',
+            : `Your account is on the Free plan. Plus includes function export: ${trialPriceCopy} on your first subscription. The search and editor tools you use today stay free.`,
         ),
       );
       if (note) children.push(note);
@@ -196,7 +196,7 @@ export function mountUpgradeHook(
           waiting
             ? action('I have upgraded, check again', 'zx-primary', 'check', () => void recheck())
             : action(
-                price === null ? 'Upgrade to Pro' : `Upgrade to Pro — $${price}/month`,
+                `Upgrade to ${trialName}`,
                 'zx-primary',
                 'plans',
                 () => void openExternal('billing:openUpgrade'),
@@ -212,7 +212,7 @@ export function mountUpgradeHook(
     } else {
       children.push(
         ...heading(
-          'Export is a Pro feature',
+          'Export is a paid feature',
           'Download all your Zoho CRM functions in one step, including their Deluge code.',
         ),
         el('ul', { className: 'zx-benefits' }, [
@@ -225,11 +225,11 @@ export function mountUpgradeHook(
       children.push(
         el('div', { className: 'zx-actions' }, [
           action(
-            `Start free ${trialDays}-day Pro trial`,
+            `Start free ${trialDays}-day ${trialName} trial`,
             'zx-primary',
             'sign-in',
             () => void signIn(),
-            'No card required',
+            `No card required · then ${trialPriceCopy}`,
           ),
           el('p', { className: 'zx-alt' }, [
             document.createTextNode('Already have an account? '),
@@ -244,6 +244,26 @@ export function mountUpgradeHook(
               },
             }),
           ]),
+        ]),
+      );
+    }
+    if (view === 'signed-out' || view === 'free') {
+      children.push(
+        el('p', { className: 'zx-alt' }, [
+          el('a', {
+            className: 'zx-inline',
+            text: 'See all plans · Plus, Pro and Max',
+            attrs: {
+              href: `${WEBSITE_BASE}/pricing`,
+              target: '_blank',
+              rel: 'noopener noreferrer',
+            },
+            dataset: { zcdtUpgradeAction: 'all-plans' },
+            onClick: (event) => {
+              event.preventDefault();
+              void openExternal('billing:openUpgrade');
+            },
+          }),
         ]),
       );
     }
@@ -311,7 +331,7 @@ export function mountUpgradeHook(
     try {
       const account = await readAccount();
       if (mine !== generation) return;
-      if (isPro(account)) {
+      if (isPaid(account)) {
         finishEntitled();
         return;
       }
@@ -333,7 +353,7 @@ export function mountUpgradeHook(
         host.dispatchEvent(new CustomEvent(ACCOUNT_CHANGED_EVENT, { bubbles: true }));
         return;
       }
-      if (isPro(account)) return finishEntitled();
+      if (isPaid(account)) return finishEntitled();
       if (account.signedIn) {
         host.dispatchEvent(new CustomEvent(ACCOUNT_CHANGED_EVENT, { bubbles: true }));
         return set({ view: classify(account), error: null });
@@ -367,7 +387,7 @@ export function mountUpgradeHook(
     try {
       const account = await readAccount();
       if (mine !== generation) return;
-      if (isPro(account)) return finishEntitled();
+      if (isPaid(account)) return finishEntitled();
       if (classify(account) === 'unavailable') return set({ view: 'unavailable', error: null });
       set({
         view: 'awaiting-checkout',
@@ -384,7 +404,7 @@ export function mountUpgradeHook(
 
   const onRequired = (event: Event) => {
     const detail = (event as CustomEvent<UpgradeRequiredDetail>).detail;
-    if (detail?.featureId === 'exportFunctions' && detail.reason === 'pro-required') void open();
+    if (detail?.featureId === 'exportFunctions' && detail.reason === 'paid-required') void open();
   };
   const onExportState = (event: Event) => {
     const detail = (event as CustomEvent<{ format?: string }>).detail;

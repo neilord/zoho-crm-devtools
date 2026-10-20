@@ -27,8 +27,11 @@ tokens and cached entitlement and attempts to revoke the refresh token at the se
 Plan selection and account management open `https://devtools.zsetup.com`. Stripe handles payment
 on the website; the extension never reads or stores card details. Account/billing data and your
 account deletion controls are described in the [website privacy policy](https://devtools.zsetup.com/privacy).
-A new account receives a 14-day free Pro trial, no card required. The new Export functions
-capability requires Pro/current trial entitlement; existing free features remain free. Export reads
+A new account receives a 14-day free Plus trial, no card required. The new Export functions
+capability requires any paid plan/current Plus trial entitlement; existing free features remain
+free. Plus is $9 for the first paid month, then $23/month; Pro is $35 first month, then $57/month;
+Max is $99 first month, then $143/month. The first-month price applies only to an account’s
+first-ever paid subscription, never to plan changes or repeat subscriptions. Export reads
 your Zoho function metadata/source through the same Zoho endpoints and creates a local JSON,
 CSV or Markdown download on your device. Export files may contain sensitive function content;
 the extension never uploads them to our account service or Stripe.

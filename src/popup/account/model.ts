@@ -1,5 +1,6 @@
 import { contract } from '../../billing/config';
 import { type Entitlement, resolvedPlan } from '../../billing/entitlement';
+import { planName } from '../../billing/plans';
 
 /** Everything the card can show. `status` strings are server-owned, so matching is defensive. */
 export type AccountView =
@@ -7,13 +8,12 @@ export type AccountView =
   | { kind: 'error' }
   | { kind: 'signed-out' }
   | { kind: 'free' }
-  | { kind: 'trial'; daysLeft: number | null }
-  | { kind: 'pro'; renews: string | null }
-  | { kind: 'pro-canceling'; until: string }
+  | { kind: 'trial'; planName: string; daysLeft: number | null }
+  | { kind: 'paid'; planName: string; renews: string | null }
+  | { kind: 'paid-canceling'; planName: string; until: string }
   | { kind: 'past-due' };
 
 export const TRIAL_DAYS = contract.trial.days;
-export const PRO_PRICE_USD = contract.plans.find((p) => p.key === 'pro')?.priceUsdMonthly ?? null;
 
 const DAY_MS = 86_400_000;
 
@@ -39,12 +39,25 @@ export function deriveView(
   if (!e.checkedAt) return { kind: 'error' };
   const status = e.status.toLowerCase();
   const pastDue = status === 'past_due' || status === 'unpaid' || status === 'incomplete';
-  if (resolvedPlan(e) !== 'pro')
+  if (resolvedPlan(e) === 'free')
     return pastDue || status === 'active' ? { kind: 'past-due' } : { kind: 'free' };
   if (pastDue) return { kind: 'past-due' };
-  if (status === 'trialing') return { kind: 'trial', daysLeft: daysLeft(e.currentPeriodEnd, now) };
+  if (status === 'trialing')
+    return {
+      kind: 'trial',
+      planName: planName(e.plan),
+      daysLeft: daysLeft(e.currentPeriodEnd, now),
+    };
   if (e.cancelAtPeriodEnd && e.currentPeriodEnd) {
-    return { kind: 'pro-canceling', until: formatDate(e.currentPeriodEnd) };
+    return {
+      kind: 'paid-canceling',
+      planName: planName(e.plan),
+      until: formatDate(e.currentPeriodEnd),
+    };
   }
-  return { kind: 'pro', renews: e.currentPeriodEnd ? formatDate(e.currentPeriodEnd) : null };
+  return {
+    kind: 'paid',
+    planName: planName(e.plan),
+    renews: e.currentPeriodEnd ? formatDate(e.currentPeriodEnd) : null,
+  };
 }

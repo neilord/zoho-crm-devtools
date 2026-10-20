@@ -1,7 +1,8 @@
 import type { AccountState } from '../../billing/client';
 import { WEBSITE_BASE } from '../../billing/config';
+import { trialPriceCopy } from '../../billing/plans';
 import { account } from './api';
-import { type AccountView, deriveView, PRO_PRICE_USD, TRIAL_DAYS } from './model';
+import { type AccountView, deriveView, TRIAL_DAYS } from './model';
 
 export { account } from './api';
 
@@ -68,43 +69,43 @@ export function copyFor(view: Exclude<AccountView, { kind: 'loading' | 'error' }
     case 'signed-out':
       return {
         title: 'Free plan',
-        text: `Pro: export all functions · ${TRIAL_DAYS}-day free trial, no card`,
+        text: `Plus: export all functions · ${TRIAL_DAYS}-day free trial, no card · then ${trialPriceCopy}`,
         actions: [signIn('Start free trial'), { ...signIn('Sign in'), tone: 'link' }],
       };
     case 'free':
       return {
         title: 'Free plan',
-        text: `Pro adds export of all functions${PRO_PRICE_USD ? ` · $${PRO_PRICE_USD}/month` : ''}. Everything else stays free.`,
+        text: `Plus, Pro and Max include function export. Plus: ${trialPriceCopy} on your first subscription. Everything else stays free.`,
         actions: [upgrade('Upgrade'), manage, signOut],
       };
     case 'trial':
       return {
-        title: 'Pro trial',
+        title: `${view.planName} trial${view.daysLeft === null ? '' : ` · ${plural(view.daysLeft, 'day')} left`}`,
         text:
           view.daysLeft === null
-            ? 'Your free Pro trial is active.'
+            ? `Your free ${view.planName} trial is active.`
             : view.daysLeft === 0
               ? 'Your free trial ends today.'
               : `${plural(view.daysLeft, 'day')} left · no card needed until you upgrade.`,
         actions: [upgrade('Upgrade'), manage, signOut],
       };
-    case 'pro':
+    case 'paid':
       return {
-        title: 'Pro',
-        badge: 'Pro',
+        title: view.planName,
+        badge: view.planName,
         text: view.renews ? `Renews ${view.renews}.` : 'Thanks for supporting DevTools.',
         actions: [manage, signOut],
       };
-    case 'pro-canceling':
+    case 'paid-canceling':
       return {
-        title: `Pro until ${view.until}`,
+        title: `${view.planName} until ${view.until}`,
         text: 'Your plan will not renew. Resume any time from Manage account.',
         actions: [{ ...manage, tone: 'primary' }, signOut],
       };
     case 'past-due':
       return {
         title: 'Payment needs attention',
-        text: 'We could not renew Pro. Your editor tools are unaffected.',
+        text: 'We could not renew your plan. Your editor tools are unaffected.',
         actions: [{ ...manage, label: 'Update payment', tone: 'primary' }, signOut],
       };
   }
@@ -219,11 +220,11 @@ export function mountNotice(root: HTMLElement): void {
       notice.dataset.billingNotice = '';
       notice.setAttribute('aria-label', 'What is new');
       notice.append(
-        el('strong', 'notice-title', 'New: optional account & Pro plan'),
+        el('strong', 'notice-title', 'New: optional account & paid plans'),
         el(
           'p',
           'notice-text',
-          'Everything you use today stays free. Signing in is optional. Pro adds function export and requires a current trial or paid plan.',
+          'Everything you use today stays free. Signing in is optional. Plus, Pro and Max add function export and requires a current trial or paid plan.',
         ),
         el(
           'p',

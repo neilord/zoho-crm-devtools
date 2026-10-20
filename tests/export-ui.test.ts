@@ -30,7 +30,7 @@ const act = (name: string) =>
 const raise = () =>
   document.dispatchEvent(
     new CustomEvent(UPGRADE_REQUIRED_EVENT, {
-      detail: { featureId: 'exportFunctions', reason: 'pro-required' },
+      detail: { featureId: 'exportFunctions', reason: 'paid-required' },
     }),
   );
 const flush = () => new Promise((resolve) => setTimeout(resolve, 0));
@@ -61,6 +61,19 @@ afterEach(() => {
 });
 
 describe('upgrade modal state machine', () => {
+  it.each([
+    'plus',
+    'pro',
+    'max',
+    'future',
+    'free',
+  ])('opens upgrade for unentitled %s', async (plan) => {
+    setup(async () => ({ signedIn: true, entitlement: { ...pro, plan, entitled: false } }));
+    raise();
+    await vi.waitFor(() => expect(dialog().dataset.view).toBe('free'));
+    expect(dialog().textContent).toContain('Export is a paid feature');
+  });
+
   it('shows unavailable rather than a Free-plan upsell on a failed entitlement read', async () => {
     const send = vi
       .fn()
@@ -81,9 +94,12 @@ describe('upgrade modal state machine', () => {
     await vi.waitFor(() => expect(dialog().dataset.view).toBe('signed-out'));
     expect(dialog().getAttribute('aria-modal')).toBe('true');
     expect(dialog().getAttribute('aria-labelledby')).toBeTruthy();
-    expect(dialog().textContent).toContain('Export is a Pro feature');
-    expect(act('sign-in').textContent).toContain('Start free 14-day Pro trial');
+    expect(dialog().textContent).toContain('Export is a paid feature');
+    expect(act('sign-in').textContent).toContain('Start free 14-day Plus trial');
     expect(act('sign-in').textContent).toContain('No card required');
+    expect(act('sign-in').textContent).toContain('then $9 for the first month, $23/month after');
+    expect(act('all-plans').textContent).toContain('Plus, Pro and Max');
+    expect(act('all-plans').getAttribute('href')).toBe('https://devtools.zsetup.com/pricing');
     expect(dialog().textContent).toContain('Already have an account?');
     dispose();
     expect(document.querySelector('[data-zcdt-upgrade-modal]')).toBeNull();
@@ -154,7 +170,7 @@ describe('upgrade modal state machine', () => {
     setup(send);
     raise();
     await vi.waitFor(() => expect(dialog().dataset.view).toBe('free'));
-    expect(act('plans').textContent).toBe('Upgrade to Pro — $23/month');
+    expect(act('plans').textContent).toBe('Upgrade to Plus');
     act('account').click();
     await flush();
     expect(send).toHaveBeenCalledWith('billing:openAccount');
@@ -225,8 +241,8 @@ describe('upgrade modal state machine', () => {
     await vi.waitFor(() => expect(dialog().dataset.view).toBe('signed-out'));
   });
 
-  it('skips the dialog entirely if the user is already entitled', async () => {
-    const { resumed } = setup(async () => proAccount);
+  it.each(['plus', 'pro', 'max', 'future'])('skips dialog for entitled %s', async (plan) => {
+    const { resumed } = setup(async () => ({ ...proAccount, entitlement: { ...pro, plan } }));
     raise();
     await vi.waitFor(() => expect(resumed).toHaveBeenCalledOnce());
     expect(modal().hidden).toBe(true);
@@ -269,7 +285,9 @@ describe('upgrade modal state machine', () => {
     setup(async () => signedOut);
     raise();
     await vi.waitFor(() => expect(dialog().dataset.view).toBe('signed-out'));
-    const focusable = [...dialog().querySelectorAll<HTMLElement>('button:not([disabled])')];
+    const focusable = [
+      ...dialog().querySelectorAll<HTMLElement>('button:not([disabled]), a[href]'),
+    ];
     const last = focusable[focusable.length - 1];
     last.focus();
     const forward = new KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true });
@@ -332,7 +350,7 @@ describe('export control states', () => {
     free.dispose();
     document.body.innerHTML = '';
     const entitled = mount(proAccount);
-    await vi.waitFor(() => expect(entitled.root.dataset.exportPlan).toBe('pro'));
+    await vi.waitFor(() => expect(entitled.root.dataset.exportPlan).toBe('paid'));
     expect(entitled.root.querySelector('.zx-badge')).toBeNull();
   });
 

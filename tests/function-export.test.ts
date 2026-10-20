@@ -178,9 +178,9 @@ describe('export entitlement orchestration', () => {
     expect(isFeatureAvailable(getFeature('exportFunctions'), FREE, false)).toBe(true);
     expect(isFeatureAvailable(getFeature('functionSearch'), FREE)).toBe(true);
   });
-  it.each(['active', 'trialing'])('exports for entitled Pro %s', async (status) => {
+  it.each(['plus', 'pro', 'max', 'future'])('exports for entitled %s', async (plan) => {
     const deps = dependencies();
-    deps.getEntitlement = vi.fn(async () => ({ signedIn: true, entitlement: { ...pro, status } }));
+    deps.getEntitlement = vi.fn(async () => ({ signedIn: true, entitlement: { ...pro, plan } }));
     await runFunctionExport(context, 'json', deps, new AbortController().signal);
     expect(deps.download).toHaveBeenCalledOnce();
     expect(deps.upgradeRequired).not.toHaveBeenCalled();
@@ -192,6 +192,10 @@ describe('export entitlement orchestration', () => {
   it.each([
     { signedIn: false, entitlement: FREE },
     { signedIn: true, entitlement: FREE },
+    ...['plus', 'pro', 'max', 'future'].map((plan) => ({
+      signedIn: true,
+      entitlement: { ...pro, plan, entitled: false },
+    })),
     { signedIn: true, entitlement: { ...FREE, status: 'past_due' } },
     { signedIn: false, entitlement: pro },
   ])('requests upgrade without fetching any Zoho data for %j', async (account) => {
@@ -460,7 +464,7 @@ describe('unstyled frontend hooks', () => {
     );
     expect((upgraded.mock.calls[0][0] as CustomEvent).detail).toEqual({
       featureId: 'exportFunctions',
-      reason: 'pro-required',
+      reason: 'paid-required',
     });
     expect(root.querySelector('[data-zcdt-export-run]')).not.toBeNull();
     dispose();

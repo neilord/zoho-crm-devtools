@@ -28,7 +28,7 @@ const FORMAT_COPY: Record<ExportFormat, { label: string; hint: string }> = {
 };
 
 /** Resolved account plan for the export gate. */
-export type ExportPlanState = 'unknown' | 'pro' | 'free';
+export type ExportPlanState = 'unknown' | 'paid' | 'free';
 
 /**
  * Export control: a native-looking button that opens a format menu, plus an anchored status popover.
@@ -213,7 +213,7 @@ export function mountFunctionExport(
         getFeature('exportFunctions'),
         account.signedIn ? account.entitlement : FREE,
       );
-      setPlan(entitled ? 'pro' : 'free');
+      setPlan(entitled ? 'paid' : 'free');
     } catch {
       if (!disposed && mine === planGeneration) setPlan('unknown');
     }
@@ -259,7 +259,7 @@ export function mountFunctionExport(
             root.dispatchEvent(
               new CustomEvent<UpgradeRequiredDetail>(UPGRADE_REQUIRED_EVENT, {
                 bubbles: true,
-                detail: { featureId: 'exportFunctions', reason: 'pro-required' },
+                detail: { featureId: 'exportFunctions', reason: 'paid-required' },
               }),
             ),
           contextIsCurrent: () => {

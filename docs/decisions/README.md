@@ -15,6 +15,9 @@ renumbers.
 
 ## Log
 
+- [`0023-paid-entitlement-and-forward-compatible-plans.md`](0023-paid-entitlement-and-forward-compatible-plans.md) —
+  paid entitlement gates, future plan keys, Plus trial and three-tier pricing; refines 0011/0016/0019.
+
 - [`0022-resilient-partial-function-export.md`](0022-resilient-partial-function-export.md) —
   supersede 0019 partial-failure policy: retries, explicit skipped entries and anchored status UI.
 

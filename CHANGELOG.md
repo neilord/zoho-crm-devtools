@@ -4,8 +4,11 @@
 
 - Added optional account sign-in in a browser tab. All existing features stay free forever,
   with no account required.
-- Added Pro Export functions beside Search All Functions: download your org's functions locally
-  as JSON, CSV or Markdown. Pro is $23/month after a 14-day free trial, no card required.
+- Added Paid Export functions beside Search All Functions: download your org's functions locally
+  as JSON, CSV or Markdown. Start a 14-day free Plus trial, no card required. Plus is $9 for the
+  first paid month, then $23/month; Pro is $35 first month, then $57/month; Max is $99 first month,
+  then $143/month. The first-month price applies only to an account’s first-ever paid subscription,
+  never to plan changes or repeat subscriptions.
 - Added a one-time account/privacy notice for existing users. Zoho data stays on your device;
   payments are handled through Stripe on our website.
 

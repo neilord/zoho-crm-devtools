@@ -48,5 +48,5 @@ export function isFeatureAvailable(
     ? EXPORT_FUNCTIONS_GATE_ENFORCED
     : PREMIUM_GATE_ENABLED,
 ): boolean {
-  return feature.tier === 'free' || !gateEnabled || resolvedPlan(entitlement) === 'pro';
+  return feature.tier === 'free' || !gateEnabled || resolvedPlan(entitlement) !== 'free';
 }

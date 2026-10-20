@@ -1,5 +1,5 @@
 export interface Entitlement {
-  plan: 'free' | 'pro';
+  plan: string;
   entitled: boolean;
   status: string;
   currentPeriodEnd: string | null;
@@ -19,7 +19,8 @@ export function parseEntitlement(value: unknown): Entitlement {
   if (!value || typeof value !== 'object') return FREE;
   const e = value as Partial<Entitlement>;
   if (
-    (e.plan !== 'free' && e.plan !== 'pro') ||
+    typeof e.plan !== 'string' ||
+    !e.plan.trim() ||
     typeof e.entitled !== 'boolean' ||
     typeof e.status !== 'string' ||
     !(
@@ -42,6 +43,6 @@ export function parseEntitlement(value: unknown): Entitlement {
   };
 }
 
-export function resolvedPlan(e: Entitlement): 'free' | 'pro' {
-  return e.plan === 'pro' && e.entitled ? 'pro' : 'free';
+export function resolvedPlan(e: Entitlement): string {
+  return e.entitled && e.plan !== 'free' ? e.plan : 'free';
 }

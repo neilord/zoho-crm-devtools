@@ -36,12 +36,12 @@ their first release; free use requires no account or subscription.
 [ADR 0002](decisions/0002-monetization.md) remains in force.
 
 Stage 1 adds optional account connection, server-resolved entitlement, website plan/account
-links, and a persisted disclosure notice. New accounts receive a 14-day free Pro trial, no card
-required, resolved by the server (ADR 0016).
+links, and a persisted disclosure notice. New accounts receive a 14-day free Plus trial, no card
+required, resolved by the server (ADRs 0016 and 0023).
 
 **Export functions** is the selected first premium capability (ADR 0019): download all the org's
 function metadata and Deluge source locally as JSON, CSV, or one combined Markdown document.
-Pro/current trial entitlement permits export; Free/signed-out users see an upgrade hook. Its
+Any paid plan/current Plus trial entitlement permits export; Free/signed-out users see an upgrade hook. Its
 configurable gate is enforced from first availability, refining the two-release direction for this
 new feature only. Existing free editor/search capabilities remain free without an account.
-Frontend styling and dashboard bottom-left placement are implemented; live acceptance remains pending.
+Export sits beside Search All Functions in both toolbars (ADR 0021).

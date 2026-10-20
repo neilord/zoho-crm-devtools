@@ -62,11 +62,12 @@ describe('deriveView', () => {
     expect(deriveView(signedIn({ ...free, status: 'active' })).kind).toBe('past-due');
     expect(deriveView(signedIn({ ...base, status: 'trialing' }), NOW)).toEqual({
       kind: 'trial',
+      planName: 'Pro',
       daysLeft: 44,
     });
-    expect(deriveView(signedIn(base), NOW).kind).toBe('pro');
+    expect(deriveView(signedIn(base), NOW).kind).toBe('paid');
     expect(deriveView(signedIn({ ...base, cancelAtPeriodEnd: true }), NOW).kind).toBe(
-      'pro-canceling',
+      'paid-canceling',
     );
     expect(deriveView(signedIn({ ...base, status: 'past_due' })).kind).toBe('past-due');
     expect(deriveView(signedIn({ ...free, status: 'past_due' })).kind).toBe('past-due');
@@ -97,8 +98,8 @@ describe('account card', () => {
 
   it('trialing: days left, Upgrade, Manage account, Sign out', async () => {
     const soon = new Date(Date.now() + 3 * 86_400_000 - 1000).toISOString();
-    await mount(signedIn({ ...base, status: 'trialing', currentPeriodEnd: soon }));
-    expect(root().textContent).toContain('Pro trial');
+    await mount(signedIn({ ...base, plan: 'plus', status: 'trialing', currentPeriodEnd: soon }));
+    expect(root().textContent).toContain('Plus trial · 3 days left');
     expect(root().textContent).toContain('3 days left');
     respond({ 'billing:openUpgrade': null, 'billing:getEntitlement': signedIn(base) });
     action('upgrade')?.click();
@@ -108,6 +109,17 @@ describe('account card', () => {
     action('manage')?.click();
     await flush();
     expect(calls[0]).toBe('billing:openAccount');
+  });
+
+  it.each([
+    ['plus', 'Plus'],
+    ['pro', 'Pro'],
+    ['max', 'Max'],
+    ['future', 'Future'],
+  ])('shows actual plan %s', async (plan, name) => {
+    await mount(signedIn({ ...base, plan }));
+    expect(root().querySelector('.badge')?.textContent).toBe(name);
+    expect(action('upgrade')).toBeNull();
   });
 
   it('pro active: badge, renewal date, manage and sign out returns to signed out', async () => {

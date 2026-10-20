@@ -118,10 +118,10 @@ Responses are `{ ok: true, value }` or `{ ok: false, error }`; the typed helper 
 and throws a sanitized error. An optional `signedOutPending: true` on account snapshots means
 Free/checking sign-in; call `getEntitlement` once more to finish the storage recovery. The popup
 `account.getEntitlement` helper and export controller perform that one follow-up automatically. Entitlement is the backend's exact six-field snapshot:
-`plan: free|pro`, `entitled: boolean`, `status: string`, `currentPeriodEnd: string|null`,
+`plan: string`, `entitled: boolean`, `status: string`, `currentPeriodEnd: string|null`,
 `cancelAtPeriodEnd: boolean`, `checkedAt: string`. No email, Stripe objects or tokens cross this
-API. Treat `plan === 'pro' && entitled` as Pro; the server owns trial expiry, subscription grace,
-and cancellation semantics. Scheduled cancellation can still be entitled. Unknown plan/invalid
+API. Treat `entitled && plan !== 'free'` as paid (ADR 0023); the server owns trial expiry, subscription grace,
+and cancellation semantics. Scheduled cancellation can still be entitled. Accept any non-empty plan key, including future entitled paid keys; invalid
 responses resolve to Free. Do not reconstruct entitlement from local dates or status strings.
 
 `billingPendingSignIn` in trusted `storage.session` holds state, verifier, exact redirect, auth-tab
@@ -160,7 +160,7 @@ the default gate (ADR 0019, refining ADR 0015). `isFeatureAvailable` accepts a r
 synchronously; existing free callers need no network.
 
 `src/popup/account` exports the account methods and `mountAccount(root)`. Its account/plan card
-renders loading, signed-out, Free, trial, Pro, scheduled cancellation, payment attention and error
+renders loading, signed-out, Free, trial, actual paid plan name, scheduled cancellation, payment attention and error
 states, with server-resolved entitlement and contract-derived price/trial copy. It renders a disclosure hook
 `[data-billing-notice]`, pending until explicitly dismissed. Separate `billingNotice2026` local
 state follows the promo card's independent persistence pattern so account/settings resets do
@@ -222,7 +222,7 @@ The format menu opens below its trigger with viewport-clamped fixed positioning 
 trigger, with wrapped text and a separate action row. The Export button retains its label/size.
 Errors stay until dismissed; success (including explicit partial counts) dismisses after six seconds.
 The status follows scroll/resize and stays viewport-clamped. It has a neutral “Export functions” tooltip and no plan
-badge; the existing entitlement gate and upgrade modal explain Pro after interaction. It mounts
+badge; the existing entitlement gate and upgrade modal explain paid plans after interaction. It mounts
 only on the enabled Functions route and removes/cancels on departure.
 `mountFunctionExport(root)` returns a disposer for controls, modal and listeners.
 
@@ -256,7 +256,7 @@ cache, which the awaiting-checkout message explains.
   `{ status: 'error', format, message }`. The root mirrors `status` in `data-export-state` and sets
   `aria-busy="true|false"`. Before the first request the state is `idle`. No records/code in events.
 - A blocked attempt emits bubbling `billing:upgradeRequired` with exactly
-  `{ featureId: 'exportFunctions', reason: 'pro-required' }`. `mountUpgradeHook(host)` listens at
+  `{ featureId: 'exportFunctions', reason: 'paid-required' }`. `mountUpgradeHook(host)` listens at
   `document`, opens the upgrade modal and returns a disposer. An entitled sign-in/recheck closes
   the dialog and resumes the requested export. `billing:accountChanged` bubbles from the root
   after account changes so its plan state refreshes.

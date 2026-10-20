@@ -25,13 +25,29 @@
       "priceUsdMonthly": 0
     },
     {
+      "key": "plus",
+      "name": "Plus",
+      "priceUsdMonthly": 23,
+      "introPriceUsdFirstMonth": 9
+    },
+    {
       "key": "pro",
       "name": "Pro",
-      "priceUsdMonthly": 23
+      "priceUsdMonthly": 57,
+      "introPriceUsdFirstMonth": 35
+    },
+    {
+      "key": "max",
+      "name": "Max",
+      "priceUsdMonthly": 143,
+      "introPriceUsdFirstMonth": 99
     }
   ],
   "trial": {
-    "plan": "pro",
+    "plan": "plus",
     "days": 14
+  },
+  "introOffer": {
+    "months": 1
   }
 }

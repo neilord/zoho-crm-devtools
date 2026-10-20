@@ -320,9 +320,16 @@ describe('worker session lifecycle', () => {
 });
 
 describe('licence resolution and Stage 1', () => {
-  it.each([
+  it.each<[string, import('../src/billing/entitlement').Entitlement, boolean]>([
     ['free', FREE, false],
     ['pro', pro, true],
+    ...['plus', 'max', 'future'].map<
+      [string, import('../src/billing/entitlement').Entitlement, boolean]
+    >((plan) => [plan, parseEntitlement({ ...pro, plan }), true]),
+    ['free-entitled', { ...pro, plan: 'free' }, false],
+    ...['plus', 'pro', 'max', 'future'].map<
+      [string, import('../src/billing/entitlement').Entitlement, boolean]
+    >((plan) => [plan, { ...pro, plan, entitled: false }, false]),
     ['trialing', { ...pro, status: 'trialing' }, true],
     ['past_due', { ...pro, plan: 'free' as const, entitled: false, status: 'past_due' }, false],
     ['canceled-but-active', { ...pro, cancelAtPeriodEnd: true }, true],
@@ -335,6 +342,8 @@ describe('licence resolution and Stage 1', () => {
   it('rejects old billing-status envelopes and malformed fields', () => {
     expect(parseEntitlement({ subscription: pro })).toEqual(FREE);
     expect(parseEntitlement({ ...pro, entitled: 'yes' })).toEqual(FREE);
+    for (const plan of ['', '   ', 23, null])
+      expect(parseEntitlement({ ...pro, plan })).toEqual(FREE);
   });
   it('accepts only the narrow message envelope', () => {
     expect(isBillingMessage({ type: 'billing:getEntitlement' })).toBe(true);
