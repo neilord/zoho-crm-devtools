@@ -1,0 +1,322 @@
+/*
+ * Upgrade dialog for blocked Export attempts. Light DOM on document.body, so every rule is
+ * scoped under [data-zcdt-upgrade-modal] and resets the properties Zoho's page CSS could leak
+ * into. Palette mirrors the search overlay and promo card (Zoho light surfaces).
+ */
+[data-zcdt-upgrade-modal] {
+  --zx-bg: #ffffff;
+  --zx-surface: #f7f9fc;
+  --zx-border: #e2e6ee;
+  --zx-text: #1d2638;
+  --zx-body: #3d4657;
+  --zx-muted: #6b7488;
+  --zx-accent: #2f6df0;
+  --zx-accent-hover: #2458c9;
+  --zx-accent-soft: #eaf1fe;
+  --zx-ok: #2e9e5b;
+  --zx-pro-bg: #fdf0d2;
+  --zx-pro-text: #8a5a00;
+  --zx-note-bg: #fff8e6;
+  --zx-note-border: #f1dba2;
+  --zx-note-text: #6b4b00;
+  --zx-font: "Zoho_Puvi_Regular", "Segoe UI", system-ui, -apple-system, sans-serif;
+
+  position: fixed;
+  inset: 0;
+  /* Above the corner promo card (2147482000), below the search overlay (2147483000). */
+  z-index: 2147482500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(20, 26, 40, 0.45);
+  font-family: var(--zx-font);
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--zx-text);
+  animation: zx-fade 140ms ease-out;
+}
+
+[data-zcdt-upgrade-modal][hidden] {
+  display: none;
+}
+
+[data-zcdt-upgrade-modal] *,
+[data-zcdt-upgrade-modal] *::before,
+[data-zcdt-upgrade-modal] *::after {
+  box-sizing: border-box;
+}
+
+@keyframes zx-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes zx-rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes zx-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+[data-zcdt-upgrade-modal] .zx-dialog {
+  position: relative;
+  width: 100%;
+  max-width: 440px;
+  max-height: calc(100vh - 32px);
+  overflow-y: auto;
+  padding: 28px 28px 24px;
+  background: var(--zx-bg);
+  border: 1px solid var(--zx-border);
+  border-radius: 10px;
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.35);
+  outline: 0;
+  animation: zx-rise 180ms ease-out;
+}
+
+[data-zcdt-upgrade-modal] .zx-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 14px;
+}
+
+[data-zcdt-upgrade-modal] .zx-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--zx-accent-soft);
+  color: var(--zx-accent);
+}
+
+[data-zcdt-upgrade-modal] .zx-pro {
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--zx-pro-bg);
+  color: var(--zx-pro-text);
+  font: 700 11px / 1.5 var(--zx-font);
+  letter-spacing: 0.06em;
+}
+
+[data-zcdt-upgrade-modal] .zx-title {
+  margin: 0 0 6px;
+  padding: 0;
+  font: 700 18px / 1.3 var(--zx-font);
+  color: var(--zx-text);
+}
+
+[data-zcdt-upgrade-modal] .zx-copy {
+  margin: 0 0 16px;
+  color: var(--zx-body);
+}
+
+[data-zcdt-upgrade-modal] .zx-benefits {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0 0 20px;
+  padding: 0;
+  list-style: none;
+}
+
+[data-zcdt-upgrade-modal] .zx-benefits li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  color: var(--zx-body);
+}
+
+[data-zcdt-upgrade-modal] .zx-tick {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  margin-top: 1px;
+  border-radius: 50%;
+  background: #e3f4ea;
+  color: var(--zx-ok);
+}
+
+[data-zcdt-upgrade-modal] .zx-note {
+  margin: 0 0 14px;
+  padding: 9px 12px;
+  border: 1px solid var(--zx-note-border);
+  border-radius: 6px;
+  background: var(--zx-note-bg);
+  color: var(--zx-note-text);
+  font-size: 13px;
+}
+
+[data-zcdt-upgrade-modal] .zx-wait {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 6px;
+  background: var(--zx-surface);
+  color: var(--zx-body);
+}
+
+[data-zcdt-upgrade-modal] .fs-spinner {
+  flex: 0 0 auto;
+  color: var(--zx-accent);
+  animation: zx-spin 800ms linear infinite;
+}
+
+[data-zcdt-upgrade-modal] .zx-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
+}
+
+[data-zcdt-upgrade-modal] button {
+  margin: 0;
+  font-family: var(--zx-font);
+  text-transform: none;
+  letter-spacing: normal;
+  cursor: pointer;
+}
+
+[data-zcdt-upgrade-modal] .zx-primary {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  min-height: 42px;
+  padding: 8px 16px;
+  border: 1px solid var(--zx-accent);
+  border-radius: 6px;
+  background: var(--zx-accent);
+  color: #ffffff;
+  font-size: 14px;
+  line-height: 1.25;
+  box-shadow: none;
+  transition:
+    background-color 120ms ease,
+    border-color 120ms ease,
+    box-shadow 120ms ease;
+}
+
+[data-zcdt-upgrade-modal] .zx-primary .zx-btn-label {
+  font-weight: 600;
+}
+
+[data-zcdt-upgrade-modal] .zx-primary .zx-btn-sub {
+  font-size: 12px;
+  opacity: 0.85;
+}
+
+[data-zcdt-upgrade-modal] .zx-primary:hover {
+  border-color: var(--zx-accent-hover);
+  background: var(--zx-accent-hover);
+}
+
+[data-zcdt-upgrade-modal] .zx-primary:focus-visible,
+[data-zcdt-upgrade-modal] .zx-link:focus-visible,
+[data-zcdt-upgrade-modal] .zx-inline:focus-visible,
+[data-zcdt-upgrade-modal] .zx-close:focus-visible {
+  outline: 0;
+  box-shadow: 0 0 0 3px rgba(47, 109, 240, 0.35);
+}
+
+[data-zcdt-upgrade-modal] .zx-link {
+  min-height: 36px;
+  padding: 6px 12px;
+  border: 1px solid #505d81;
+  border-radius: 6px;
+  background: transparent;
+  color: #313949;
+  font-size: 14px;
+}
+
+[data-zcdt-upgrade-modal] .zx-link:hover {
+  border-color: #6a78ff;
+  background: #f7f9ff;
+  color: #2446d8;
+}
+
+[data-zcdt-upgrade-modal] .zx-alt {
+  margin: 2px 0 0;
+  text-align: center;
+  color: var(--zx-muted);
+  font-size: 13px;
+}
+
+[data-zcdt-upgrade-modal] .zx-inline {
+  padding: 0;
+  border: 0;
+  border-radius: 3px;
+  background: none;
+  color: var(--zx-accent);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+[data-zcdt-upgrade-modal] .zx-inline:hover {
+  color: var(--zx-accent-hover);
+}
+
+[data-zcdt-upgrade-modal] .zx-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--zx-muted);
+}
+
+[data-zcdt-upgrade-modal] .zx-close:hover {
+  background: var(--zx-surface);
+  color: var(--zx-text);
+}
+
+[data-zcdt-upgrade-modal] button:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+
+@media (max-width: 480px) {
+  [data-zcdt-upgrade-modal] .zx-dialog {
+    padding: 24px 20px 20px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-zcdt-upgrade-modal],
+  [data-zcdt-upgrade-modal] .zx-dialog,
+  [data-zcdt-upgrade-modal] .fs-spinner {
+    animation: none;
+  }
+}

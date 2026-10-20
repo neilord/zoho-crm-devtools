@@ -6,5 +6,6 @@ export default defineConfig(({ mode }) => ({
   plugins: [crx({ manifest: createManifest(mode) })],
   build: {
     sourcemap: true,
+    rollupOptions: { input: { callback: 'src/billing/oauth-callback.html' } },
   },
 }));

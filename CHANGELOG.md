@@ -1,5 +1,14 @@
 # Changelog
 
+## 2.4.0 - 2026-10-20
+
+- Added optional account sign-in in a browser tab. All existing features stay free forever,
+  with no account required.
+- Added Pro Export functions beside Search All Functions: download your org's functions locally
+  as JSON, CSV or Markdown. Pro is $23/month after a 14-day free trial, no card required.
+- Added a one-time account/privacy notice for existing users. Zoho data stays on your device;
+  payments are handled through Stripe on our website.
+
 ## 2.3.0 - 2026-09-18
 
 - Added a one-time corner card introducing Zoho CRM AI Assistant, our new companion extension,

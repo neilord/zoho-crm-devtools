@@ -15,6 +15,25 @@ renumbers.
 
 ## Log
 
+- [`0022-resilient-partial-function-export.md`](0022-resilient-partial-function-export.md) —
+  supersede 0019 partial-failure policy: retries, explicit skipped entries and anchored status UI.
+
+- [`0021-normal-tab-sign-in-and-export-placement.md`](0021-normal-tab-sign-in-and-export-placement.md) —
+  refine 0017/0007: normal-tab OAuth, storage-only permission and adjacent neutral Export.
+
+- [`0020-billing-browser-and-transport-baseline.md`](0020-billing-browser-and-transport-baseline.md) —
+  Chrome 116 minimum, redirect rejection, and demand-driven refresh without scheduler permissions.
+
+- [`0019-local-function-export.md`](0019-local-function-export.md) — select local Export functions
+  as premium, enforce its configurable gate immediately, retain every existing free capability;
+  partial-failure policy superseded by 0022.
+
+- [`0018-refresh-reuse-and-recovery.md`](0018-refresh-reuse-and-recovery.md) — cross-device
+  revocation on refresh reuse; one stored-pair recovery check with no replay.
+
+- [`0017-extension-oauth-pkce.md`](0017-extension-oauth-pkce.md) — OAuth code + S256 PKCE; opaque
+  rotating tokens and a restart journal that never replays an uncertain refresh.
+
 - [`0009-additive-paid-tier.md`](0009-additive-paid-tier.md) — supersede the billing non-goal;
   preserve ADR 0002 and every existing free feature.
 - [`0010-private-billing-backend.md`](0010-private-billing-backend.md) — keep the backend and

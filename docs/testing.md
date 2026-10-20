@@ -21,6 +21,17 @@ Reference for test layers and evidence requirements. The command gate lives only
 For example, a theme integration test is stronger when it protects selected-state persistence or native
 alias behavior than when it only checks that a custom option node was appended.
 
+### Built-extension billing check
+
+Run `npm run build:dev` then `npm run test:e2e` for the opt-in Playwright billing tests.
+They launch isolated Chromium profiles with the unpacked extension, exercise the popup and
+content modal against the production authorize/login endpoint, preserve OAuth query parameters,
+and verify adjacent tabs, cancellation, trusted storage isolation and a synthetic invalid-code
+callback. The callback must reach the real token endpoint and report failure, protecting native
+worker fetch receiver binding. No credentials are entered or accounts created. Successful
+callback/token persistence and restart/replay validation remain covered by unit tests; owner login
+and actual Zoho downloads remain release acceptance checks.
+
 ## Real-site Verification
 
 Real-site checks are required for:

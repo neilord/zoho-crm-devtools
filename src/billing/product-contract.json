@@ -1,0 +1,37 @@
+{
+  "version": "0.1.0",
+  "extensionAuth": {
+    "authorizePath": "/v1/auth/oauth2/authorize",
+    "tokenPath": "/v1/auth/oauth2/token",
+    "revokePath": "/v1/auth/oauth2/revoke",
+    "clientId": "zoho-crm-devtools-extension",
+    "scopes": ["entitlement:read", "offline_access"],
+    "redirectPattern": "chrome-extension://<extension-id>/src/billing/oauth-callback.html",
+    "accessTokenLifetimeSeconds": 900,
+    "refreshTokenLifetimeSeconds": 2592000
+  },
+  "legalDocuments": {
+    "terms": {
+      "effectiveAt": "2026-10-20"
+    },
+    "privacy": {
+      "effectiveAt": "2026-10-20"
+    }
+  },
+  "plans": [
+    {
+      "key": "free",
+      "name": "Free",
+      "priceUsdMonthly": 0
+    },
+    {
+      "key": "pro",
+      "name": "Pro",
+      "priceUsdMonthly": 23
+    }
+  ],
+  "trial": {
+    "plan": "pro",
+    "days": 14
+  }
+}

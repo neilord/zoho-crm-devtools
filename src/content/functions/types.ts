@@ -68,5 +68,10 @@ export interface FunctionRecord {
 
 /** The Deluge source for a record, regardless of function kind. */
 export function getFunctionSource(record: FunctionRecord): string {
-  return record.detail?.script ?? record.detail?.workflow ?? '';
+  const detail = record.detail;
+  return typeof detail?.script === 'string'
+    ? detail.script
+    : typeof detail?.workflow === 'string'
+      ? detail.workflow
+      : '';
 }

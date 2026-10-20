@@ -1,0 +1,306 @@
+/*
+ * Export control on the Functions page. Light DOM, so everything is scoped under the mount id.
+ * The trigger copies the Search All Functions button (same border, radius, height, hover) so the
+ * two read as siblings of Zoho's native secondary buttons.
+ */
+#zcdt-function-export {
+  --zx-text: #313949;
+  --zx-muted: #6b7488;
+  --zx-border: #505d81;
+  --zx-soft-border: #e2e6ee;
+  --zx-accent: #2f6df0;
+  --zx-ok: #2e9e5b;
+  --zx-err: #b3402a;
+  --zx-font: "Zoho_Puvi_Regular", "Segoe UI", system-ui, -apple-system, sans-serif;
+
+  position: relative;
+  display: inline-flex;
+  flex: 0 0 auto;
+  vertical-align: top;
+  margin: 0 0 0 10px;
+  padding: 0;
+  font: 400 14px / 1.4 var(--zx-font);
+  color: var(--zx-text);
+}
+
+#zcdt-function-export *,
+#zcdt-function-export *::before,
+#zcdt-function-export *::after {
+  box-sizing: border-box;
+}
+
+#zcdt-function-export[hidden] {
+  display: none;
+}
+
+#zcdt-function-export button {
+  margin: 0;
+  font-family: var(--zx-font);
+  text-transform: none;
+  letter-spacing: normal;
+  cursor: pointer;
+}
+
+#zcdt-function-export .zx-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  max-width: 100%;
+}
+
+#zcdt-function-export .zx-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 34px;
+  flex: 0 0 auto;
+  padding: 0 12px 0 14px;
+  border: 1px solid var(--zx-border);
+  border-radius: 6px;
+  background: #ffffff;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
+  color: var(--zx-text);
+  font-size: 14px;
+  line-height: 1;
+  outline: 0;
+  transition:
+    background-color 120ms ease,
+    border-color 120ms ease,
+    box-shadow 120ms ease,
+    color 120ms ease;
+}
+
+#zcdt-function-export .zx-trigger svg {
+  flex: 0 0 auto;
+}
+
+#zcdt-function-export .zx-trigger:hover:not(:disabled),
+#zcdt-function-export .zx-trigger:focus-visible,
+#zcdt-function-export .zx-trigger[aria-expanded="true"] {
+  border-color: #6a78ff;
+  background: #f7f9ff;
+  box-shadow: 0 0 0 2px rgba(88, 103, 255, 0.12);
+  color: #2446d8;
+}
+
+#zcdt-function-export .zx-trigger:disabled {
+  cursor: progress;
+  opacity: 0.7;
+}
+
+#zcdt-function-export .zx-menu {
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  max-width: calc(100vw - 16px);
+  z-index: 1000;
+  min-width: 248px;
+  padding: 6px;
+  border: 1px solid var(--zx-soft-border);
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.18);
+}
+
+#zcdt-function-export .zx-menu[hidden] {
+  display: none;
+}
+
+#zcdt-function-export .zx-item {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
+  width: 100%;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--zx-text);
+  text-align: left;
+  outline: 0;
+}
+
+#zcdt-function-export .zx-item:hover,
+#zcdt-function-export .zx-item:focus-visible {
+  background: #eaf1fe;
+}
+
+#zcdt-function-export .zx-item-label {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+#zcdt-function-export .zx-item-hint {
+  color: var(--zx-muted);
+  font-size: 12px;
+}
+
+#zcdt-function-export .zx-status {
+  position: fixed;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 320px;
+  max-width: calc(100vw - 16px);
+  padding: 12px;
+  border: 1px solid #e3e6eb;
+  border-radius: 6px;
+  background: #ffffff;
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.14);
+  font-size: 13px;
+  line-height: 1.5;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+#zcdt-function-export .zx-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+#zcdt-function-export .zx-status:empty {
+  display: none;
+}
+
+#zcdt-function-export .zx-msg {
+  display: inline-flex;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-width: 0;
+}
+
+#zcdt-function-export .zx-msg > svg {
+  flex: 0 0 auto;
+  margin-top: 3px;
+}
+
+#zcdt-function-export .zx-msg > span:not(.zx-file) {
+  flex: 1;
+}
+
+#zcdt-function-export .zx-ok svg {
+  color: var(--zx-ok);
+}
+
+#zcdt-function-export .zx-err svg {
+  color: var(--zx-err);
+}
+
+#zcdt-function-export .zx-file {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--zx-muted);
+  font:
+    12px / 1.4 "JetBrains Mono",
+    "SFMono-Regular",
+    Consolas,
+    monospace;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#zcdt-function-export .fs-spinner {
+  flex: 0 0 auto;
+  color: var(--zx-accent);
+  animation: zx-export-spin 800ms linear infinite;
+}
+
+@keyframes zx-export-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+#zcdt-function-export .zx-bar {
+  position: relative;
+  flex: 0 0 auto;
+  width: 100%;
+  height: 4px;
+  overflow: hidden;
+  border-radius: 2px;
+  background: #e2e6ee;
+}
+
+#zcdt-function-export .zx-bar-fill {
+  display: block;
+  width: var(--zx-progress, 35%);
+  height: 100%;
+  border-radius: 2px;
+  background: var(--zx-accent);
+  transition: width 160ms ease;
+}
+
+#zcdt-function-export .zx-bar[data-indeterminate] .zx-bar-fill {
+  animation: zx-export-slide 1.1s ease-in-out infinite;
+}
+
+@keyframes zx-export-slide {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(300%);
+  }
+}
+
+#zcdt-function-export .zx-retry {
+  padding: 2px 4px;
+  border: 0;
+  border-radius: 3px;
+  background: none;
+  color: var(--zx-accent);
+  font-size: 13px;
+  font-weight: 600;
+  outline: 0;
+}
+
+#zcdt-function-export .zx-retry:hover {
+  text-decoration: underline;
+}
+
+#zcdt-function-export .zx-dismiss {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 4px;
+  font-size: 13px;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--zx-muted);
+  outline: 0;
+}
+
+#zcdt-function-export .zx-dismiss:hover {
+  background: #f1f3f8;
+  color: var(--zx-text);
+}
+
+#zcdt-function-export .zx-retry:focus-visible,
+#zcdt-function-export .zx-dismiss:focus-visible,
+#zcdt-function-export .zx-item:focus-visible {
+  box-shadow: 0 0 0 2px rgba(47, 109, 240, 0.4);
+}
+
+@media (max-width: 640px) {
+  #zcdt-function-export {
+    --zx-left: 16px;
+  }
+  #zcdt-function-export .zx-bar {
+    flex-basis: 64px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #zcdt-function-export .fs-spinner,
+  #zcdt-function-export .zx-bar[data-indeterminate] .zx-bar-fill {
+    animation: none;
+  }
+}

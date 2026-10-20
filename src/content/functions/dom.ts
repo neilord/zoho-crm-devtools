@@ -180,3 +180,31 @@ export function editIcon(size = 16): SVGSVGElement {
     root.appendChild(path('M12 6 L14 8'));
   });
 }
+
+export function downloadIcon(size = 16): SVGSVGElement {
+  return svg(size, (root) => {
+    root.appendChild(path('M10 3 L10 12.5'));
+    root.appendChild(path('M6 9 L10 13 L14 9'));
+    root.appendChild(path('M4 16 L16 16'));
+  });
+}
+
+export function chevronIcon(size = 14): SVGSVGElement {
+  return svg(size, (root) => {
+    root.appendChild(path('M5 8 L10 13 L15 8'));
+  });
+}
+
+export function checkIcon(size = 16): SVGSVGElement {
+  return svg(size, (root) => {
+    root.appendChild(path('M4.5 10.5 L8.5 14.5 L15.5 6'));
+  });
+}
+
+export function warnIcon(size = 16): SVGSVGElement {
+  return svg(size, (root) => {
+    root.appendChild(path('M10 3 L18 16.5 L2 16.5 Z'));
+    root.appendChild(path('M10 8.5 L10 12'));
+    root.appendChild(path('M10 14.3 L10 14.4'));
+  });
+}

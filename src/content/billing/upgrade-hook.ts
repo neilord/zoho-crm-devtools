@@ -1,0 +1,437 @@
+import { contract } from '../../billing/config';
+import { resolvedPlan } from '../../billing/entitlement';
+import type { BillingAction, BillingResults } from '../../billing/protocol';
+import { billingMessage } from '../../shared/browser';
+import { checkIcon, closeIcon, downloadIcon, el, spinnerIcon } from '../functions/dom';
+import {
+  ACCOUNT_CHANGED_EVENT,
+  EXPORT_REQUEST_EVENT,
+  EXPORT_STATE_EVENT,
+} from '../functions/export-events';
+import modalCss from './upgrade-modal.css?inline';
+
+export const UPGRADE_REQUIRED_EVENT = 'billing:upgradeRequired';
+export interface UpgradeRequiredDetail {
+  featureId: 'exportFunctions';
+  reason: 'pro-required';
+}
+
+type AccountState = BillingResults['billing:getEntitlement'];
+
+/** What the modal shows. `error` is an inline, non-alarming note layered on any view. */
+export type UpgradeView =
+  | 'closed'
+  | 'checking'
+  | 'signed-out'
+  | 'signing-in'
+  | 'unavailable'
+  | 'free'
+  | 'awaiting-checkout';
+export interface UpgradeModalState {
+  view: UpgradeView;
+  error: string | null;
+}
+
+export interface UpgradeModalDependencies {
+  send<A extends BillingAction>(type: A): Promise<BillingResults[A]>;
+}
+
+const STYLE_ID = 'zcdt-upgrade-modal-style';
+
+/** Plan facts come from the shared contract; never restate them here. */
+function planFacts() {
+  const pro = contract.plans.find((plan) => plan.key === 'pro');
+  return { price: pro?.priceUsdMonthly ?? null, trialDays: contract.trial.days };
+}
+
+function isPro(account: AccountState): boolean {
+  return account.signedIn && resolvedPlan(account.entitlement) === 'pro';
+}
+
+/** Cancelled windows are a normal outcome, not a failure. */
+function signInErrorMessage(error: unknown): string {
+  return error instanceof Error && /cancel/i.test(error.message)
+    ? 'Sign-in was cancelled. You can try again whenever you are ready.'
+    : 'We could not reach the account service. Check your connection and try again.';
+}
+
+const FOCUSABLE = 'button:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])';
+
+/**
+ * Upgrade dialog for blocked Export attempts. The modal lives on `document.body` (not inside
+ * the fixed export root) so its stacking context is not capped by the root. `host` is the
+ * export root: it supplies the last requested format and receives the resumed request.
+ */
+export function mountUpgradeHook(
+  host: HTMLElement,
+  deps: UpgradeModalDependencies = { send: billingMessage },
+): () => void {
+  const doc = host.ownerDocument;
+  if (!doc.getElementById(STYLE_ID)) {
+    const style = doc.createElement('style');
+    style.id = STYLE_ID;
+    style.textContent = modalCss;
+    doc.head.append(style);
+  }
+
+  let state: UpgradeModalState = { view: 'closed', error: null };
+  let requestedFormat: string | undefined;
+  let returnFocus: HTMLElement | null = null;
+  // Invalidates in-flight account work when the dialog closes or reopens.
+  let generation = 0;
+  let disposed = false;
+
+  const titleId = `zcdt-upgrade-title-${Math.random().toString(36).slice(2, 8)}`;
+  const descId = `${titleId}-desc`;
+  const backdrop = el('div', { className: 'zx-backdrop' });
+  backdrop.dataset.zcdtUpgradeModal = '';
+  backdrop.hidden = true;
+  const dialog = el('div', {
+    className: 'zx-dialog',
+    attrs: {
+      role: 'dialog',
+      'aria-modal': 'true',
+      'aria-labelledby': titleId,
+      'aria-describedby': descId,
+      tabindex: '-1',
+    },
+  });
+  backdrop.append(dialog);
+  doc.body.append(backdrop);
+
+  const closeButton = (): HTMLButtonElement => {
+    const button = el(
+      'button',
+      {
+        className: 'zx-close',
+        type: 'button',
+        attrs: { 'aria-label': 'Close' },
+        dataset: { zcdtUpgradeAction: 'close' },
+        onClick: () => close(),
+      },
+      [closeIcon(16)],
+    );
+    return button;
+  };
+
+  const action = (
+    label: string,
+    className: string,
+    actionName: string,
+    onClick: () => void,
+    sub?: string,
+  ) =>
+    el(
+      'button',
+      {
+        className,
+        type: 'button',
+        dataset: { zcdtUpgradeAction: actionName },
+        onClick: (event) => {
+          event.preventDefault();
+          onClick();
+        },
+      },
+      [
+        el('span', { className: 'zx-btn-label', text: label }),
+        sub ? el('span', { className: 'zx-btn-sub', text: sub }) : null,
+      ],
+    );
+
+  const benefit = (text: string) =>
+    el('li', {}, [el('span', { className: 'zx-tick' }, [checkIcon(14)]), el('span', { text })]);
+
+  function render(): void {
+    const { view, error } = state;
+    const { price, trialDays } = planFacts();
+    const children: Node[] = [closeButton()];
+    const proPill = el('span', { className: 'zx-pro', text: 'PRO' });
+    const mark = el('div', { className: 'zx-mark', attrs: { 'aria-hidden': 'true' } }, [
+      downloadIcon(22),
+    ]);
+    const heading = (title: string, body: string) => [
+      el('div', { className: 'zx-head' }, [mark, proPill]),
+      el('h2', { className: 'zx-title', text: title, attrs: { id: titleId } }),
+      el('p', { className: 'zx-copy', text: body, attrs: { id: descId } }),
+    ];
+    const note = error
+      ? el('p', { className: 'zx-note', text: error, attrs: { role: 'alert' } })
+      : null;
+
+    if (view === 'checking' || view === 'signing-in') {
+      const busy = view === 'signing-in';
+      children.push(
+        ...heading(
+          busy ? 'Finish signing in' : 'Export functions',
+          busy
+            ? 'Complete sign-in in the tab that just opened. This page will continue automatically.'
+            : 'Checking your account…',
+        ),
+        el('div', { className: 'zx-wait', attrs: { role: 'status' } }, [
+          spinnerIcon(18),
+          el('span', { text: busy ? 'Waiting for sign-in…' : 'One moment…' }),
+        ]),
+      );
+    } else if (view === 'unavailable') {
+      children.push(
+        ...heading(
+          'Account unavailable',
+          'We could not verify your plan. Your free editor and search tools keep working.',
+        ),
+        action('Check again', 'zx-primary', 'check', () => void recheck()),
+      );
+    } else if (view === 'free' || view === 'awaiting-checkout') {
+      const waiting = view === 'awaiting-checkout';
+      children.push(
+        ...heading(
+          waiting ? 'Almost there' : 'Export is a Pro feature',
+          waiting
+            ? 'Finish upgrading in the tab that just opened, then check again here.'
+            : 'Your account is on the Free plan. Upgrade to export every function as a local file. The search and editor tools you use today stay free.',
+        ),
+      );
+      if (note) children.push(note);
+      children.push(
+        el('div', { className: 'zx-actions' }, [
+          waiting
+            ? action('I have upgraded, check again', 'zx-primary', 'check', () => void recheck())
+            : action(
+                price === null ? 'Upgrade to Pro' : `Upgrade to Pro — $${price}/month`,
+                'zx-primary',
+                'plans',
+                () => void openExternal('billing:openUpgrade'),
+              ),
+          action(
+            'Manage account',
+            'zx-link',
+            'account',
+            () => void openExternal('billing:openAccount', false),
+          ),
+        ]),
+      );
+    } else {
+      children.push(
+        ...heading(
+          'Export is a Pro feature',
+          'Download all your Zoho CRM functions in one step, including their Deluge code.',
+        ),
+        el('ul', { className: 'zx-benefits' }, [
+          benefit('Export every function as JSON, CSV or Markdown'),
+          benefit('Keep backups for audits, handovers and migrations'),
+          benefit('Files are built in your browser and never sent to us'),
+        ]),
+      );
+      if (note) children.push(note);
+      children.push(
+        el('div', { className: 'zx-actions' }, [
+          action(
+            `Start free ${trialDays}-day Pro trial`,
+            'zx-primary',
+            'sign-in',
+            () => void signIn(),
+            'No card required',
+          ),
+          el('p', { className: 'zx-alt' }, [
+            document.createTextNode('Already have an account? '),
+            el('button', {
+              className: 'zx-inline',
+              type: 'button',
+              text: 'Sign in',
+              dataset: { zcdtUpgradeAction: 'sign-in-existing' },
+              onClick: (event) => {
+                event.preventDefault();
+                void signIn();
+              },
+            }),
+          ]),
+        ]),
+      );
+    }
+    dialog.replaceChildren(...children);
+    dialog.dataset.view = view;
+    dialog.dataset.hasError = error ? 'true' : 'false';
+    if (!dialog.contains(doc.activeElement) || doc.activeElement === doc.body) {
+      (dialog.querySelector<HTMLElement>('.zx-primary') ?? dialog).focus();
+    }
+  }
+
+  function set(next: Partial<UpgradeModalState>): void {
+    if (disposed) return;
+    state = { ...state, ...next };
+    backdrop.hidden = state.view === 'closed';
+    backdrop.dataset.view = state.view;
+    if (state.view !== 'closed') render();
+  }
+
+  async function readAccount(): Promise<AccountState> {
+    let account = await deps.send('billing:getEntitlement');
+    // A pending rotation needs one more read to finish stored-pair recovery.
+    if (account.signedOutPending) account = await deps.send('billing:getEntitlement');
+    return account;
+  }
+
+  function classify(account: AccountState): UpgradeView {
+    if (account.signedIn && !account.entitlement.checkedAt) return 'unavailable';
+    return account.signedIn ? 'free' : 'signed-out';
+  }
+
+  function resumeExport(): void {
+    if (requestedFormat)
+      host.dispatchEvent(
+        new CustomEvent(EXPORT_REQUEST_EVENT, { detail: { format: requestedFormat } }),
+      );
+  }
+
+  function close(): void {
+    if (state.view === 'closed') return;
+    generation++;
+    set({ view: 'closed', error: null });
+    const previous = returnFocus;
+    const target =
+      previous?.isConnected && !(previous as HTMLButtonElement).disabled
+        ? previous
+        : host.querySelector<HTMLElement>('[data-zcdt-export-run]');
+    returnFocus = null;
+    target?.focus();
+  }
+
+  /** Entitled: dismiss, tell the export control, and run the export the user asked for. */
+  function finishEntitled(): void {
+    host.dispatchEvent(new CustomEvent(ACCOUNT_CHANGED_EVENT, { bubbles: true }));
+    close();
+    resumeExport();
+  }
+
+  async function open(): Promise<void> {
+    if (state.view !== 'closed') return;
+    const mine = ++generation;
+    returnFocus = doc.activeElement instanceof HTMLElement ? doc.activeElement : null;
+    set({ view: 'checking', error: null });
+    let view: UpgradeView = 'signed-out';
+    try {
+      const account = await readAccount();
+      if (mine !== generation) return;
+      if (isPro(account)) {
+        finishEntitled();
+        return;
+      }
+      view = classify(account);
+    } catch {
+      if (mine !== generation) return;
+    }
+    set({ view, error: null });
+  }
+
+  async function signIn(): Promise<void> {
+    if (state.view !== 'signed-out') return;
+    const mine = generation;
+    set({ view: 'signing-in', error: null });
+    try {
+      let account = await deps.send('billing:signIn');
+      if (account.signedOutPending) account = await deps.send('billing:getEntitlement');
+      if (mine !== generation) {
+        host.dispatchEvent(new CustomEvent(ACCOUNT_CHANGED_EVENT, { bubbles: true }));
+        return;
+      }
+      if (isPro(account)) return finishEntitled();
+      if (account.signedIn) {
+        host.dispatchEvent(new CustomEvent(ACCOUNT_CHANGED_EVENT, { bubbles: true }));
+        return set({ view: classify(account), error: null });
+      }
+      set({
+        view: 'signed-out',
+        error: account.cancelled
+          ? 'Sign-in was cancelled. You can try again whenever you are ready.'
+          : 'Sign-in failed. Please try again.',
+      });
+    } catch (error) {
+      if (mine !== generation) return;
+      set({ view: 'signed-out', error: signInErrorMessage(error) });
+    }
+  }
+
+  async function openExternal(type: 'billing:openUpgrade' | 'billing:openAccount', await_ = true) {
+    const mine = generation;
+    try {
+      await deps.send(type);
+      if (mine === generation && await_) set({ view: 'awaiting-checkout', error: null });
+    } catch {
+      if (mine === generation)
+        set({ error: 'The account page could not be opened. Please try again.' });
+    }
+  }
+
+  async function recheck(): Promise<void> {
+    const mine = generation;
+    set({ view: 'checking', error: null });
+    try {
+      const account = await readAccount();
+      if (mine !== generation) return;
+      if (isPro(account)) return finishEntitled();
+      if (classify(account) === 'unavailable') return set({ view: 'unavailable', error: null });
+      set({
+        view: 'awaiting-checkout',
+        error: 'Your plan has not updated yet. It can take up to five minutes after checkout.',
+      });
+    } catch {
+      if (mine === generation)
+        set({
+          view: 'awaiting-checkout',
+          error: 'We could not check your plan right now. Please try again.',
+        });
+    }
+  }
+
+  const onRequired = (event: Event) => {
+    const detail = (event as CustomEvent<UpgradeRequiredDetail>).detail;
+    if (detail?.featureId === 'exportFunctions' && detail.reason === 'pro-required') void open();
+  };
+  const onExportState = (event: Event) => {
+    const detail = (event as CustomEvent<{ format?: string }>).detail;
+    if (detail?.format) requestedFormat = detail.format;
+  };
+  const onKeydown = (event: KeyboardEvent) => {
+    if (state.view === 'closed') return;
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      event.stopPropagation();
+      close();
+      return;
+    }
+    if (event.key !== 'Tab') return;
+    const items = [...dialog.querySelectorAll<HTMLElement>(FOCUSABLE)];
+    if (items.length === 0) {
+      event.preventDefault();
+      dialog.focus();
+      return;
+    }
+    const first = items[0];
+    const last = items[items.length - 1];
+    const active = doc.activeElement;
+    if (event.shiftKey && (active === first || active === dialog)) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && active === last) {
+      event.preventDefault();
+      first.focus();
+    } else if (!dialog.contains(active)) {
+      event.preventDefault();
+      first.focus();
+    }
+  };
+  backdrop.addEventListener('mousedown', (event) => {
+    if (event.target === backdrop) close();
+  });
+  backdrop.addEventListener('keydown', onKeydown);
+  doc.addEventListener(UPGRADE_REQUIRED_EVENT, onRequired);
+  host.addEventListener(EXPORT_STATE_EVENT, onExportState);
+
+  return () => {
+    close();
+    disposed = true;
+    generation++;
+    doc.removeEventListener(UPGRADE_REQUIRED_EVENT, onRequired);
+    host.removeEventListener(EXPORT_STATE_EVENT, onExportState);
+    backdrop.remove();
+  };
+}

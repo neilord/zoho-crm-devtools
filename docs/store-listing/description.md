@@ -1,7 +1,7 @@
 Zoho CRM DevTools enhances the default Zoho CRM Deluge Function Editor with polished themes and practical editor improvements.
 
 ✪ What's New
-September 16, 2026 – Search All Functions now appears right beside Zoho's native Search field in the new Functions layout, so it stays easy to find.
+October 20, 2026 – Export functions now sits beside Search All Functions. Download your org's functions as JSON, CSV or Markdown with Pro. All existing features stay free without an account.
 
 ✪ Editor Themes
 Choose from a selection of handpicked themes to give the editor a cleaner, more modern look.
@@ -11,3 +11,23 @@ Improve readability with indent guides and enhanced syntax highlighting for Delu
 
 ✪ Search All Functions
 Search across every Deluge function in your org at once — names, API names, descriptions, and source code — with a syntax-highlighted source preview, then jump straight into Zoho's native editor to make the change.
+
+✪ Optional Account and Pro
+All existing features, including editor themes, code enhancements and Search All Functions,
+remain free forever with no account required.
+
+Export functions is a new paid Pro feature: $23/month after a 14-day free trial, no card required.
+Every new account gets the trial automatically. When it ends, you return to Free unless you
+choose to subscribe; you are not charged automatically without setting up billing.
+
+Export downloads your functions locally as JSON, CSV or Markdown. Your Zoho data and function
+code are never sent to our account service or Stripe.
+
+Payments are processed by Stripe on https://devtools.zsetup.com, outside the Chrome Web Store.
+The seller is Roman Shostak LLC (ZSetup), not Google. Manage or cancel your subscription on our
+website. Pricing: https://devtools.zsetup.com/pricing
+
+Optional sign-in opens a normal browser tab. Account tokens are stored locally on your device.
+Privacy: https://devtools.zsetup.com/privacy
+Terms: https://devtools.zsetup.com/terms
+Support: https://devtools.zsetup.com/support

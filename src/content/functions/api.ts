@@ -20,11 +20,13 @@ export function buildFunctionsUrl(context: CrmContext, start: number): string {
 }
 
 export function buildFunctionDetailUrl(context: CrmContext, summary: ZohoFunctionSummary): string {
+  if (!summary.id || summary.id === '.' || summary.id === '..')
+    throw new Error('Invalid function id');
   const params = new URLSearchParams({
     language: summary.language ?? 'deluge',
     source: summary.source ?? 'crm',
   });
-  return `${context.origin}/crm/${DELUGE_API_VERSION}/settings/functions/${summary.id}?${params.toString()}`;
+  return `${context.origin}/crm/${DELUGE_API_VERSION}/settings/functions/${encodeURIComponent(summary.id)}?${params.toString()}`;
 }
 
 function asRecord(value: unknown): Record<string, unknown> | null {
@@ -44,6 +46,7 @@ function request(context: CrmContext, url: string, fetchImpl: FetchLike): Promis
     method: 'GET',
     headers: buildRequestHeaders(context),
     credentials: 'include',
+    redirect: 'error',
   });
 }
 
@@ -73,6 +76,7 @@ export async function fetchAllFunctions(
       break;
     }
 
+    const previousSize = seen.size;
     for (const raw of page) {
       const summary = normalizeSummary(raw);
       if (summary && !seen.has(summary.id)) {
@@ -81,6 +85,9 @@ export async function fetchAllFunctions(
       }
     }
 
+    // A repeated full page must fail instead of looping indefinitely.
+    if (page.length >= PAGE_SIZE && seen.size === previousSize)
+      throw new Error('Zoho functions pagination made no progress');
     if (page.length < PAGE_SIZE) {
       break;
     }
@@ -94,6 +101,7 @@ export async function fetchFunctionDetail(
   context: CrmContext,
   summary: ZohoFunctionSummary,
   fetchImpl: FetchLike = fetch,
+  strict = false,
 ): Promise<ZohoFunctionDetail | null> {
   const response = await request(context, buildFunctionDetailUrl(context, summary), fetchImpl);
   // Zoho sometimes answers a detail request with a bodyless 204, the same signal
@@ -110,7 +118,8 @@ export async function fetchFunctionDetail(
   const body = asRecord(await response.json());
   const list = Array.isArray(body?.functions) ? body.functions : [];
   const detail = asRecord(list[0]);
-  if (!detail) {
+  // Export requires an explicit matching identity; search retains its legacy fallback.
+  if (!detail || (strict && (list.length !== 1 || String(detail.id) !== summary.id))) {
     return null;
   }
 

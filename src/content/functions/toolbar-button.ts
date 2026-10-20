@@ -109,7 +109,11 @@ export function injectSearchButton(
   const referenceNode = placement === 'after' ? anchor.nextSibling : anchor;
   const isPlaced =
     button.parentElement === parent &&
-    (placement === 'after' ? button.previousSibling === anchor : button.nextSibling === anchor);
+    (placement === 'after'
+      ? button.previousSibling === anchor
+      : button.nextSibling === anchor ||
+        (button.nextElementSibling?.id === 'zcdt-function-export' &&
+          button.nextElementSibling.nextSibling === anchor));
   if (!isPlaced) {
     parent.insertBefore(button, referenceNode);
   }

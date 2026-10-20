@@ -1,4 +1,4 @@
-import { browser, type StorageArea } from '../../shared/browser';
+import { functionCacheStorage, type StorageArea } from '../../shared/browser';
 import { fetchAllFunctions, fetchFunctionDetail } from './api';
 import type { CrmContext } from './crm-context';
 import type { FunctionRecord, ZohoFunctionSummary } from './types';
@@ -121,7 +121,7 @@ async function runPool<T>(
 export async function loadFunctions(
   context: CrmContext,
   handlers: LoadHandlers,
-  storage: StorageArea = browser.storage.local,
+  storage: StorageArea = functionCacheStorage,
 ): Promise<void> {
   const recordCache = await getOrgCache(context.orgId, storage);
 

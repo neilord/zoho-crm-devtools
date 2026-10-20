@@ -33,14 +33,20 @@ const crmMatches = [
   'https://*.zohoportal.in/*',
 ] as const;
 
+// Stable public key for unpacked OAuth/CORS testing only; no private key is retained.
+const DEV_PUBLIC_KEY =
+  'MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAnk1tNv9wRqMVufnHVAcFtruaZiBL4QoksLocJJCY3QwbBMqhuOcYNaBVcFMBTecwzvg2fi3ayuga3e8ZmJsSXsA9OhKMqI5sCh6UglYZt1+3bd8838VkSQg/m/sPhcWZTGI1B0lBwe31y4MAs3uHPEBMmXZBfcyyM0tIASnUDdgwXRLsQTfqx0Wve+N5sPnMjPfh3LI8rHbwzATOzs6/98NQwie/ucahA10Pg/JtP0/z2/gKN2UhQ5+ArQCRA7vhyLuPVIP3HmhQiecXPukc0Xl6A/OcKZJ11uTNCmqiS758tWoUOOUelOlYYas1UvX2euaGpsWtMQfh/OmGGE4VVQIDAQAB';
+
 export function createManifest(mode: string): ManifestV3 {
   const manifest: ManifestV3 = {
     manifest_version: 3,
+    minimum_chrome_version: '116',
     name: 'Zoho CRM DevTools',
-    version: '2.3.0',
+    version: '2.4.0',
     description: 'Enhance the Zoho CRM Deluge editor with themes and editor improvements.',
     icons: extensionIcons,
     permissions: ['storage'],
+    background: { service_worker: 'src/background/index.ts', type: 'module' },
     action: {
       default_title: 'Zoho CRM DevTools',
       default_popup: 'src/popup/index.html',
@@ -58,6 +64,11 @@ export function createManifest(mode: string): ManifestV3 {
     // exposing it here lets that injected script bypass the page CSP.
     web_accessible_resources: [
       {
+        resources: ['src/billing/oauth-callback.html'],
+        matches: ['https://devtools.zsetup.com/*', 'https://api.devtools.zsetup.com/*'],
+        use_dynamic_url: false,
+      },
+      {
         resources: ['zcdt-function-edit-bridge.js'],
         matches: [...crmMatches],
       },
@@ -65,6 +76,7 @@ export function createManifest(mode: string): ManifestV3 {
   };
 
   if (mode === 'development') {
+    manifest.key = DEV_PUBLIC_KEY;
     manifest.background = {
       service_worker: 'src/internal/dev-reload/background-entry.ts',
       type: 'module',

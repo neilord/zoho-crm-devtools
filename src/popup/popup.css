@@ -37,3 +37,153 @@ input {
   width: 18px;
   height: 18px;
 }
+
+/* Account & plan */
+[data-notice]:empty {
+  display: none;
+}
+
+.notice {
+  margin: 0 0 14px;
+  padding: 12px;
+  border: 1px solid #b9cdf0;
+  border-radius: 8px;
+  background: #eaf1fc;
+}
+
+.notice-title {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 13px;
+}
+
+.notice .notice-text {
+  margin: 0 0 6px;
+  color: #34425c;
+  line-height: 1.4;
+}
+
+.notice-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.notice-link {
+  color: #1f5fbf;
+  font-size: 12px;
+}
+
+[data-account] {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid #dfe5ef;
+}
+
+.acct-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.acct-title {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.badge {
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: #dbe8fb;
+  color: #1f5fbf;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.acct .acct-text {
+  text-wrap: pretty;
+  margin: 0 0 10px;
+  line-height: 1.4;
+}
+
+.acct-note {
+  margin: 8px 0 0;
+  color: #9a3b2e;
+}
+
+.acct-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 10px;
+}
+
+.btn {
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.btn:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+
+.btn:focus-visible {
+  outline: 2px solid #1f5fbf;
+  outline-offset: 2px;
+}
+
+.btn-primary {
+  padding: 5px 10px;
+  border: 1px solid #1f5fbf;
+  border-radius: 6px;
+  background: #1f5fbf;
+  color: #fff;
+  font-weight: 600;
+}
+
+.btn-link {
+  padding: 4px 0;
+  border: 0;
+  background: none;
+  color: #1f5fbf;
+}
+
+.btn-link:hover:not(:disabled) {
+  text-decoration: underline;
+}
+
+.skeleton {
+  display: block;
+  border-radius: 4px;
+  background: linear-gradient(90deg, #e4e9f2 25%, #eef2f8 50%, #e4e9f2 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+}
+
+.skeleton-title {
+  width: 90px;
+  height: 14px;
+  margin-bottom: 8px;
+}
+
+.skeleton-line {
+  width: 100%;
+  height: 12px;
+}
+
+@keyframes shimmer {
+  to {
+    background-position: -200% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton {
+    animation: none;
+  }
+}

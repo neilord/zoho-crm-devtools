@@ -56,7 +56,16 @@ describe('development-only extension reload tooling', () => {
       (script) => script.js ?? [],
     );
 
-    expect(productionManifest.background).toBeUndefined();
+    expect(productionManifest.background).toEqual({
+      service_worker: 'src/background/index.ts',
+      type: 'module',
+    });
+    expect(productionManifest.key).toBeUndefined();
+    expect(developmentManifest.key).toBeTruthy();
+    expect(productionManifest.minimum_chrome_version).toBe('116');
+    expect(productionManifest.permissions).toEqual(['storage']);
+    expect(productionManifest.host_permissions).toBeUndefined();
+    expect(productionManifest.optional_host_permissions).toBeUndefined();
     expect(productionEntrypoints).not.toContain('src/internal/dev-tools/content-entry.ts');
 
     expect(developmentManifest.background).toEqual({

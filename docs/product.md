@@ -21,7 +21,7 @@ Zoho CRM DevTools improves the Zoho CRM Deluge editor while staying close to Zoh
 ## Non-goals
 
 - GitHub sync
-- Bulk import/export (a future home for function export/backup)
+- Import/restore and bulk operations beyond the read-only function exports approved in ADR 0019
 - Zoho products outside CRM
 - Firefox support
 
@@ -34,3 +34,14 @@ Accounts, billing, and premium gates are in scope for additive paid capabilities
 Nothing already free becomes paid. Premium features are additive and premium from
 their first release; free use requires no account or subscription.
 [ADR 0002](decisions/0002-monetization.md) remains in force.
+
+Stage 1 adds optional account connection, server-resolved entitlement, website plan/account
+links, and a persisted disclosure notice. New accounts receive a 14-day free Pro trial, no card
+required, resolved by the server (ADR 0016).
+
+**Export functions** is the selected first premium capability (ADR 0019): download all the org's
+function metadata and Deluge source locally as JSON, CSV, or one combined Markdown document.
+Pro/current trial entitlement permits export; Free/signed-out users see an upgrade hook. Its
+configurable gate is enforced from first availability, refining the two-release direction for this
+new feature only. Existing free editor/search capabilities remain free without an account.
+Frontend styling and dashboard bottom-left placement are implemented; live acceptance remains pending.

@@ -193,3 +193,22 @@ anchor is selector-fragile.
   especially rare error and helper popovers
 - The cross-function search fallback anchor, endpoint shapes, and editor globals are undocumented;
   they require a live regression check whenever that integration changes.
+
+## Function export integration
+
+Export reuses the observed list/detail endpoints and their request-context adapter. Both export and
+search pass `summary.source` verbatim (default `crm` only when nullish), and use the same language,
+cookie credentials, org and CSRF headers. No category-specific alternate endpoint is verified.
+Export always reads fresh details, while search reuses its cache and tolerates unreadable details.
+
+Owner-supplied October 2026 evidence from a large `.com` org: paginated lists return 200, several
+`source=crm` detail requests return 503, and a different function with `source=extension` returns
+200. These are different IDs, so this does not demonstrate that changing source fixes a function.
+History of `api.ts` shows this source contract since search's introduction; later changes handled
+204, redirect rejection and strict export identity validation, not a source remapping. A server-side
+function-specific failure or transient overload is plausible, but the cause of 503 is unconfirmed.
+Search working does not prove every fresh detail succeeds: its cache and failure tolerance differ.
+Do not guess source values or endpoints from category. Export retries 429/5xx, bounds concurrency,
+and accounts for persistent failures in the local file; see `architecture.md` §10 and ADR 0022.
+No Zoho write, alternate endpoint or new selector was introduced. Real-org acceptance remains
+required; the automated toolbar harness uses sanitized existing new-layout hooks only.

@@ -29,6 +29,11 @@ function summary(id: string): ZohoFunctionSummary {
 }
 
 describe('request building', () => {
+  it('keeps untrusted ids within one path segment and rejects dot segments', () => {
+    expect(buildFunctionDetailUrl(context, summary('a/b?c#d'))).toContain('/a%2Fb%3Fc%23d?');
+    for (const id of ['', '.', '..'])
+      expect(() => buildFunctionDetailUrl(context, summary(id))).toThrow();
+  });
   it('builds the paginated list URL', () => {
     expect(buildFunctionsUrl(context, 1)).toBe(
       'https://crm.zoho.eu/crm/v2/settings/functions?type=org&start=1&limit=200',
@@ -50,6 +55,14 @@ describe('request building', () => {
 });
 
 describe('fetchAllFunctions', () => {
+  it('fails rather than looping when Zoho repeats a full page', async () => {
+    const functions = Array.from({ length: 200 }, (_, i) => ({ id: i + 1 }));
+    const request = vi.fn<FetchLike>().mockResolvedValue(jsonResponse({ functions }));
+    await expect(fetchAllFunctions(context, request)).rejects.toThrow(
+      'pagination made no progress',
+    );
+    expect(request).toHaveBeenCalledTimes(2);
+  });
   it('pages until a short page and de-duplicates ids', async () => {
     const firstPage = Array.from({ length: 200 }, (_, index) => ({ id: index + 1 }));
     const secondPage = [{ id: 200 }, { id: 201 }]; // 200 repeats across the boundary

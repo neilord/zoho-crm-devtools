@@ -5,6 +5,7 @@ import {
   isFunctionsListLocation,
 } from '../zoho/functions-page';
 import { resolveCrmContext } from './crm-context';
+import { EXPORT_MOUNT_ID, mountFunctionExport } from './export-ui';
 import { openFunctionSearchOverlay } from './overlay';
 import { injectSearchButton } from './toolbar-button';
 
@@ -20,20 +21,44 @@ export async function bootstrapFunctionSearch(): Promise<void> {
     return;
   }
 
+  let exportMount: { root: HTMLElement; dispose(): void } | undefined;
+  const ensureExport = (anchor: HTMLElement | null): void => {
+    const toolbar = anchor?.parentElement;
+    if (!toolbar) return;
+    if (exportMount?.root.isConnected) {
+      if (anchor.nextElementSibling !== exportMount.root) anchor.after(exportMount.root);
+      return;
+    }
+    exportMount?.dispose();
+    const root = document.createElement('section');
+    root.id = EXPORT_MOUNT_ID;
+    anchor.after(root);
+    const dispose = mountFunctionExport(root);
+    exportMount = {
+      root,
+      dispose: () => {
+        dispose();
+        root.remove();
+      },
+    };
+  };
+
   const ensureButton = (): void => {
     if (!isFunctionsListLocation()) {
+      exportMount?.dispose();
+      exportMount = undefined;
       return;
     }
 
     const searchAnchor = findFunctionSearchButtonAnchor();
     if (searchAnchor) {
-      injectSearchButton(searchAnchor, openOverlay, 'after');
+      ensureExport(injectSearchButton(searchAnchor, openOverlay, 'after'));
       return;
     }
 
     const createAnchor = findCreateFunctionButton();
     if (createAnchor) {
-      injectSearchButton(createAnchor, openOverlay, 'before');
+      ensureExport(injectSearchButton(createAnchor, openOverlay, 'before'));
     }
   };
 

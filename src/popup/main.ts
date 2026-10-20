@@ -2,6 +2,7 @@ import { crmMatches } from '../../manifest.config';
 import type { Settings } from '../settings/schema';
 import { loadSettings, saveSettings } from '../settings/storage';
 import { browser } from '../shared/browser';
+import { mountAccount, mountNotice } from './account';
 
 const enabledInput = document.querySelector<HTMLInputElement>('#extension-enabled');
 const pageStatus = document.querySelector<HTMLElement>('#page-status');
@@ -43,3 +44,8 @@ async function initializePopup(): Promise<void> {
 }
 
 void initializePopup();
+
+const accountRoot = document.querySelector<HTMLElement>('[data-account]');
+if (accountRoot) mountAccount(accountRoot);
+const noticeRoot = document.querySelector<HTMLElement>('[data-notice]');
+if (noticeRoot) mountNotice(noticeRoot);
