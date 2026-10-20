@@ -18,7 +18,8 @@ Live acceptance on 2026-10-20 in an authenticated US org (~918 functions, read-o
 Functions and Export render side by side in the new toolbar; signed-out Export opens the upgrade
 modal; "Start free trial" signs in through a normal adjacent tab and resumes the export; JSON, CSV
 and Markdown downloads each contained 836 functions plus an explicit list of 82 that Zoho would not
-return source for (extension-bundled functions); Search All Functions still works. Not checked
+return source for (all lacked a `source` value in the list response; cause unconfirmed); Search All
+Functions still works. Not checked
 live: popup account card states, disconnect, and the existing-user notice (covered by jsdom tests).
 
 Listing copy and paste-ready dashboard/privacy/reviewer/What's new fields are in
