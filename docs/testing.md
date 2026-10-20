@@ -32,6 +32,31 @@ worker fetch receiver binding. No credentials are entered or accounts created. S
 callback/token persistence and restart/replay validation remain covered by unit tests; owner login
 and actual Zoho downloads remain release acceptance checks.
 
+### Built-extension workflow cache regression
+
+Run `npm run test:e2e:workflows`. This builds an unlocked development extension and runs the
+opt-in isolated Chromium check (skipped by the general billing E2E command). It
+loads the actual extension and worker, intercepts all CRM traffic with synthetic responses,
+and indexes 330 rules, 212 exact source dependencies, five name-only bindings and 92 HTML
+templates. It includes an unrelated catalogue entry with `api_name:null`, the live cache-write
+regression. It asserts persisted storage, close/reopen and page-reload coverage within two seconds,
+bounded initial request counts and no repeated unchanged rule-detail reads. Every warm API
+response is held until code, template-body and action-resource searches succeed, so refreshed
+responses cannot mask missing cached matches. The badge must show cached gaps plus refreshing.
+Catalogue timestamps cover unchanged-source skips and changed-source re-reads; unit tests cover
+unknown timestamps and failed-refresh persistence. A controlled four-source
+failure changes six durable gaps to ten; targeted retry returns to six. Content/worker consoles
+are collected. It takes approximately 15 seconds; no real org/account access is needed.
+
+### Workflow cache contract fixtures
+
+`workflow-cache-shapes.test.ts` uses type-exhaustive action/trigger/load/join/source records to
+roundtrip both cache schemas, including unknown variants, nullable/empty/namespaced IDs, Unicode
+source and long HTML. Invalid envelopes assert indexed diagnostics and unchanged byte limits.
+`workflow-joins.test.ts` tests every catalogue permutation and JSON hydration for exact, name-only,
+ambiguous and conflicting duplicate identities. The store test also checks conflicts before
+pagination deduplication. These tests run with the normal verification gate.
+
 ## Real-site Verification
 
 Real-site checks are required for:

@@ -30,7 +30,7 @@ export interface ZohoFunctionTasks {
 export interface ZohoFunctionSummary {
   id: string;
   display_name: string;
-  api_name?: string;
+  api_name?: string | null;
   /** Coarse bucket, e.g. `Standalone`, `Automation`, `Dynamic`, `ExtensionAction`. */
   category: string;
   /** Used when requesting details. Usually `deluge`. */
@@ -41,7 +41,7 @@ export interface ZohoFunctionSummary {
   createdTime?: string | number;
   updatedTime?: string | number;
   /** Extension functions expose their namespace here, used as a finer category. */
-  workflow?: { namespace?: string } | null;
+  workflow?: { namespace?: string; name?: string } | null;
   associated_place?: ZohoAssociatedPlace[];
   rest_api?: ZohoRestApi[];
   tasks?: ZohoFunctionTasks | null;

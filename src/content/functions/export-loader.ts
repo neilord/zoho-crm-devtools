@@ -1,4 +1,6 @@
 import type { SkippedFunction } from '../../features/function-export';
+import { retryRequest } from '../zoho/api-client';
+import { zohoRequestPool } from '../zoho/request-pool';
 import { type FetchLike, fetchAllFunctions, fetchFunctionDetail } from './api';
 import type { CrmContext } from './crm-context';
 import type { FunctionRecord } from './types';
@@ -10,21 +12,6 @@ export interface ExportProgress {
 export interface ExportLoadResult {
   records: FunctionRecord[];
   skipped: SkippedFunction[];
-}
-
-function pause(ms: number, signal: AbortSignal): Promise<void> {
-  return new Promise((resolve, reject) => {
-    signal.throwIfAborted();
-    const abort = () => {
-      clearTimeout(timer);
-      reject(signal.reason);
-    };
-    const timer = setTimeout(() => {
-      signal.removeEventListener('abort', abort);
-      resolve();
-    }, ms);
-    signal.addEventListener('abort', abort, { once: true });
-  });
 }
 
 /** Fresh read-only export; unreadable details are explicitly accounted for in the file. */
@@ -40,31 +27,9 @@ export async function loadExportFunctions(
   if (signal.aborted) cancel();
   const seen = new Set<string>();
   const request: FetchLike = async (url, init) => {
-    let response: Response;
-    for (let attempt = 0; ; attempt++) {
-      controller.signal.throwIfAborted();
-      response = await fetchImpl(url, {
-        ...init,
-        signal: AbortSignal.any([controller.signal, AbortSignal.timeout(15_000)]),
-      });
-      if (
-        attempt >= 3 ||
-        (response.status !== 429 && response.status < 500) ||
-        response.status > 599
-      )
-        break;
-      // Keep each retry inside its pool slot; don't amplify Zoho overload with extra workers.
-      const retryAfter = response.headers.get('Retry-After');
-      const seconds = retryAfter?.trim() ? Number(retryAfter) : NaN;
-      const date = retryAfter ? Date.parse(retryAfter) : NaN;
-      const minimum = Number.isFinite(seconds)
-        ? Math.max(0, seconds * 1000)
-        : Number.isFinite(date)
-          ? Math.max(0, date - Date.now())
-          : 0;
-      await response.body?.cancel();
-      await pause(Math.max(minimum, 500 * 2 ** attempt + Math.random() * 250), controller.signal);
-    }
+    const response = await zohoRequestPool.run(controller.signal, () =>
+      retryRequest(url, init ?? {}, fetchImpl, controller.signal),
+    );
     if (
       response.ok &&
       response.status !== 204 &&

@@ -15,6 +15,10 @@ renumbers.
 
 ## Log
 
+- [`0024-paid-workflow-search.md`](0024-paid-workflow-search.md) — additive paid workflow search,
+  same-origin indexing, progressive coverage, compressed origin/org warm graph and revalidation,
+  exact API-name joins, and new-tab editor handoff.
+
 - [`0023-paid-entitlement-and-forward-compatible-plans.md`](0023-paid-entitlement-and-forward-compatible-plans.md) —
   paid entitlement gates, future plan keys, Plus trial and three-tier pricing; refines 0011/0016/0019.
 

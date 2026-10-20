@@ -1,4 +1,5 @@
 import { loadSettings } from '../../settings/storage';
+import { startWorkflowFunctionHandoff } from '../workflows/function-handoff';
 import {
   findCreateFunctionButton,
   findFunctionSearchButtonAnchor,
@@ -20,6 +21,9 @@ export async function bootstrapFunctionSearch(): Promise<void> {
   if (!settings.enabled) {
     return;
   }
+
+  const handoffContext = resolveCrmContext();
+  if (handoffContext) startWorkflowFunctionHandoff(handoffContext);
 
   let exportMount: { root: HTMLElement; dispose(): void } | undefined;
   const ensureExport = (anchor: HTMLElement | null): void => {

@@ -212,3 +212,128 @@ Do not guess source values or endpoints from category. Export retries 429/5xx, b
 and accounts for persistent failures in the local file; see `architecture.md` §10 and ADR 0022.
 No Zoho write, alternate endpoint or new selector was introduced. Real-org acceptance remains
 required; the automated toolbar harness uses sanitized existing new-layout hooks only.
+
+## Workflow Rules indexing (observed 2026-10-20)
+
+These contracts come from authenticated, read-only native UI/network research in a US CRM org.
+Fixtures in the repository are independently invented; raw research and customer configuration
+stay outside git. Other DCs and legacy Workflow UIs still require acceptance checks.
+
+### Routes and toolbar
+
+The list route is `/crm/org<digits>/settings/workflow-rules`; the native rule view appends
+`/<ruleId>`. Use the complete path (the bare settings route was not valid). The native anchor is
+`list-workflows #wfSearchWithName1`, also observed as
+`list-workflows lyte-input[data-zcqa="wfSearchWithName1"]`. Insert after this outer Lyte input,
+not its inner input or a global Search placeholder. Its flex parent already contains an `mlAuto`
+right action cluster. Native rule navigation detaches the anchor; Back creates a new node in the
+same document. `zoho/workflows-page.ts` reports delayed mounts, replacements and route departures;
+it does not render controls. Only this toolbar variant was observed.
+
+### Read-only requests
+
+All requests use the page origin, `credentials: include`, `redirect: error`, `X-Crm-Org` from the
+numeric URL org and `X-Zcsrf-Token: crmcsrfparam=<CSRF_TOKEN cookie>`. Both explicit headers were
+necessary in independent probes. JSON Content-Type is compatible with the existing Functions
+adapter. Native tracing/version/X-Requested-With headers were unnecessary. No OAuth token,
+page-world read bridge, host permission, webhook invocation or CRM write is required.
+
+| GET path | Envelope / contract |
+| --- | --- |
+| `/crm/v8/settings/automation/workflow_rules?page=1&per_page=200` | `workflow_rules[]`, `info.more_records`; one-based pages, deduplicate IDs, reject repeated pages |
+| `/crm/v8/settings/automation/workflow_rules/<id>` | Exactly one matching `workflow_rules[]` item; list summaries omit conditions/actions |
+| `/crm/v8/settings/automation/<resource>/<id>` | Matching plural array; resource is `functions`, `email_notifications`, `tasks`, `field_updates` or `webhooks` |
+| `/crm/v8/settings/email_templates/<id>` | `email_templates[]`: name, subject, content/mail_content |
+| `/crm/v8/settings/fields?module=<api_name>` | `fields[]`: id, api_name, field_label/display_label; exact joins, no guessed labels |
+| `/crm/v2.2/settings/modules?feature_name=workflow` | Observed native module-label metadata; not needed by the current loader, which retains API names when labels are absent |
+
+Resource URLs do **not** contain an extra `/actions/` segment. Action library lists also exist,
+but can differ in projections/counts from detail; the index reads only referenced details.
+Visible table rows and `info.count` are not completeness evidence. Null conditions/actions/schedules
+are valid. The shared transport uses a 15-second request timeout, up to three retries for 429/5xx,
+500ms exponential backoff plus up to 250ms jitter, with Retry-After seconds/date as a minimum.
+Retries retain their slot. Workflow rules/resources/templates/metadata/catalogue/sources and Export
+share one tab request budget of four. Existing free Functions search keeps its legacy loader.
+
+### Shapes and namespaces
+
+Rules carry `status.active` independently of `category` (an active draft was observed), plus
+`deprecated`, `modified_time`, module, description and `execute_when:{type,details}`. Detail adds
+ordered `conditions[]` with `sequence_number`, `criteria_details.criteria`,
+`criteria_details.relational_criteria`, `instant_actions.actions[]` and
+`scheduled_actions[]:{id,execute_after,actions}`. Criteria are recursive `group_operator/group`
+or `field/comparator/type/value` predicates. Keep expressions and non-scalar values verbatim;
+never evaluate merge expressions. Preserve schedule objects, including field-relative offsets.
+
+Observed trigger types: field_update, create, create_or_edit, edit, date_or_datetime, mail_sent,
+mail_sent_opened, mail_sent_bounced, email_received, section_update, incoming_call_createedit,
+outgoing_call_createedit. Field updates carry criteria/repeat/match_all; date triggers carry
+field/unit/period/recur_cycle/execute_at. Preserve `b_days` without inferring its semantics.
+`details.trigger_module` can differ from the rule module (related Notes creation).
+Section IDs are searchable; section/layout labels have not been established.
+
+Resource shapes: field updates expose field/type/value/related_module; tasks expose field_mappings
+with field/type/value/display_value; email notifications reference template IDs and recipient
+configuration; webhooks expose URL/http_method/headers/parameters/body/authentication. Index
+configuration as data, never contact configured destinations. Slack (`slack_notifications`),
+assign_owner, add_tags and convert are inline `details`; preserve message/notify_to, assign_to,
+tags/over_write, and conversion field_mappings/configuration respectively. Unknown trigger/action
+wire types remain visible searchable JSON. Delete/score/Cliq-specific schemas are unverified.
+Template markup is parsed through DOMParser inside an inert template wrapper with closing-template
+tags escaped, then reduced to text; it never reaches an HTML injection sink or the live DOM.
+
+A workflow **action ID**, nested automation `function.id` (**CRM ID**), and Functions catalogue
+`id` (**Deluge ID**) are different namespaces. Resolve automation `function.api_name` to one exact
+catalogue `summary.api_name` from the existing `/crm/v2/settings/functions?type=org&start=1&limit=200`
+pagination. Then use that summary's own id/language/source with the existing detail endpoint.
+Never infer the source enum from an automation binding (`platform_plugin` can join to `extension`).
+A unique display_name/workflow.name-only candidate is **uncertain** and is not source-indexed;
+ambiguous/missing candidates are **none**. Catalogue `api_name` can be JSON null even
+for unrelated functions. Cache projection converts non-string names to absent values and retains
+`workflow.name` and the source enum, so a nullable unrelated entry cannot reject the graph or alter
+name-only joins on hydration. Name-only joins require a non-empty binding name. Identical
+catalogue IDs count once; conflicting identity metadata (API/display/workflow name, language or source)
+remains unresolved regardless of order. The workflow reader rejects conflicting duplicate catalogue
+identities before the shared pagination helper discards duplicates; this is a retryable catalogue
+failure rather than a first-page-wins join. See ADR 0024. HTTP 200 without nonempty script/workflow is explicitly
+unavailable. Related editor handoff opens a fresh same-origin Functions tab using a short-lived, single-use
+hash marker containing org, Deluge ID and API name (no code). The Functions bootstrap consumes
+it before awaiting readiness, then re-resolves catalogue ID/API name and its own language/source
+and refetches a strictly matching detail. A separate acknowledged workflow bridge contract renders
+only on the Functions route; it never transitions the Workflow Rules SPA or closes a stale hidden
+editor wrapper. Failures remain visible on the destination page. Search All Functions keeps its
+legacy handoff. See ADR 0024. Zoho may redirect `/settings/functions/myFunctions` to
+`/settings/functions`; workflow handoffs accept both and wait at most ten seconds for the native
+list search control and `customFunctionsObj.renderEditorView` together.
+
+### Progressive coverage and local cache
+
+The index emits list metadata before enrichment, deduplicates shared resources/templates/sources,
+and retains each condition/instant/scheduled occurrence. Failure handles retry just their dependency
+and discover downstream dependencies. Complete coverage excludes failures and missing/uncertain
+source. Gap counts are unique failed dependencies plus missing/unmatched sources and uncertain
+bindings, not the number of affected rules (one source may affect several rules). The Source
+unavailable filter also includes pending sources. Retryable source failures have their own note;
+a failed re-read of a cached missing source counts once. Development completion diagnostics report
+available/missing/unmatched/uncertain counts and failure categories without CRM identities or text.
+Aborted, disposed or changed-origin/org instances cannot publish stale responses.
+
+The worker accepts only exact `workflows:readCache` / `workflows:writeCache` messages with a
+supported HTTPS CRM/Portal origin and numeric org. The derived namespace includes **origin+org**;
+no arbitrary storage keys/URLs/headers are accepted. Schema version 2 wire graphs (with version 1 read compatibility) live in the
+`zcdt-workflow-caches-v1` bucket: maximum three partitions, 3MB each, 6MB total with oldest eviction.
+Oversized/invalid writes fail harmlessly; hydration re-normalizes wire nodes. Validation checks
+the envelope and graph structure without closing raw action/trigger unions or requiring numeric
+cache identifiers. Legacy normalized nodes can have numeric, absent or null raw IDs. Nullable API
+names, empty strings and unfamiliar identifiers remain advisory data; API reads and handoffs retain
+their independent identity checks. Development failures report an indexed structural path and static
+reason (including decoded/encoded size limits), without CRM values or map keys. Shared action
+resources, templates, catalogue, metadata and sources are stored once per dependency, avoiding
+normalized per-occurrence duplication. Cached data stays visible through list pagination and
+background enrichment. Freshness is tracked separately from presence; matching non-null
+modified_time allows reuse of rule detail, and unchanged function catalogue identity plus non-null `updatedTime` allows reuse of source.
+The catalogue list is re-read each load; changed/unknown source timestamps require a detail read.
+Source-refresh failures retain cached text but do not persist the new timestamp as freshness proof.
+Actions/templates/metadata are re-read because no reliable independent change signal is known.
+Settled cached coverage shows its complete/gap state plus “refreshing…” until revalidation settles;
+refresh failures retain cached search data and expose retryable failures. Cache I/O and workflow API I/O both require current paid access first.

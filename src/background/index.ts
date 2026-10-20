@@ -13,9 +13,11 @@ import {
   registerWorkerMessages,
 } from '../shared/browser';
 import { registerFunctionCache } from './function-cache';
+import { registerWorkflowCache } from './workflow-cache';
 
 const ready = protectLocalStorage();
 registerFunctionCache(ready);
+registerWorkflowCache(ready);
 const client = new BillingClient(billingPlatform);
 const signIn = new TabSignIn(client, authTabPlatform);
 const NOTICE_KEY = 'billingNotice2026';

@@ -264,3 +264,32 @@ cache, which the awaiting-checkout message explains.
 These DOM hooks are UX APIs, not authentication boundaries: page code can dispatch DOM events.
 Every actual export rechecks entitlement and never accepts tokens, arbitrary URLs, org ids or
 source records from an event. Existing popup `account` and disclosure hooks remain unchanged.
+
+## 11. Workflow search data layer
+
+`src/content/workflows` owns the normalized rule/condition/schedule/action graph, progressive
+`WorkflowIndex`, related function identity joins and rule-identity-cached literal search documents with
+match provenance. The frozen frontend contract is `types.ts`, `workflow-store.ts` and `search.ts`.
+The dashboard and bootstrap render progressive snapshots without pre-filtering their rule arrays.
+The store preserves unchanged rule identities and exposes nullable expected stage totals; the UI
+uses those totals for coverage. Search retains only the latest query/scope match set per rule. The Zoho route/anchor observer and
+native handoffs live under `src/content/zoho/workflows-page.ts`.
+
+Shared CRM context, status retries/timeouts and an abort-aware request budget live under
+`src/content/zoho`; Functions retains compatibility imports and Export reuses the transport/budget.
+The workflow store checks paid entitlement before cache or API reads. `requestWorkflowSearchAccess`
+opens a feature-configured upgrade modal, resolves on upgrade, and supports caller cancellation;
+Export's existing event adapter remains the default. `workflowSearch` enforces the any-paid gate
+without changing the global planned-feature switch. Development builds may set
+`VITE_WORKFLOW_SEARCH_UNLOCK=true`; the compile-time development-mode guard (also used by billing diagnostics) ignores it in production.
+
+Workflow snapshots use a separate validated worker-only local cache channel partitioned by origin
+and org, with version/size/eviction bounds. Cache and CRM traffic never enter billing requests.
+Coverage, retry and invalidation contracts and observed endpoints live in `zoho-integration.md`.
+
+Workflow search snapshots use a dedicated origin/org-partitioned worker cache channel. The version-2
+wire graph is gzip/base64 compressed before write messaging and local storage (ADR 0024). Existing
+raw versions remain readable. Validation bounds decoded JSON at 32 MB, compressed entries at 3 MB,
+and the worker bucket at three partitions / 6 MB total, evicting oldest partitions. This retains
+the `storage`-only permission model; cache failures are advisory and dev builds log read/write
+failures and byte counts without source contents.

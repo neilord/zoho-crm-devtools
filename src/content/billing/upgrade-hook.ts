@@ -3,7 +3,7 @@ import { resolvedPlan } from '../../billing/entitlement';
 import { planName, trialPriceCopy } from '../../billing/plans';
 import type { BillingAction, BillingResults } from '../../billing/protocol';
 import { billingMessage } from '../../shared/browser';
-import { checkIcon, closeIcon, downloadIcon, el, spinnerIcon } from '../functions/dom';
+import { checkIcon, closeIcon, downloadIcon, el, searchIcon, spinnerIcon } from '../functions/dom';
 import {
   ACCOUNT_CHANGED_EVENT,
   EXPORT_REQUEST_EVENT,
@@ -13,7 +13,7 @@ import modalCss from './upgrade-modal.css?inline';
 
 export const UPGRADE_REQUIRED_EVENT = 'billing:upgradeRequired';
 export interface UpgradeRequiredDetail {
-  featureId: 'exportFunctions';
+  featureId: 'exportFunctions' | 'workflowSearch';
   reason: 'paid-required';
 }
 
@@ -37,6 +37,30 @@ export interface UpgradeModalDependencies {
   send<A extends BillingAction>(type: A): Promise<BillingResults[A]>;
 }
 
+export interface UpgradeFeatureConfig {
+  featureId: UpgradeRequiredDetail['featureId'];
+  title: string;
+  body: string;
+  freeBody: string;
+  benefits: readonly string[];
+  icon(): Node;
+  onEntitled(): void;
+  invoker?: HTMLElement;
+  onClose?(): void;
+}
+export const workflowSearchUpgradeCopy = {
+  featureId: 'workflowSearch' as const,
+  title: 'Search All Workflows is a paid feature',
+  body: 'Search All Workflows is a paid feature included in every paid plan. Search rule configuration and related Deluge source in your browser.',
+  freeBody: 'Search All Workflows is a paid feature included in every paid plan.',
+  benefits: [
+    'Search workflow triggers, conditions and actions',
+    'Find related function source with explicit coverage',
+    'CRM configuration stays in your browser',
+  ],
+  icon: () => searchIcon(22),
+};
+
 const STYLE_ID = 'zcdt-upgrade-modal-style';
 
 /** Plan facts come from the shared contract; never restate them here. */
@@ -58,13 +82,14 @@ function signInErrorMessage(error: unknown): string {
 const FOCUSABLE = 'button:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])';
 
 /**
- * Upgrade dialog for blocked Export attempts. The modal lives on `document.body` (not inside
+ * Feature-configured upgrade dialog; the default adapter handles blocked Export attempts. The modal lives on `document.body` (not inside
  * the fixed export root) so its stacking context is not capped by the root. `host` is the
  * export root: it supplies the last requested format and receives the resumed request.
  */
 export function mountUpgradeHook(
   host: HTMLElement,
   deps: UpgradeModalDependencies = { send: billingMessage },
+  config?: UpgradeFeatureConfig,
 ): () => void {
   const doc = host.ownerDocument;
   if (!doc.getElementById(STYLE_ID)) {
@@ -147,7 +172,7 @@ export function mountUpgradeHook(
     const children: Node[] = [closeButton()];
     const proPill = el('span', { className: 'zx-pro', text: 'PAID' });
     const mark = el('div', { className: 'zx-mark', attrs: { 'aria-hidden': 'true' } }, [
-      downloadIcon(22),
+      config?.icon() ?? downloadIcon(22),
     ]);
     const heading = (title: string, body: string) => [
       el('div', { className: 'zx-head' }, [mark, proPill]),
@@ -162,7 +187,7 @@ export function mountUpgradeHook(
       const busy = view === 'signing-in';
       children.push(
         ...heading(
-          busy ? 'Finish signing in' : 'Export functions',
+          busy ? 'Finish signing in' : (config?.title ?? 'Export functions'),
           busy
             ? 'Complete sign-in in the tab that just opened. This page will continue automatically.'
             : 'Checking your account…',
@@ -184,10 +209,11 @@ export function mountUpgradeHook(
       const waiting = view === 'awaiting-checkout';
       children.push(
         ...heading(
-          waiting ? 'Almost there' : 'Export is a paid feature',
+          waiting ? 'Almost there' : (config?.title ?? 'Export is a paid feature'),
           waiting
             ? 'Finish upgrading in the tab that just opened, then check again here.'
-            : `Your account is on the Free plan. Plus includes function export: ${trialPriceCopy} on your first subscription. The search and editor tools you use today stay free.`,
+            : (config?.freeBody ??
+                `Your account is on the Free plan. Plus includes function export: ${trialPriceCopy} on your first subscription. The search and editor tools you use today stay free.`),
         ),
       );
       if (note) children.push(note);
@@ -212,14 +238,21 @@ export function mountUpgradeHook(
     } else {
       children.push(
         ...heading(
-          'Export is a paid feature',
-          'Download all your Zoho CRM functions in one step, including their Deluge code.',
+          config?.title ?? 'Export is a paid feature',
+          config?.body ??
+            'Download all your Zoho CRM functions in one step, including their Deluge code.',
         ),
-        el('ul', { className: 'zx-benefits' }, [
-          benefit('Export every function as JSON, CSV or Markdown'),
-          benefit('Keep backups for audits, handovers and migrations'),
-          benefit('Files are built in your browser and never sent to us'),
-        ]),
+        el(
+          'ul',
+          { className: 'zx-benefits' },
+          config
+            ? config.benefits.map(benefit)
+            : [
+                benefit('Export every function as JSON, CSV or Markdown'),
+                benefit('Keep backups for audits, handovers and migrations'),
+                benefit('Files are built in your browser and never sent to us'),
+              ],
+        ),
       );
       if (note) children.push(note);
       children.push(
@@ -296,6 +329,10 @@ export function mountUpgradeHook(
   }
 
   function resumeExport(): void {
+    if (config) {
+      config.onEntitled();
+      return;
+    }
     if (requestedFormat)
       host.dispatchEvent(
         new CustomEvent(EXPORT_REQUEST_EVENT, { detail: { format: requestedFormat } }),
@@ -306,13 +343,14 @@ export function mountUpgradeHook(
     if (state.view === 'closed') return;
     generation++;
     set({ view: 'closed', error: null });
-    const previous = returnFocus;
+    const previous = config?.invoker ?? returnFocus;
     const target =
       previous?.isConnected && !(previous as HTMLButtonElement).disabled
         ? previous
-        : host.querySelector<HTMLElement>('[data-zcdt-export-run]');
+        : (config?.invoker ?? host.querySelector<HTMLElement>('[data-zcdt-export-run]'));
     returnFocus = null;
     target?.focus();
+    config?.onClose?.();
   }
 
   /** Entitled: dismiss, tell the export control, and run the export the user asked for. */
@@ -404,7 +442,11 @@ export function mountUpgradeHook(
 
   const onRequired = (event: Event) => {
     const detail = (event as CustomEvent<UpgradeRequiredDetail>).detail;
-    if (detail?.featureId === 'exportFunctions' && detail.reason === 'paid-required') void open();
+    if (
+      detail?.featureId === (config?.featureId ?? 'exportFunctions') &&
+      detail.reason === 'paid-required'
+    )
+      void open();
   };
   const onExportState = (event: Event) => {
     const detail = (event as CustomEvent<{ format?: string }>).detail;

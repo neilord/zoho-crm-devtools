@@ -17,6 +17,9 @@ Zoho CRM DevTools improves the Zoho CRM Deluge editor while staying close to Zoh
 - Cross-function search: a "Search All Functions" control on the Zoho functions page
   opens a search overlay across every Deluge function in the org, including their
   source, with an "Edit in CRM" handoff to Zoho's native editor. Shipped free.
+- Search All Workflows: a control beside Zoho's native workflow search opens a local,
+  progressive index of workflow rules and related function source, with coverage details and
+  native rule/function handoffs. Implemented; pending release. Premium from launch under ADR 0024.
 
 ## Non-goals
 

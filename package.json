@@ -24,7 +24,8 @@
     "test:watch": "vitest",
     "test:e2e": "playwright test",
     "verify": "npm run check && npm run typecheck && npm run test && npm run build",
-    "zip": "npm run build && rm -f zoho-crm-devtools.zip && cd dist && zip -r ../zoho-crm-devtools.zip ."
+    "zip": "npm run build && rm -f zoho-crm-devtools.zip && cd dist && zip -r ../zoho-crm-devtools.zip .",
+    "test:e2e:workflows": "VITE_WORKFLOW_SEARCH_UNLOCK=true npm run build:dev && playwright test --config playwright.workflows.config.ts"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.1",

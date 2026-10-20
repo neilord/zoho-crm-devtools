@@ -66,3 +66,39 @@ export function requestEditInCrm(detail: ZohoFunctionDetail): Promise<boolean> {
       return false;
     });
 }
+
+/** Separate acknowledged contract: legacy Search All Functions keeps its own behavior. */
+export async function requestWorkflowEditInCrm(
+  detail: ZohoFunctionDetail,
+  signal: AbortSignal,
+): Promise<boolean> {
+  await ensureBridge();
+  signal.throwIfAborted();
+  const requestId = crypto.randomUUID();
+  return new Promise((resolve) => {
+    const finish = (ok: boolean) => {
+      clearTimeout(timer);
+      window.removeEventListener('message', receive);
+      signal.removeEventListener('abort', abort);
+      resolve(ok);
+    };
+    const receive = (event: MessageEvent) => {
+      if (
+        event.source === window &&
+        event.origin === location.origin &&
+        event.data?.source === 'zcdt-workflow-function' &&
+        event.data?.action === 'editorResult' &&
+        event.data?.requestId === requestId
+      )
+        finish(event.data.ok === true);
+    };
+    const abort = () => finish(false);
+    const timer = setTimeout(() => finish(false), 15_000);
+    window.addEventListener('message', receive);
+    signal.addEventListener('abort', abort, { once: true });
+    window.postMessage(
+      { source: 'zcdt-workflow-function', action: 'editInCrm', requestId, detail },
+      location.origin,
+    );
+  });
+}

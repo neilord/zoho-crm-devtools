@@ -1,4 +1,5 @@
 import type { FunctionCache, FunctionCacheMessage } from './function-cache-protocol';
+import { packWorkflowCache, unpackWorkflowCache } from './workflow-cache-codec';
 export interface StorageArea {
   get<T extends Record<string, unknown>>(keys?: string[] | null): Promise<T>;
   set(items: Record<string, unknown>): Promise<void>;
@@ -146,4 +147,27 @@ export const authTabPlatform = {
 };
 export function sendOAuthCallback(url: string): Promise<{ ok: boolean }> {
   return getChromeApi().runtime.sendMessage({ type: 'billing:oauthCallback', url });
+}
+
+export async function workflowCacheMessage(
+  message: import('./workflow-cache-protocol').WorkflowCacheMessage,
+): Promise<import('./workflow-cache-protocol').WorkflowCache | null> {
+  let payload = message;
+  if (message.type === 'workflows:writeCache') {
+    const decoded = await unpackWorkflowCache(message.value);
+    if (!decoded) throw new Error('Invalid workflow cache');
+    payload = { ...message, value: await packWorkflowCache(decoded) };
+  }
+  const reply = await getChromeApi().runtime.sendMessage(payload);
+  if (!reply?.ok) throw new Error('Workflow cache unavailable');
+  return unpackWorkflowCache(reply.value);
+}
+
+/** Open synchronously in the click gesture; sever the opener before navigating. */
+export function openIsolatedTab(url: string): boolean {
+  const tab = window.open('about:blank', '_blank');
+  if (!tab) return false;
+  tab.opener = null;
+  tab.location.replace(url);
+  return true;
 }

@@ -1,3 +1,4 @@
+import { buildRequestHeaders } from '../zoho/api-client';
 import type { CrmContext } from './crm-context';
 import type { ZohoFunctionDetail, ZohoFunctionSummary } from './types';
 
@@ -7,13 +8,7 @@ const PAGE_SIZE = 200;
 /** Injectable fetch so the client can be unit tested without a network. */
 export type FetchLike = (input: string, init?: RequestInit) => Promise<Response>;
 
-export function buildRequestHeaders(context: CrmContext): Record<string, string> {
-  return {
-    'Content-Type': 'application/json;charset=UTF-8',
-    'X-Crm-Org': context.orgId,
-    'X-Zcsrf-Token': context.csrfHeader,
-  };
-}
+export { buildRequestHeaders } from '../zoho/api-client';
 
 export function buildFunctionsUrl(context: CrmContext, start: number): string {
   return `${context.origin}/crm/${DELUGE_API_VERSION}/settings/functions?type=org&start=${start}&limit=${PAGE_SIZE}`;

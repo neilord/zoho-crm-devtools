@@ -15,9 +15,7 @@
  * The message source/action below must stay in sync with
  * `src/content/functions/messaging.ts`.
  */
-(function () {
-  'use strict';
-
+(() => {
   var MESSAGE_SOURCE = 'zcdt-function-search';
   var FUNCTIONS_ROUTE = 'crm.settings.section.functions.myFunctions';
   var EDITOR_WRAPPER_SELECTOR = 'crm-deluge-editor-wrapper';
@@ -59,7 +57,7 @@
     }
 
     if (attempt < MAX_EDITOR_WAIT_ATTEMPTS) {
-      window.setTimeout(function () {
+      window.setTimeout(() => {
         openEditor(detail, attempt + 1);
       }, EDITOR_WAIT_INTERVAL_MS);
     } else {
@@ -67,7 +65,49 @@
     }
   }
 
-  window.addEventListener('message', function (event) {
+  // Workflow handoffs arrive on a fresh Functions document. Never transition an unrelated SPA.
+  window.addEventListener('message', (event) => {
+    var data = event.data;
+    if (
+      event.source !== window ||
+      event.origin !== window.location.origin ||
+      !data ||
+      data.source !== 'zcdt-workflow-function' ||
+      data.action !== 'editInCrm'
+    )
+      return;
+    var attempts = 0;
+    function finish(ok) {
+      window.postMessage(
+        { source: data.source, action: 'editorResult', requestId: data.requestId, ok: ok },
+        window.location.origin,
+      );
+    }
+    function attempt() {
+      if (
+        !/^\/crm\/org\d+\/settings\/functions(?:\/myFunctions)?\/?$/.test(window.location.pathname)
+      )
+        return finish(false);
+      var functions = window.customFunctionsObj;
+      // The module can precede the list mount during Zoho's redirect/bootstrap.
+      var list = document.querySelector(
+        '[data-zcqa="fxn_lv_search"], lyte-input#functionSearch, #functionSearch, [data-zcqa="cfSearchFunctions"]',
+      );
+      if (!list || !functions || typeof functions.renderEditorView !== 'function') {
+        if (++attempts < 50) return window.setTimeout(attempt, 200);
+        return finish(false);
+      }
+      try {
+        functions.renderEditorView(JSON.stringify(data.detail), '', '', 'edit');
+        finish(true);
+      } catch {
+        finish(false);
+      }
+    }
+    attempt();
+  });
+
+  window.addEventListener('message', (event) => {
     if (event.source !== window) {
       return;
     }
