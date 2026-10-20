@@ -3,7 +3,7 @@
 The single living state document for this repository. It is a snapshot, not a changelog; completed
 history lives in git and durable reasoning lives in ADRs.
 
-_Last updated: 2026-10-20 — paid-tier decisions landed on `main`; implementation not started._
+_Last updated: 2026-10-20 — billing/export implementation exists on review branches; live acceptance pending._
 
 ## Current status
 
@@ -11,7 +11,9 @@ Version 2.2.0 remains published on the Chrome Web Store (listing checked Septemb
 2.2.1 (new Functions toolbar fix) was packaged but its publication is superseded by 2.3.0, which
 adds the one-time Zoho CRM AI Assistant promo card (ADR 0008) on top of it. 2.3.0 is verified,
 live-checked in an authenticated EU org, and packaged as `zoho-crm-devtools.zip`; Chrome Web Store
-submission is the next manual step. No product implementation is in flight.
+submission is the next manual step. Billing and local function export are implemented on
+`feat/billing-client`; popup and content UI work continues in separate worktrees. These changes
+have not landed on `main`.
 
 ## Status table
 
@@ -27,19 +29,20 @@ submission is the next manual step. No product implementation is in flight.
 
 ## In flight
 
-- Paid-tier work: ADRs 0009–0016 and the product-scope update are **landed on `main`**; no
-  implementation has begun.
-  The new-account trial is settled: 14 days of Pro, no card required (ADR 0016).
-  The separate working plan remains at `docs/plans/billing.md` on `docs/billing-plan`;
-  retain it while implementation and its open owner choices remain outstanding.
-  Next: select the premium feature and resolve its product non-goals versus registry mismatch
-  (ADR 0013), then implement the private backend and extension client under these decisions.
-  `PRIVACY.md` remains unchanged because it describes shipped behavior. Its rewrite and the
-  Chrome Web Store declaration changes must land with the implementation branch, including
-  the first plumbing release, not ahead of it. Update the plan's earlier privacy-update sequence
-  when that branch is resumed. Live signed-out Zoho checks, CORS checks for published and pinned
-  development ids, and Extension Update Testing Tool validation remain implementation release
-  gates; this documentation-only branch changes no runtime behavior.
+- Paid-tier implementation is on `feat/billing-client` (through `d92b322`), with account UI and
+  content UI worktrees on `feat/billing-ui-popup` and `feat/billing-ui-content`. The implementation
+  branch records ADRs 0017–0019, the selected local Export functions capability, privacy updates,
+  and its detailed handoff in `docs/plans/billing-client-review.md`; those files/decisions are not
+  yet on `main`. Read that branch's handoff before continuing implementation.
+  A fresh `npm run verify` on the clean implementation branch passes: 209 tests, TypeScript,
+  production build, and Biome (five existing bridge warnings). UI work is actively in progress;
+  avoid overlapping edits in its worktrees.
+  Next: finish frontend integration, then run live signed-out Zoho/auth/export acceptance,
+  published and pinned-development-origin CORS, and Extension Update Testing Tool validation.
+  Store disclosures, reviewer instructions, and terms/refund/seller details remain release gates.
+  Version stays 2.3.0; no merge, package, or publication of the paid implementation yet.
+  The separate broader working plan remains on `docs/billing-plan`; reconcile its earlier
+  sequence and resolved owner choices with the implementation handoff when resumed.
   Public Chrome Web Store transfer/trader research is complete; the task report is saved outside
   the repository. It recommends verifying the actual legal trader on the existing publisher;
   no transfer or dashboard change was made, and the owner has not adopted a new decision.
