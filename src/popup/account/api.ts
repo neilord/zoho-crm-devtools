@@ -6,6 +6,7 @@ export const account = {
     return state.signedOutPending ? billingMessage('billing:getEntitlement') : state;
   },
   signIn: () => billingMessage('billing:signIn'),
+  signUp: () => billingMessage('billing:signUp'),
   signOut: () => billingMessage('billing:signOut'),
   openUpgrade: () => billingMessage('billing:openUpgrade'),
   openAccount: () => billingMessage('billing:openAccount'),

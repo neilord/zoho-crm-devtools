@@ -93,6 +93,10 @@ describe('OAuth boundary', () => {
     expect(u.searchParams.get('scope')).toBe('entitlement:read offline_access');
     expect(u.searchParams.get('code_challenge_method')).toBe('S256');
     expect(u.searchParams.has('prompt')).toBe(false);
+    expect(u.searchParams.has('screen_hint')).toBe(false);
+    const signUp = new URL((await f.client.beginSignIn({ signUp: true })).url);
+    expect(signUp.searchParams.get('screen_hint')).toBe('signup');
+    expect(signUp.searchParams.get('code_challenge_method')).toBe('S256');
     const callback = `${pending.redirect}?code=single-use&state=${pending.state}&iss=${encodeURIComponent(OAUTH_ISSUER)}`;
     f.request
       .mockResolvedValueOnce(Response.json(tokenReply))

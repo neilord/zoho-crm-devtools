@@ -88,21 +88,31 @@ describe('account card', () => {
     expect(root().querySelector('[aria-busy="true"]')).not.toBeNull();
   });
 
-  it('signed out: Try Plus free, both buttons sign in, then trial pricing', async () => {
+  it('signed out: Try Plus free, trial button signs up, Log in signs in', async () => {
     await mount({ signedIn: false, entitlement: free });
     expect(root().textContent).toContain('Try Plus free');
     expect(root().textContent).toContain('14 days · no card required');
     expect(root().textContent).toContain('Export functions');
     expect(root().textContent).toContain('Then $9 for the first month, $23/month after.');
-    expect(root().querySelectorAll('[data-account-action="sign-in"]')).toHaveLength(2);
+    expect(root().querySelectorAll('[data-account-action="sign-up"]')).toHaveLength(1);
+    expect(root().querySelectorAll('[data-account-action="sign-in"]')).toHaveLength(1);
     expect(root().textContent).toContain('Start free trial');
     expect(root().textContent).toContain('Log in');
     expect(root().textContent).not.toContain('Sign out');
+    respond({ 'billing:signUp': signedIn({ ...base, status: 'trialing' }) });
+    action('sign-up')?.click();
+    await flush();
+    expect(calls).toEqual(['billing:signUp']);
+    expect((root().firstElementChild as HTMLElement).dataset.state).toBe('trial');
+  });
+
+  it('signed out: Log in runs plain sign-in, not sign-up', async () => {
+    await mount({ signedIn: false, entitlement: free });
+    calls.length = 0;
     respond({ 'billing:signIn': signedIn({ ...base, status: 'trialing' }) });
     action('sign-in')?.click();
     await flush();
     expect(calls).toEqual(['billing:signIn']);
-    expect((root().firstElementChild as HTMLElement).dataset.state).toBe('trial');
   });
 
   it('lists every paid plan from the contract as a column, never Free', async () => {
@@ -288,12 +298,10 @@ describe('existing-user notice', () => {
     mountNotice(host);
     await flush();
     expect(host.textContent).toContain(
-      'Everything you use today stays free. Signing in is optional. Plus, Pro and Max add function export and requires a current trial or paid plan.',
+      'Free tools stay free and signing in is optional. An account holds only your email and sign-in tokens; your Zoho data is never sent to it.',
     );
-    expect(host.textContent).toContain(
-      'An account involves your email and sign-in tokens, handled by our account service. Your Zoho data is never sent to it.',
-    );
-    expect(host.textContent).toContain('New: optional account & paid plans');
+    expect(host.textContent).toContain('New: Export functions & Search All Workflows');
+    expect(host.textContent).toContain('Free for 14 days, no card required.');
     expect(host.textContent).toContain('never sent');
     expect(host.querySelector<HTMLAnchorElement>('a')?.href).toBe(PRIVACY_URL);
     host.querySelector<HTMLButtonElement>('[data-notice-dismiss]')?.click();

@@ -68,7 +68,7 @@ export async function billingMessage<A extends import('../billing/protocol').Bil
   };
   let value = await send(type, payload);
   // Short messages wake a restarted worker; no ten-minute runtime port or worker keepalive.
-  if (type === 'billing:signIn') {
+  if (type === 'billing:signIn' || type === 'billing:signUp') {
     while (value?.pending === true) {
       await new Promise((resolve) => setTimeout(resolve, 1000));
       value = await send('billing:signInStatus');

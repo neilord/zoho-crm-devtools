@@ -53,6 +53,13 @@ const signIn = (label: string, tone: Tone): Action => ({
   tone,
   action: 'sign-in',
 });
+/** New accounts get the trial at sign-up, so the trial button opens sign-up instead of login. */
+const signUp = (label: string, tone: Tone): Action => ({
+  label,
+  run: account.signUp,
+  tone,
+  action: 'sign-up',
+});
 const manageBilling = (tone: Tone, label = 'Manage billing'): Action => ({
   label,
   run: account.openBilling,
@@ -93,7 +100,7 @@ export function tileFor(view: SettledView): Tile {
         meta: `${TRIAL_DAYS} days · no card required`,
         chips: true,
         tint: true,
-        actions: [signIn('Start free trial', 'primary'), signIn('Log in', 'secondary')],
+        actions: [signUp('Start free trial', 'primary'), signIn('Log in', 'secondary')],
       };
     case 'free':
       return {
@@ -379,16 +386,16 @@ export function mountNotice(root: HTMLElement): void {
       notice.setAttribute('aria-label', 'What is new');
       const body = el('div', 'notice-body');
       body.append(
-        el('strong', 'notice-title', 'New: optional account & paid plans'),
+        el('strong', 'notice-title', 'New: Export functions & Search All Workflows'),
         el(
           'p',
           'notice-text',
-          'Everything you use today stays free. Signing in is optional. Plus, Pro and Max add function export and requires a current trial or paid plan.',
+          `Export all functions with their Deluge code and search every workflow rule in one place. Free for ${TRIAL_DAYS} days, no card required.`,
         ),
         el(
           'p',
-          'notice-text',
-          'An account involves your email and sign-in tokens, handled by our account service. Your Zoho data is never sent to it.',
+          'notice-text notice-fine',
+          'Free tools stay free and signing in is optional. An account holds only your email and sign-in tokens; your Zoho data is never sent to it.',
         ),
       );
       const row = el('div', 'notice-actions');

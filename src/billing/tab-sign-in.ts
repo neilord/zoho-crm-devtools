@@ -67,7 +67,7 @@ export class TabSignIn {
       Math.max(0, pending.expiresAt - this.now()),
     );
   }
-  start(): Promise<SignInProgress> {
+  start(options: { signUp?: boolean } = {}): Promise<SignInProgress> {
     return this.serial(async () => {
       let pending = await this.read();
       if (pending?.tabId !== undefined) {
@@ -85,7 +85,7 @@ export class TabSignIn {
       if (!pending) {
         const current = await this.platform.current();
         pending = {
-          ...(await this.client.beginSignIn()),
+          ...(await this.client.beginSignIn(options)),
           expiresAt: this.now() + 600_000,
           openerTabId: current?.id,
         };

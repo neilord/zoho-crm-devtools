@@ -261,7 +261,7 @@ export function mountUpgradeHook(
             `Start free ${trialDays}-day ${trialName} trial`,
             'zx-primary',
             'sign-in',
-            () => void signIn(),
+            () => void signIn('billing:signUp'),
             `No card required · then ${trialPriceCopy}`,
           ),
           el('p', { className: 'zx-alt' }, [
@@ -380,12 +380,15 @@ export function mountUpgradeHook(
     set({ view, error: null });
   }
 
-  async function signIn(): Promise<void> {
+  /** The trial button opens sign-up (new accounts get the trial); "Log in" opens login. */
+  async function signIn(
+    type: 'billing:signIn' | 'billing:signUp' = 'billing:signIn',
+  ): Promise<void> {
     if (state.view !== 'signed-out') return;
     const mine = generation;
     set({ view: 'signing-in', error: null });
     try {
-      let account = await deps.send('billing:signIn');
+      let account = await deps.send(type);
       if (account.signedOutPending) account = await deps.send('billing:getEntitlement');
       if (mine !== generation) {
         host.dispatchEvent(new CustomEvent(ACCOUNT_CHANGED_EVENT, { bubbles: true }));

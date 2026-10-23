@@ -3,7 +3,7 @@
 The single living state document for this repository. It is a snapshot, not a changelog; completed
 history lives in git and durable reasoning lives in ADRs.
 
-_Last updated: 2026-10-23 — popup redesign landed on `main` (unreleased); 2.4.0 store submission remains pending._
+_Last updated: 2026-10-24 — popup redesign, feature-led notice and sign-up hint landed on `main` (unreleased); 2.4.0 store submission remains pending._
 
 ## Current status
 
@@ -35,7 +35,7 @@ Listing copy and paste-ready dashboard/privacy/reviewer/What's new fields are in
 | New Functions toolbar | release ready | Search All Functions sits beside the new native Search field. Legacy placement is unchanged (ADR 0007). Version 2.2.1 is verified and packaged; Chrome Web Store publication is pending. Live checks covered both versions of an authenticated EU org, version switches, reloads, dashboard opening, and a 1280px viewport. |
 | Dashboard preview highlighting | done | Own Deluge tokenizer highlights the `fs-code` preview using Zoho's native light palette (ADR 0005). Shipping in 2.2.0. Theme-following deferred to a later release (needs the observed editor theme persisted first). |
 | Paid tier and Export functions | release ready (2.4.0) | Optional account via normal-tab OAuth/PKCE, entitlement with Free fallback, Paid-entitlement-gated Export (JSON/CSV/Markdown) beside Search All Functions, upgrade modal, popup account card, one-time notice. Live-checked in an authenticated org. |
-| Popup redesign | release ready | Landed on `main`: compact account sheet, Plus/Pro/Max checkout columns from the contract (`billing:openCheckout {plan}`, validated against paid keys → `/app/billing?checkout=<plan>`), single Manage billing (`/app/billing`), signed-out Start free trial + Log in, paywall link renamed "Log in". 503 tests and `npm run verify` pass; stubbed-`chrome` screenshots of every state. Owner reviewed the reloaded dev popup on 2026-10-23. Not clicked live: Manage billing, plan-column checkout (incl. plan change for an existing subscriber), sign-in-then-checkout. Signed-out + once-only notice is ~760px, so Chrome scrolls once. "Start free trial" lands on login, not sign-up, until the API's authorize accepts a sign-up hint. |
+| Popup redesign | release ready | Landed on `main`: compact account sheet, Plus/Pro/Max checkout columns from the contract (`billing:openCheckout {plan}`, validated against paid keys → `/app/billing?checkout=<plan>`), single Manage billing (`/app/billing`), signed-out Start free trial + Log in, paywall link renamed "Log in". Trial buttons (popup and paywall) send `billing:signUp`, which adds `screen_hint=signup` so the account site opens /signup; Log in keeps /login (cloud PR #16, deployed and smoke-checked 2026-10-24). The once-only notice now leads with Export functions and Search All Workflows, keeping the account/data disclosure as a fine-print line. 503 tests and `npm run verify` pass; stubbed-`chrome` screenshots of every state. Owner reviewed the reloaded dev popup on 2026-10-23. Not clicked live: Manage billing, plan-column checkout (incl. plan change for an existing subscriber), sign-in-then-checkout. Signed-out + once-only notice is ~760px, so Chrome scrolls once. The sign-up hint was not clicked through in a real extension session. |
 | Search All Workflows | release ready | Landed on `main` for any paid plan (ADR 0024); 493 tests and the Chromium harness (`npm run test:e2e:workflows`) pass. Authenticated US-org live acceptance passed on 2026-10-21: 327 rules, ~50 s cold index, cached search usable in ~3 s on reopen, 6 function-source gaps (1 unavailable, 5 name-only). Not verified live: free-user upgrade modal (jsdom only), other DCs, 1024/1280 widths, delete/score/Cliq types. Known nit: after Esc, a scope-chip click then immediate typing can miss search focus. Unreleased; upgrade-modal copy needs owner approval. |
 | Agent context | done | Closed docs taxonomy, ADR log, living state, and guardrails are installed. |
 | Rare Zoho surfaces | in-progress | Editor mount/settings selectors and less common overlays still need observation as they appear. |
@@ -94,14 +94,15 @@ Listing copy and paste-ready dashboard/privacy/reviewer/What's new fields are in
 
 ## Next
 
-1. After 2.3.0 is published, watch the AI Assistant listing's `utm_source=zoho-crm-devtools`
+1. **CRM functionality map (next major feature)** — a flowchart of everything configured in the CRM (functions, workflows and their relations) to view, sort, filter and understand in one place. Not started; plan it under `docs/plans/` and record scope decisions as an ADR.
+2. After 2.3.0 is published, watch the AI Assistant listing's `utm_source=zoho-crm-devtools`
    traffic to judge whether in-extension promotion is worth repeating.
-2. Ship the deferred theme-following for the preview: persist the observed Zoho editor theme
+3. Ship the deferred theme-following for the preview: persist the observed Zoho editor theme
    (light/dark) and any selected custom theme, then source the preview palette from
    `--zcdt-theme-editor-*` so it matches the active editor (announced as a follow-up feature).
-3. Run a focused live-org regression pass when changing cross-function search or its undocumented
+4. Run a focused live-org regression pass when changing cross-function search or its undocumented
    Zoho endpoints and globals.
-4. Capture and cover rare editor overlays only when live evidence exposes an unthemed or fragile
+5. Capture and cover rare editor overlays only when live evidence exposes an unthemed or fragile
    surface.
 
 ## How to update this doc

@@ -231,6 +231,12 @@ h1 {
   text-wrap: pretty;
 }
 
+.notice .notice-fine {
+  color: var(--muted);
+  font-size: 11.5px;
+  line-height: 1.45;
+}
+
 .notice-actions {
   display: flex;
   align-items: center;

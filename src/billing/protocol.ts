@@ -2,6 +2,7 @@ import type { AccountState } from './client';
 export const billingActions = [
   'billing:getEntitlement',
   'billing:signIn',
+  'billing:signUp',
   'billing:signInStatus',
   'billing:signOut',
   'billing:openUpgrade',
@@ -15,6 +16,7 @@ export type BillingAction = (typeof billingActions)[number];
 export interface BillingResults {
   'billing:getEntitlement': AccountState;
   'billing:signIn': AccountState;
+  'billing:signUp': AccountState;
   'billing:signInStatus': import('./tab-sign-in').SignInProgress;
   'billing:signOut': null;
   'billing:openUpgrade': null;

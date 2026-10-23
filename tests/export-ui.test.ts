@@ -60,6 +60,8 @@ afterEach(() => {
   document.head.innerHTML = '';
 });
 
+/** The trial button sends billing:signUp and the "Log in" link billing:signIn; both run the same flow. */
+const isSignIn = (type: string) => type === 'billing:signIn' || type === 'billing:signUp';
 describe('upgrade modal state machine', () => {
   it.each([
     'plus',
@@ -117,7 +119,8 @@ describe('upgrade modal state machine', () => {
     act('sign-in').click();
     expect(dialog().dataset.view).toBe('signing-in');
     await vi.waitFor(() => expect(modal().hidden).toBe(true));
-    expect(send).toHaveBeenCalledWith('billing:signIn');
+    // The trial button opens sign-up; new accounts get the trial at sign-up.
+    expect(send).toHaveBeenCalledWith('billing:signUp');
     expect(resumed).toHaveBeenCalledWith({ format: 'csv' });
     expect(changed).toHaveBeenCalled();
     expect(document.activeElement).toBe(trigger);
@@ -148,11 +151,23 @@ describe('upgrade modal state machine', () => {
     expect(resumed).not.toHaveBeenCalled();
   });
 
+  it('sends the existing-account "Log in" link through plain sign-in', async () => {
+    const send = vi.fn(async (type: string) =>
+      type === 'billing:getEntitlement' ? signedOut : proAccount,
+    );
+    setup(send);
+    raise();
+    await vi.waitFor(() => expect(dialog().dataset.view).toBe('signed-out'));
+    act('sign-in-existing').click();
+    await vi.waitFor(() => expect(modal().hidden).toBe(true));
+    expect(send).toHaveBeenCalledWith('billing:signIn');
+    expect(send).not.toHaveBeenCalledWith('billing:signUp');
+  });
+
   it('resolves a pending stored-pair recovery with one more read', async () => {
     const reads = vi.fn();
     const send = async (type: string) => {
-      if (type === 'billing:signIn')
-        return { signedIn: false, signedOutPending: true, entitlement: FREE };
+      if (isSignIn(type)) return { signedIn: false, signedOutPending: true, entitlement: FREE };
       reads();
       return reads.mock.calls.length === 1 ? signedOut : proAccount;
     };
@@ -204,7 +219,7 @@ describe('upgrade modal state machine', () => {
     ['network down', /could not reach/],
   ])('keeps the dialog open with a calm inline message on "%s"', async (message, pattern) => {
     const send = async (type: string) => {
-      if (type === 'billing:signIn') throw new Error(message);
+      if (isSignIn(type)) throw new Error(message);
       return signedOut;
     };
     const { resumed } = setup(send);
@@ -223,7 +238,7 @@ describe('upgrade modal state machine', () => {
     [{ failed: true }, /Sign-in failed/],
   ])('distinguishes returned sign-in outcome %j', async (outcome, pattern) => {
     const { resumed } = setup(async (type: string) =>
-      type === 'billing:signIn' ? { ...signedOut, ...outcome } : signedOut,
+      isSignIn(type) ? { ...signedOut, ...outcome } : signedOut,
     );
     raise();
     await vi.waitFor(() => expect(dialog().dataset.view).toBe('signed-out'));
@@ -266,7 +281,7 @@ describe('upgrade modal state machine', () => {
   it('does not resume an export the user dismissed while sign-in was pending', async () => {
     let finish: (value: unknown) => void = () => {};
     const send = (type: string) =>
-      type === 'billing:signIn'
+      isSignIn(type)
         ? new Promise((resolve) => {
             finish = resolve;
           })

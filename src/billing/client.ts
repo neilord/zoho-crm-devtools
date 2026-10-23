@@ -97,7 +97,7 @@ export class BillingClient {
       expiresAt: this.now() + t.expires_in * 1000,
     };
   }
-  async beginSignIn() {
+  async beginSignIn({ signUp = false }: { signUp?: boolean } = {}) {
     const pkce = await createPkce();
     const redirect = this.platform.redirectURL();
     const url = new URL(`${API_BASE}${contract.extensionAuth.authorizePath}`);
@@ -109,6 +109,8 @@ export class BillingClient {
       state: pkce.state,
       code_challenge: pkce.challenge,
       code_challenge_method: 'S256',
+      // Only picks the account site's sign-up page over login; the OAuth flow is otherwise identical.
+      ...(signUp ? { screen_hint: 'signup' } : {}),
     }).toString();
     return { url: url.href, redirect, ...pkce };
   }

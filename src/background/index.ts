@@ -50,6 +50,8 @@ registerWorkerMessages((message, sender, respond) => {
           return client.getEntitlement();
         case 'billing:signIn':
           return signIn.start();
+        case 'billing:signUp':
+          return signIn.start({ signUp: true });
         case 'billing:signInStatus':
           return signIn.status();
         case 'billing:signOut':
