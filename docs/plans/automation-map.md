@@ -36,7 +36,7 @@ webforms, macros, export of the map, saved views, theme following.
 
 | Stage | Work | Status |
 |---|---|---|
-| 0 | Research, capability gate, analyzer, contract | Complete on `feat/automation-map` |
+| 0 | Research, capability gate, analyzer, contract | Complete |
 | 1a | Pure graph builder, queries, search and fixtures | Complete |
 | 1b | Zoho adapters, progressive store, teaser and worker cache | Complete |
 | 1c | UX spec and synthetic prototype | Complete; spec retained until release |
@@ -46,7 +46,7 @@ webforms, macros, export of the map, saved views, theme following.
 | 3 | Lazy integration and packaged Chromium harness | Complete |
 | 4 | Independent reviews and authenticated US-org passes | Review fixes integrated; live results and coverage gaps in STATE |
 | 5 | Documentation consolidation | Complete; both plans retained until release |
-| Owner | Land feature branch | Pending approval |
+| Owner | Land feature branch | Done (`b270898` on `main`) |
 | Owner | Push/deploy cloud `feat/plan-features` (contract 0.2.0), approve Pro upgrade copy | Pending |
 | Owner | Version bump, CHANGELOG, store release, then fold/delete both plans | Pending |
 
