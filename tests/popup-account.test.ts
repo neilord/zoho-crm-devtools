@@ -62,6 +62,7 @@ describe('deriveView', () => {
     expect(deriveView(signedIn({ ...free, status: 'active' })).kind).toBe('past-due');
     expect(deriveView(signedIn({ ...base, status: 'trialing' }), NOW)).toEqual({
       kind: 'trial',
+      plan: 'pro',
       planName: 'Pro',
       daysLeft: 44,
     });
@@ -74,6 +75,11 @@ describe('deriveView', () => {
   });
 });
 
+const cols = () => [
+  ...root().querySelectorAll<HTMLButtonElement>('[data-account-action="checkout"]'),
+];
+const col = (plan: string) => root().querySelector<HTMLButtonElement>(`[data-plan="${plan}"]`);
+
 describe('account card', () => {
   it('shows a skeleton while loading and never blocks', async () => {
     billingMessage.mockReturnValue(new Promise(() => {}));
@@ -82,13 +88,16 @@ describe('account card', () => {
     expect(root().querySelector('[aria-busy="true"]')).not.toBeNull();
   });
 
-  it('signed out: Free plan, Pro pitch, and both buttons sign in', async () => {
+  it('signed out: Try Plus free, both buttons sign in, then trial pricing', async () => {
     await mount({ signedIn: false, entitlement: free });
-    expect(root().textContent).toContain('Free plan');
-    expect(root().textContent).toContain('Export all functions'.toLowerCase().replace('e', 'e'));
-    expect(root().textContent).toContain('14-day free trial, no card');
+    expect(root().textContent).toContain('Try Plus free');
+    expect(root().textContent).toContain('14 days · no card required');
+    expect(root().textContent).toContain('Export functions');
+    expect(root().textContent).toContain('Then $9 for the first month, $23/month after.');
     expect(root().querySelectorAll('[data-account-action="sign-in"]')).toHaveLength(2);
     expect(root().textContent).toContain('Start free trial');
+    expect(root().textContent).toContain('Log in');
+    expect(root().textContent).not.toContain('Sign out');
     respond({ 'billing:signIn': signedIn({ ...base, status: 'trialing' }) });
     action('sign-in')?.click();
     await flush();
@@ -96,19 +105,69 @@ describe('account card', () => {
     expect((root().firstElementChild as HTMLElement).dataset.state).toBe('trial');
   });
 
-  it('trialing: days left, Upgrade, Manage account, Sign out', async () => {
+  it('lists every paid plan from the contract as a column, never Free', async () => {
+    await mount({ signedIn: false, entitlement: free });
+    expect(cols().map((c) => c.dataset.plan)).toEqual(['plus', 'pro', 'max']);
+    expect(cols().map((c) => c.textContent)).toEqual(['Plus$23/mo', 'Pro$57/mo', 'Max$143/mo']);
+    expect(root().textContent).toContain(
+      'Every paid plan includes Export functions and Search All Workflows.',
+    );
+    expect(cols().every((c) => !c.disabled)).toBe(true);
+  });
+
+  it('signed-out column click signs in, then opens checkout for that plan', async () => {
+    await mount({ signedIn: false, entitlement: free });
+    respond({ 'billing:signIn': signedIn(free), 'billing:openCheckout': null });
+    col('pro')?.click();
+    await flush();
+    expect(calls).toEqual(['billing:signIn', 'billing:openCheckout']);
+    expect(billingMessage).toHaveBeenLastCalledWith('billing:openCheckout', { plan: 'pro' });
+    expect((root().firstElementChild as HTMLElement).dataset.state).toBe('free');
+  });
+
+  it('signed-out column click does not open checkout when sign-in is cancelled', async () => {
+    await mount({ signedIn: false, entitlement: free });
+    respond({ 'billing:signIn': { signedIn: false, entitlement: free, cancelled: true } });
+    col('max')?.click();
+    await flush();
+    expect(calls).toEqual(['billing:signIn']);
+    expect(root().textContent).toContain('Sign-in was cancelled');
+  });
+
+  it('free: tile plus plan columns that open checkout, and no other actions', async () => {
+    await mount(signedIn(free));
+    expect(root().textContent).toContain('Free plan');
+    expect(root().textContent).toContain('Signed in');
+    expect(cols()).toHaveLength(3);
+    expect(action('upgrade')).toBeNull();
+    expect(action('manage')).toBeNull();
+    respond({ 'billing:openCheckout': null, 'billing:getEntitlement': signedIn(free) });
+    col('plus')?.click();
+    await flush();
+    expect(calls).toEqual(['billing:openCheckout', 'billing:getEntitlement']);
+    expect(billingMessage).toHaveBeenCalledWith('billing:openCheckout', { plan: 'plus' });
+  });
+
+  it('trialing: day progress, trial column stays clickable, Manage billing opens billing', async () => {
     const soon = new Date(Date.now() + 3 * 86_400_000 - 1000).toISOString();
     await mount(signedIn({ ...base, plan: 'plus', status: 'trialing', currentPeriodEnd: soon }));
-    expect(root().textContent).toContain('Plus trial · 3 days left');
+    expect(root().textContent).toContain('Plus trial');
     expect(root().textContent).toContain('3 days left');
-    respond({ 'billing:openUpgrade': null, 'billing:getEntitlement': signedIn(base) });
-    action('upgrade')?.click();
-    await flush();
-    expect(calls).toEqual(['billing:openUpgrade', 'billing:getEntitlement']);
-    respond({ 'billing:openAccount': null, 'billing:getEntitlement': signedIn(base) });
+    expect(root().textContent).toContain('Day 11 of 14');
+    expect(root().querySelector('[role="progressbar"]')).not.toBeNull();
+    expect(col('plus')?.disabled).toBe(false);
+    expect(col('plus')?.textContent).toContain('Trial');
+    expect(col('pro')?.textContent).not.toContain('Trial');
+    expect(action('upgrade')).toBeNull();
+    respond({ 'billing:openBilling': null, 'billing:getEntitlement': signedIn(base) });
     action('manage')?.click();
     await flush();
-    expect(calls[0]).toBe('billing:openAccount');
+    expect(calls[0]).toBe('billing:openBilling');
+  });
+
+  it('trial without an end date omits the progress bar', async () => {
+    await mount(signedIn({ ...base, plan: 'plus', status: 'trialing', currentPeriodEnd: null }));
+    expect(root().querySelector('[role="progressbar"]')).toBeNull();
   });
 
   it.each([
@@ -122,11 +181,21 @@ describe('account card', () => {
     expect(action('upgrade')).toBeNull();
   });
 
-  it('pro active: badge, renewal date, manage and sign out returns to signed out', async () => {
+  it('paid: current column is disabled and marked, others open checkout', async () => {
+    await mount(signedIn(base));
+    expect(col('pro')?.disabled).toBe(true);
+    expect(col('pro')?.getAttribute('aria-current')).toBe('true');
+    expect(col('pro')?.textContent).toContain('Current');
+    expect(col('plus')?.disabled).toBe(false);
+    expect(col('plus')?.hasAttribute('aria-current')).toBe(false);
+  });
+
+  it('pro active: badge, Active, renewal date, manage and sign out returns to signed out', async () => {
     await mount(signedIn(base));
     expect(root().querySelector('.badge')?.textContent).toBe('Pro');
+    expect(root().textContent).toContain('Active');
     expect(root().textContent).toContain('Renews');
-    expect(action('upgrade')).toBeNull();
+    expect(action('manage')?.className).toContain('btn-secondary');
     respond({
       'billing:signOut': null,
       'billing:getEntitlement': { signedIn: false, entitlement: free },
@@ -137,25 +206,57 @@ describe('account card', () => {
     expect(root().textContent).toContain('Start free trial');
   });
 
-  it('canceled but active: Pro until date, resume via Manage account', async () => {
-    await mount(signedIn({ ...base, cancelAtPeriodEnd: true }));
-    expect(root().textContent).toMatch(/Pro until .*2026/);
-    expect(action('manage')?.className).toContain('btn-primary');
+  it('paid without a renewal date shows no renewal line', async () => {
+    await mount(signedIn({ ...base, currentPeriodEnd: null }));
+    expect(root().textContent).not.toContain('Renews');
   });
 
-  it('past due and free-after-trial prompt gently towards plans', async () => {
+  it('canceling: Ends date, resume note, primary Manage billing, current column disabled', async () => {
+    await mount(signedIn({ ...base, cancelAtPeriodEnd: true }));
+    expect(root().textContent).toContain('Canceling');
+    expect(root().textContent).toMatch(/Ends .*2026/);
+    expect(root().textContent).toContain("Won't renew. Resume anytime from Manage billing.");
+    expect(action('manage')?.className).toContain('btn-primary');
+    expect(col('pro')?.disabled).toBe(true);
+  });
+
+  it('past due: Update payment only, no plan columns', async () => {
     await mount(signedIn({ ...base, status: 'past_due' }));
     expect(root().textContent).toContain('Payment needs attention');
-    expect(action('upgrade')).toBeNull();
+    expect(root().textContent).toContain('Editor tools are unaffected.');
+    expect(root().textContent).toContain('Past due');
     expect(action('manage')?.textContent).toBe('Update payment');
-    await mount(signedIn(free));
-    expect(root().textContent).toContain('Free plan');
-    expect(action('upgrade')?.textContent).toBe('Upgrade');
+    expect(action('manage')?.className).toContain('btn-primary');
+    expect(cols()).toHaveLength(0);
+  });
+
+  it('never offers a Cancel or Switch plan action', async () => {
+    for (const e of [
+      { signedIn: false, entitlement: free },
+      signedIn(free),
+      signedIn({ ...base, status: 'trialing' }),
+      signedIn(base),
+      signedIn({ ...base, cancelAtPeriodEnd: true }),
+      signedIn({ ...base, status: 'past_due' }),
+    ]) {
+      await mount(e);
+      expect(root().textContent).not.toMatch(/\bcancel\b/i);
+      expect(root().textContent).not.toContain('Switch plan');
+    }
+  });
+
+  it('footer: privacy link and version', async () => {
+    respond({ 'billing:getEntitlement': signedIn(base) });
+    mountAccount(root(), { version: '2.4.0' });
+    await flush();
+    expect(root().querySelector<HTMLAnchorElement>('.foot a')?.href).toBe(PRIVACY_URL);
+    expect(root().querySelector('.foot .v')?.textContent).toBe('v2.4.0');
   });
 
   it('error: reassures and Retry recovers', async () => {
     await mount(new Error('offline'));
-    expect(root().textContent).toContain('Your free editor and search tools keep working.');
+    expect(root().textContent).toContain('Account unavailable');
+    expect(root().textContent).toContain('Editor tools still work.');
     respond({ 'billing:getEntitlement': signedIn(base) });
     action('retry')?.click();
     await flush();
@@ -186,7 +287,13 @@ describe('existing-user notice', () => {
     const host = document.querySelector<HTMLElement>('[data-notice]') as HTMLElement;
     mountNotice(host);
     await flush();
-    expect(host.textContent).toContain('stays free');
+    expect(host.textContent).toContain(
+      'Everything you use today stays free. Signing in is optional. Plus, Pro and Max add function export and requires a current trial or paid plan.',
+    );
+    expect(host.textContent).toContain(
+      'An account involves your email and sign-in tokens, handled by our account service. Your Zoho data is never sent to it.',
+    );
+    expect(host.textContent).toContain('New: optional account & paid plans');
     expect(host.textContent).toContain('never sent');
     expect(host.querySelector<HTMLAnchorElement>('a')?.href).toBe(PRIVACY_URL);
     host.querySelector<HTMLButtonElement>('[data-notice-dismiss]')?.click();

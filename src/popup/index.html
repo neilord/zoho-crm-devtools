@@ -9,18 +9,24 @@
   </head>
   <body>
     <main class="popup">
-      <section data-notice aria-label="Notice"></section>
-      <header>
-        <h1>Zoho CRM DevTools</h1>
-        <p id="page-status">Checking page...</p>
-      </header>
-
-      <label class="toggle-row">
-        <span>Enabled</span>
-        <input id="extension-enabled" type="checkbox" />
-      </label>
+      <div class="pad">
+        <header class="hd">
+          <img src="/icons/icon-48.png" alt="" width="34" height="34" />
+          <div class="hcol">
+            <h1>Zoho CRM DevTools</h1>
+            <p id="page-status" class="pill off"><i></i><span id="page-status-text">Checking page...</span></p>
+          </div>
+        </header>
+        <label class="en">
+          <span class="x">
+            <b>Enabled</b>
+            <span id="extension-enabled-desc">Editor themes, search and export on Zoho CRM pages</span>
+          </span>
+          <input id="extension-enabled" class="sw" type="checkbox" role="switch" aria-checked="false" aria-label="Enabled" aria-describedby="extension-enabled-desc" />
+        </label>
+        <section data-notice aria-label="Notice"></section>
+      </div>
       <section data-account aria-label="Account"></section>
     </main>
   </body>
 </html>
-

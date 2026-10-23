@@ -60,9 +60,9 @@ afterEach(() => {
   document.body.replaceChildren();
 });
 
-function call(type: string) {
+function call(type: string, extra: object = {}) {
   return new Promise<{ ok: boolean; value: unknown }>((resolve) => {
-    expect(listener({ type }, { id: 'own' }, resolve)).toBe(true);
+    expect(listener({ type, ...extra }, { id: 'own' }, resolve)).toBe(true);
   });
 }
 it('restricts local token storage to trusted contexts and rejects foreign senders/extra fields', () => {
@@ -228,4 +228,18 @@ it('allows real content-script sender shapes to sign in, open plans and read onl
     begin.mockRestore();
     vi.useRealTimers();
   }
+});
+
+it('opens billing and checkout pages, rejecting unknown or Free plan keys', async () => {
+  expect(await call('billing:openBilling')).toEqual({ ok: true, value: null });
+  expect(create).toHaveBeenLastCalledWith({ url: 'https://devtools.zsetup.com/app/billing' });
+  expect(await call('billing:openCheckout', { plan: 'max' })).toEqual({ ok: true, value: null });
+  expect(create).toHaveBeenLastCalledWith({
+    url: 'https://devtools.zsetup.com/app/billing?checkout=max',
+  });
+  create.mockClear();
+  for (const plan of ['free', 'enterprise', 'pro&x=1', '__proto__']) {
+    expect(await call('billing:openCheckout', { plan })).toMatchObject({ ok: false });
+  }
+  expect(create).not.toHaveBeenCalled();
 });

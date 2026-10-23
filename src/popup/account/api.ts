@@ -9,6 +9,8 @@ export const account = {
   signOut: () => billingMessage('billing:signOut'),
   openUpgrade: () => billingMessage('billing:openUpgrade'),
   openAccount: () => billingMessage('billing:openAccount'),
+  openBilling: () => billingMessage('billing:openBilling'),
+  openCheckout: (plan: string) => billingMessage('billing:openCheckout', { plan }),
   getNotice: () => billingMessage('billing:getNotice'),
   dismissNotice: () => billingMessage('billing:dismissNotice'),
 };

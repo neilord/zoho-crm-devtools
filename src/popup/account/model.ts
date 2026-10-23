@@ -8,9 +8,9 @@ export type AccountView =
   | { kind: 'error' }
   | { kind: 'signed-out' }
   | { kind: 'free' }
-  | { kind: 'trial'; planName: string; daysLeft: number | null }
-  | { kind: 'paid'; planName: string; renews: string | null }
-  | { kind: 'paid-canceling'; planName: string; until: string }
+  | { kind: 'trial'; plan: string; planName: string; daysLeft: number | null }
+  | { kind: 'paid'; plan: string; planName: string; renews: string | null }
+  | { kind: 'paid-canceling'; plan: string; planName: string; until: string }
   | { kind: 'past-due' };
 
 export const TRIAL_DAYS = contract.trial.days;
@@ -45,18 +45,21 @@ export function deriveView(
   if (status === 'trialing')
     return {
       kind: 'trial',
+      plan: e.plan,
       planName: planName(e.plan),
       daysLeft: daysLeft(e.currentPeriodEnd, now),
     };
   if (e.cancelAtPeriodEnd && e.currentPeriodEnd) {
     return {
       kind: 'paid-canceling',
+      plan: e.plan,
       planName: planName(e.plan),
       until: formatDate(e.currentPeriodEnd),
     };
   }
   return {
     kind: 'paid',
+    plan: e.plan,
     planName: planName(e.plan),
     renews: e.currentPeriodEnd ? formatDate(e.currentPeriodEnd) : null,
   };

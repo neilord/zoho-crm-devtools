@@ -6,6 +6,7 @@ import { mountAccount, mountNotice } from './account';
 
 const enabledInput = document.querySelector<HTMLInputElement>('#extension-enabled');
 const pageStatus = document.querySelector<HTMLElement>('#page-status');
+const pageStatusText = document.querySelector<HTMLElement>('#page-status-text');
 
 function isSupportedUrl(url: string | undefined): boolean {
   if (!url) {
@@ -19,7 +20,7 @@ function isSupportedUrl(url: string | undefined): boolean {
 }
 
 async function initializePopup(): Promise<void> {
-  if (!enabledInput || !pageStatus) {
+  if (!enabledInput || !pageStatus || !pageStatusText) {
     return;
   }
 
@@ -29,11 +30,14 @@ async function initializePopup(): Promise<void> {
   ]);
 
   enabledInput.checked = settings.enabled;
-  pageStatus.textContent = isSupportedUrl(tabs[0]?.url)
-    ? 'Supported Zoho CRM page'
-    : 'Open Zoho CRM to use editor tools';
+  enabledInput.setAttribute('aria-checked', String(settings.enabled));
+  const onCrm = isSupportedUrl(tabs[0]?.url);
+  pageStatus.classList.toggle('on', onCrm);
+  pageStatus.classList.toggle('off', !onCrm);
+  pageStatusText.textContent = onCrm ? 'On Zoho CRM' : 'Open Zoho CRM to use tools';
 
   enabledInput.addEventListener('change', async () => {
+    enabledInput.setAttribute('aria-checked', String(enabledInput.checked));
     const latestSettings = await loadSettings();
     const nextSettings: Settings = {
       ...latestSettings,
@@ -46,6 +50,6 @@ async function initializePopup(): Promise<void> {
 void initializePopup();
 
 const accountRoot = document.querySelector<HTMLElement>('[data-account]');
-if (accountRoot) mountAccount(accountRoot);
+if (accountRoot) mountAccount(accountRoot, { version: browser.runtime.version() });
 const noticeRoot = document.querySelector<HTMLElement>('[data-notice]');
 if (noticeRoot) mountNotice(noticeRoot);

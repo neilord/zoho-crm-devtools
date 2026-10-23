@@ -351,6 +351,11 @@ describe('licence resolution and Stage 1', () => {
       false,
     );
     expect(isBillingMessage({ type: 'fetch' })).toBe(false);
+    expect(isBillingMessage({ type: 'billing:openCheckout', plan: 'pro' })).toBe(true);
+    expect(isBillingMessage({ type: 'billing:openCheckout' })).toBe(false);
+    expect(isBillingMessage({ type: 'billing:openCheckout', plan: 7 })).toBe(false);
+    expect(isBillingMessage({ type: 'billing:openCheckout', plan: 'pro', url: 'x' })).toBe(false);
+    expect(isBillingMessage({ type: 'billing:openBilling', plan: 'pro' })).toBe(false);
   });
 });
 

@@ -1,6 +1,7 @@
 import { BillingClient } from '../billing/client';
 import { WEBSITE_BASE } from '../billing/config';
 import { reportBillingFailure } from '../billing/diagnostics';
+import { isPaidPlanKey } from '../billing/plans';
 import { isBillingMessage } from '../billing/protocol';
 import { TabSignIn } from '../billing/tab-sign-in';
 import {
@@ -41,7 +42,7 @@ registerWorkerMessages((message, sender, respond) => {
     return true;
   }
   if (!isOwnSender(sender) || !isBillingMessage(message)) return false;
-  const type = message.type;
+  const { type, plan } = message;
   void ready
     .then(async () => {
       switch (type) {
@@ -60,6 +61,14 @@ registerWorkerMessages((message, sender, respond) => {
           return null;
         case 'billing:openAccount':
           await openWebsite(`${WEBSITE_BASE}/app/account`);
+          return null;
+        case 'billing:openBilling':
+          await openWebsite(`${WEBSITE_BASE}/app/billing`);
+          return null;
+        case 'billing:openCheckout':
+          // The plan comes from a popup message, so it must be a paid key the contract lists.
+          if (!isPaidPlanKey(plan)) throw new Error('Unknown plan');
+          await openWebsite(`${WEBSITE_BASE}/app/billing?checkout=${encodeURIComponent(plan)}`);
           return null;
         case 'billing:getNotice': {
           const data = await browser.storage.local.get([NOTICE_KEY]);

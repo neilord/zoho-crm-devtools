@@ -10,6 +10,9 @@ export interface BrowserFacade {
     sync: StorageArea;
     local: StorageArea;
   };
+  runtime: {
+    version(): string;
+  };
   tabs: {
     query(queryInfo: chrome.tabs.QueryInfo): Promise<chrome.tabs.Tab[]>;
   };
@@ -39,6 +42,9 @@ export const browser: BrowserFacade = {
     sync: promisifyStorage(() => getChromeApi().storage.sync),
     local: promisifyStorage(() => getChromeApi().storage.local),
   },
+  runtime: {
+    version: () => getChromeApi().runtime.getManifest().version,
+  },
   tabs: {
     query(queryInfo) {
       return getChromeApi().tabs.query(queryInfo);
@@ -53,13 +59,14 @@ export const billingPlatform = {
 };
 export async function billingMessage<A extends import('../billing/protocol').BillingAction>(
   type: A,
+  payload?: import('../billing/protocol').BillingPayloads[keyof import('../billing/protocol').BillingPayloads],
 ): Promise<import('../billing/protocol').BillingResults[A]> {
-  const send = async (action: string) => {
-    const reply = await getChromeApi().runtime.sendMessage({ type: action });
+  const send = async (action: string, extra?: object) => {
+    const reply = await getChromeApi().runtime.sendMessage({ type: action, ...extra });
     if (!reply?.ok) throw new Error(reply?.error ?? 'Account service unavailable');
     return reply.value;
   };
-  let value = await send(type);
+  let value = await send(type, payload);
   // Short messages wake a restarted worker; no ten-minute runtime port or worker keepalive.
   if (type === 'billing:signIn') {
     while (value?.pending === true) {

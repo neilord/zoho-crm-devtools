@@ -269,7 +269,7 @@ export function mountUpgradeHook(
             el('button', {
               className: 'zx-inline',
               type: 'button',
-              text: 'Sign in',
+              text: 'Log in',
               dataset: { zcdtUpgradeAction: 'sign-in-existing' },
               onClick: (event) => {
                 event.preventDefault();
