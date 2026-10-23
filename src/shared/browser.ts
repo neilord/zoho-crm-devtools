@@ -178,3 +178,21 @@ export function openIsolatedTab(url: string): boolean {
   tab.location.replace(url);
   return true;
 }
+
+/** Only the background worker opens Automation Map IndexedDB. */
+export async function automationMapCacheMessage(
+  message: import('./automation-map-cache-protocol').AutomationMapCacheMessage,
+): Promise<import('./automation-map-cache-protocol').AutomationMapCache | null> {
+  const { packAutomationMapCache, unpackAutomationMapCache } = await import(
+    './automation-map-cache-protocol'
+  );
+  let payload = message;
+  if (message.type === 'automationMap:writeCache') {
+    const decoded = await unpackAutomationMapCache(message.value);
+    if (!decoded) throw new Error('Invalid Automation Map cache');
+    payload = { ...message, value: await packAutomationMapCache(decoded) };
+  }
+  const reply = await getChromeApi().runtime.sendMessage(payload);
+  if (!reply?.ok) throw new Error('Automation Map cache unavailable');
+  return unpackAutomationMapCache(reply.value);
+}

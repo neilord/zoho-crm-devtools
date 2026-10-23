@@ -1,3 +1,4 @@
+import { mapIcon } from '../automation-map/entry/icon';
 import { searchAllFunctionsIcon } from '../functions/dom';
 
 /**
@@ -9,14 +10,22 @@ import { searchAllFunctionsIcon } from '../functions/dom';
  */
 export const WORKFLOW_SEARCH_BUTTON_ID = 'zcdt-workflow-search-button';
 export const WORKFLOW_SEARCH_BUTTON_STYLE_ID = 'zcdt-workflow-search-button-style';
+export const AUTOMATION_MAP_BUTTON_ID = 'zcdt-automation-map-button';
 const LABEL = 'Search All Workflows';
 
-const BUTTON_CSS = `
+const BUTTON_CSS =
+  `
 #${WORKFLOW_SEARCH_BUTTON_ID}{all:unset;box-sizing:border-box;display:inline-flex;align-items:center;gap:7px;flex:0 0 auto;align-self:flex-start;height:34px;margin:0 0 0 8px;padding:0 12px 0 10px;border:1px solid #b9c0cf;border-radius:4px;background:#fff;color:#313949;font:500 14px/1 "Zoho_Puvi_Regular","Segoe UI",system-ui,sans-serif;white-space:nowrap;cursor:pointer;transition:background-color 120ms ease,border-color 120ms ease,color 120ms ease}
 #${WORKFLOW_SEARCH_BUTTON_ID}:hover{border-color:#6a78ff;background:#f7f9ff;color:#2446d8}
 #${WORKFLOW_SEARCH_BUTTON_ID}:focus-visible{outline:0;border-color:#2f6df0;box-shadow:0 0 0 3px rgba(47,109,240,.35)}
 #${WORKFLOW_SEARCH_BUTTON_ID}[aria-busy="true"]{cursor:progress;opacity:.7}
 #${WORKFLOW_SEARCH_BUTTON_ID} svg{flex:0 0 auto}
+`.replaceAll(
+    `#${WORKFLOW_SEARCH_BUTTON_ID}`,
+    `:is(#${WORKFLOW_SEARCH_BUTTON_ID},#${AUTOMATION_MAP_BUTTON_ID})`,
+  ) +
+  `
+@media(max-width:1100px){#${AUTOMATION_MAP_BUTTON_ID}{width:34px;padding:0;justify-content:center}#${AUTOMATION_MAP_BUTTON_ID} span{display:none}}
 `;
 
 let activeHandler: (event: MouseEvent) => void = () => {};
@@ -70,4 +79,33 @@ export function injectWorkflowSearchButton(
 export function removeWorkflowSearchButton(doc: Document = document): void {
   doc.getElementById(WORKFLOW_SEARCH_BUTTON_ID)?.remove();
   doc.getElementById(WORKFLOW_SEARCH_BUTTON_STYLE_ID)?.remove();
+}
+
+/** The map is available to every plan; its store decides full access versus preview. */
+export function injectAutomationMapButton(onOpen: () => void): void {
+  const search = document.getElementById(WORKFLOW_SEARCH_BUTTON_ID);
+  if (!search) {
+    removeAutomationMapButton();
+    return;
+  }
+  ensureStyle(document);
+  let button = document.getElementById(AUTOMATION_MAP_BUTTON_ID) as HTMLButtonElement | null;
+  if (!button) {
+    button = document.createElement('button');
+    button.id = AUTOMATION_MAP_BUTTON_ID;
+    button.type = 'button';
+    button.title = 'See what runs in this CRM and what can change each field';
+    button.setAttribute('aria-label', 'Automation Map');
+    const label = document.createElement('span');
+    label.textContent = 'Automation Map';
+    button.append(mapIcon(), label);
+    button.addEventListener('click', (event) => {
+      event.preventDefault();
+      onOpen();
+    });
+  }
+  if (search.nextElementSibling !== button) search.after(button);
+}
+export function removeAutomationMapButton(): void {
+  document.getElementById(AUTOMATION_MAP_BUTTON_ID)?.remove();
 }

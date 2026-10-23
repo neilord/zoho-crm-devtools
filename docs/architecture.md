@@ -117,12 +117,22 @@ headers, tokens, or arbitrary fetch options. There is no external-message listen
 Responses are `{ ok: true, value }` or `{ ok: false, error }`; the typed helper unwraps success
 and throws a sanitized error. An optional `signedOutPending: true` on account snapshots means
 Free/checking sign-in; call `getEntitlement` once more to finish the storage recovery. The popup
-`account.getEntitlement` helper and export controller perform that one follow-up automatically. Entitlement is the backend's exact six-field snapshot:
+`account.getEntitlement` helper and export controller perform that one follow-up automatically. Entitlement retains the backend's six required fields:
 `plan: string`, `entitled: boolean`, `status: string`, `currentPeriodEnd: string|null`,
-`cancelAtPeriodEnd: boolean`, `checkedAt: string`. No email, Stripe objects or tokens cross this
+`cancelAtPeriodEnd: boolean`, `checkedAt: string`, plus optional `features: string[]` capability keys.
+An invalid optional list (anything other than an array of non-empty strings) is treated as absent;
+the six required fields remain strictly validated. No email, Stripe objects or tokens cross this
 API. Treat `entitled && plan !== 'free'` as paid (ADR 0023); the server owns trial expiry, subscription grace,
 and cancellation semantics. Scheduled cancellation can still be entitled. Accept any non-empty plan key, including future entitled paid keys; invalid
 responses resolve to Free. Do not reconstruct entitlement from local dates or status strings.
+For tiered features, `hasPlanFeature(entitlement: Entitlement, featureId: string): boolean` first
+requires a resolved paid plan, then prefers a server `features` list (including `[]`), falls back
+to a known plan's contract features, or grants only `exportFunctions`/`workflowSearch` for an unknown
+paid key without a list (ADR 0025). The server resolves capabilities from its contract only when
+entitled. Export and workflow search retain their existing any-paid gate independently of lists.
+The worker router and persistent cache preserve the complete snapshot, as does the popup account
+API. The popup's display-only view model projects plan/status without carrying capabilities;
+feature checks use the original entitlement rather than this view.
 
 `billingPendingSignIn` in trusted `storage.session` holds state, verifier, exact redirect, auth-tab
 and opener ids, and a ten-minute expiry across worker restarts. Repeated clicks focus/reuse the
@@ -155,9 +165,11 @@ revoke. A signed-out, offline, timed-out or failed entitlement read returns Free
 free-feature initialization have no dependency on these requests.
 
 `PREMIUM_GATE_ENABLED = false` retains the Stage 1 default for other planned premium features.
-For the new `exportFunctions` feature only, `EXPORT_FUNCTIONS_GATE_ENFORCED = true` controls
-the default gate (ADR 0019, refining ADR 0015). `isFeatureAvailable` accepts a resolved snapshot
-synchronously; existing free callers need no network.
+`EXPORT_FUNCTIONS_GATE_ENFORCED = true` and `WORKFLOW_SEARCH_GATE_ENFORCED = true` control
+the existing any-paid gates (ADRs 0019/0024). The beta `automationMap` feature uses
+`AUTOMATION_MAP_GATE_ENFORCED = true` and the capability check: contract fallback allows only
+Pro/Max. `isFeatureAvailable` accepts a resolved snapshot synchronously; existing free callers
+need no network.
 
 `src/popup/account` exports the account methods and `mountAccount(root)`. Its account/plan card
 renders loading, signed-out, Free, trial, actual paid plan name, scheduled cancellation, payment attention and error
@@ -171,7 +183,7 @@ Build constants `VITE_BILLING_API_BASE` and `VITE_BILLING_WEBSITE_BASE` default 
 `https://api.devtools.zsetup.com` and `https://devtools.zsetup.com`. Local development may set
 `http://localhost:3000` and `http://localhost:3001`; these are compile-time values, never message
 parameters. `src/billing/product-contract.json` is copied unchanged from the cloud repository's
-exported artifact (version 0.1.0); update it from that source, never hand-edit plan facts.
+exported artifact (version 0.2.0); update it from that source, never hand-edit plan facts.
 The dev-only manifest public key pins id `lkgcneekmlnpcjcfeieehpokgmefpdde`; allowlist it in the
 API's `EXTENSION_DEV_IDS`. Production emits no key. The published id remains
 `mjcppmfgjpllmmoneiaegecjlcpbfgmi`.
@@ -293,3 +305,115 @@ raw versions remain readable. Validation bounds decoded JSON at 32 MB, compresse
 and the worker bucket at three partitions / 6 MB total, evicting oldest partitions. This retains
 the `storage`-only permission model; cache failures are advisory and dev builds log read/write
 failures and byte counts without source contents.
+
+## 12. Automation Map
+
+### Runtime, graph and UI
+
+`automation-map/bootstrap.ts` registers entries from the isolated-world content script. On first
+open, `resolveUi()` dynamically imports `automation-map/runtime.ts`, which wires the store,
+analyzer, graph builder, port, Shadow DOM shell and Board/Trace canvases. Dagre is a separate
+lazy chunk for small trace subgraphs; the estate board uses deterministic module lanes,
+semantic zoom, hub collapse and portals. CRXJS declares the generated chunks as web-accessible
+resources; they execute from the extension origin. Ordinary pages do not load the map runtime.
+
+`AutomationMapStore` takes CRM context, fetch, entitlement and an injected `buildGraph(inputs)`.
+It composes `WorkflowIndex` with shared catalogue/source providers, adds the other configuration
+adapters, and publishes progressive snapshots. `subscribe()` delivers immediately; `start()`
+loads once, `refreshAccess()` invalidates the access generation, `retry(id?)` retries failures,
+`refresh()` forces revalidation, and `dispose()` aborts/detaches. Awaited reads and publications
+check generation, abort and origin/org. All CRM reads share the four-request tab pool. Local
+Deluge analysis is serialized, yields after roughly eight milliseconds and reuses matching
+identity, non-null revision and analyzer version. Graph rebuilds are limited to twice a second.
+Endpoint shapes, joins and Zoho quirks live in [`zoho-integration.md`](zoho-integration.md).
+
+`createStorePort()` implements the UI's `MapDataPort` plus `dispose()`. The UI consumes snapshot,
+subscription, source lookup, search, field-lens/ranking queries, trace, Retry/Refresh, upgrade and
+native handoffs through that port. Search-index rebuilding is debounced 75 ms on graph changes;
+readiness notifies subscribers independently of graph identity. Source/editor lookup is restricted
+to published function identities. Billing receives only fixed account/checkout actions, never CRM
+context or data. The Pro upgrade modal checks `hasPlanFeature(..., 'automationMap')`, uses
+contract-derived prices and Pro checkout, then refreshes access after eligible sign-in/recheck.
+
+Fields, Board, List, Trace and inspector share view state. Board and List derive the same visible
+identities from scope, module, kind, trigger and flag filters; search intersects that set. The
+inspector follows selection and closes when it leaves the visible graph or the lens pivots.
+Show on map retains its target until loading supplies it, frames it once, and widens to
+Everything once for an inactive rule unless user navigation has superseded the landing.
+
+### Coverage and counts
+
+`coverage.gaps` is the store-owned total of unique failed dependencies plus catalogue functions
+whose analysis is not analyzed (pending counts once settled). Shared dependency failures count
+once. `gapsProvisional` stays true until discovery/analysis settles; the UI announces readiness
+only after completion, outside refresh, using the settled gap number. Category loaded, failed
+and unsupported totals count dependency reads, including empty successes, rather than item counts.
+
+`fieldWriters` maps action effects to their selectable owner rule/transition/approval through
+`FieldLens.writerEntityIds`. `lensCounts(lens, scope?)` returns `total`, `groups` and
+`entityGroups`, assigning each entity once to its strongest group: declared, exact, partial,
+unknown fields, unresolved module. All evidence edges remain available. `fieldWriterCount` and
+`mostWrittenFields` use the same definition. Target-module filters retain cross-module writers;
+record-only mutations appear in `otherRecordChanges`, never field-writer totals.
+
+`coverage.modules` and teaser `totals.modules` count module metadata plus modules named by listed
+rules. Graph islands can additionally reflect source/action targets; they do not establish extra
+configured modules. `quietModules` aggregates inventory modules without list-visible automation.
+Per-island function memberships can overlap and must not be summed as catalogue totals.
+
+### Persistence and freshness
+
+Only the background worker opens extension-origin IndexedDB `zcdt-automation-map-v1`. The exact
+`automationMap:readCache` / `automationMap:writeCache` messages validate own-extension senders,
+supported HTTPS CRM origins, numeric orgs and versioned payloads. Content code compresses through
+the shared gzip/base64 codec before messaging. Bounds are 24 MB decoded and 3 MB encoded per
+partition, three origin/org partitions and 9 MB encoded total, evicting the oldest saved partition.
+Sources/effects are stored once per function; hydration re-normalizes action/trigger unions.
+Storage failures are advisory. The independent workflow cache remains unchanged.
+
+A full revalidation pass establishes **15-minute freshness when it settles, including failures**
+(ADR 0032 supersedes this part of 0029). Fresh automatic opens make zero CRM requests. Expired
+partitions, missing/invalid freshness metadata, future timestamps, analyzer-version changes and
+explicit Refresh require revalidation; cached presence stays visible while refreshing. Failed
+reads retain cached data and retryable identities/category outcomes. Reopening and targeted Retry
+do not advance full-pass freshness; hydrated Retry reconstructs only failed dependency jobs from persisted identities and bounded
+parent metadata. Per-dependency outcomes preserve category coverage across targeted retries. A
+failed source refresh never certifies its new revision. `coverage.lastRevalidatedAt` supplies the
+UI's Updated age; gaps remain visible even while fresh.
+
+### Teaser boundary
+
+Full cache/API access requires the `automationMap` capability. The separate teaser loader reads
+only catalogue, rule and module lists plus one representative active rule chain: one rule detail,
+at most two action resources and one exactly joined function source. It never reads fields,
+buttons, schedules, blueprints, approvals, templates or either cache. Selection policy and endpoint
+contracts live in `zoho-integration.md`; rationale lives in ADRs 0026/0028.
+
+The published preview graph contains only the revealed flow and explicit catalogue projections.
+Fog contains numeric counts and opaque slots, never hidden identities, labels or code; omitted
+siblings count on the revealed module rather than becoming another fog island. Every selection,
+hover, field, module, trace root and serialized hash is checked against the revealed graph on
+initialization, state changes and graph replacement. Explicit entry options have no exemption.
+
+### Entries, history and lifecycle
+
+Settings home/nav open Fields; the Workflow Rules toolbar opens the Board overview (no selected
+native-module hook is verified); dashboard Show on map supplies rule/module context. Canonical
+`#zcdt-map=` links auto-open with decoded state. Selector and native marker contracts live only in
+`zoho-integration.md`. NEW expires after UTC `2027-01-31`, without dismissal storage (ADR 0028).
+
+The map owns one marked history entry. Opening pushes it (or adopts a matching existing entry);
+state changes replace its hash with a 300 ms debounce bounded to one second. Copy link flushes
+immediately and encodes validated state even if the history write fails. Until access resolves,
+only view is written; teaser hashes retain only permitted state. Incoming hash edits/history
+navigation apply decoded state. Back to a non-map hash closes in place; UI close pops only an
+owned top entry, otherwise removes the hash by replacement. Writes stop after route departure.
+The controller remembers the hash left by closing so the resulting pop cannot reopen it.
+Detailed ownership rules and rationale live in ADR 0031.
+
+There is one store/port/overlay per tab, including concurrent open requests. Opening closes
+existing function/workflow search overlays and upgrade dialogs. Close, org/origin departure,
+extension disable or controller disposal tears down the map. Route polling and adapter observers
+repair native entry replacements. Development-only `VITE_AUTOMATION_MAP_UNLOCK=true` and
+`VITE_AUTOMATION_MAP_FORCE_TEASER=true` select acceptance modes (force teaser wins); production
+ignores both. Packaged and real-site acceptance procedures live in [`testing.md`](testing.md).

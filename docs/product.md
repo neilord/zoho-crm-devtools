@@ -20,6 +20,12 @@ Zoho CRM DevTools improves the Zoho CRM Deluge editor while staying close to Zoh
 - Search All Workflows: a control beside Zoho's native workflow search opens a local,
   progressive index of workflow rules and related function source, with coverage details and
   native rule/function handoffs. Implemented; pending release. Premium from launch under ADR 0024.
+- Automation Map: a local overlay with a module board, searchable list, upstream/downstream trace
+  and field lens showing possible writers with evidence and coverage gaps. Pro/Max unlock the
+  full map; signed-out, Free and Plus users (including Plus trials) get a bounded one-flow fog
+  teaser. Configuration reads and Deluge analysis stay in the browser; client-script analysis
+  is out of scope. See ADRs [0025](decisions/0025-plan-feature-capabilities.md) and
+  [0026](decisions/0026-automation-map.md).
 
 ## Non-goals
 

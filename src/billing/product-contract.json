@@ -1,10 +1,14 @@
 {
-  "version": "0.1.0",
+  "version": "0.2.0",
   "extensionAuth": {
     "authorizePath": "/v1/auth/oauth2/authorize",
     "tokenPath": "/v1/auth/oauth2/token",
     "revokePath": "/v1/auth/oauth2/revoke",
     "clientId": "zoho-crm-devtools-extension",
+    "signupHint": {
+      "parameter": "screen_hint",
+      "value": "signup"
+    },
     "scopes": ["entitlement:read", "offline_access"],
     "redirectPattern": "chrome-extension://<extension-id>/src/billing/oauth-callback.html",
     "accessTokenLifetimeSeconds": 900,
@@ -22,32 +26,36 @@
     {
       "key": "free",
       "name": "Free",
-      "priceUsdMonthly": 0
+      "priceUsdMonthly": 0,
+      "features": []
     },
     {
       "key": "plus",
       "name": "Plus",
       "priceUsdMonthly": 23,
-      "introPriceUsdFirstMonth": 9
+      "introPriceUsdFirstMonth": 9,
+      "features": ["exportFunctions", "workflowSearch"]
     },
     {
       "key": "pro",
       "name": "Pro",
       "priceUsdMonthly": 57,
-      "introPriceUsdFirstMonth": 35
+      "introPriceUsdFirstMonth": 35,
+      "features": ["exportFunctions", "workflowSearch", "automationMap"]
     },
     {
       "key": "max",
       "name": "Max",
       "priceUsdMonthly": 143,
-      "introPriceUsdFirstMonth": 99
+      "introPriceUsdFirstMonth": 99,
+      "features": ["exportFunctions", "workflowSearch", "automationMap"]
     }
   ],
+  "introOffer": {
+    "months": 1
+  },
   "trial": {
     "plan": "plus",
     "days": 14
-  },
-  "introOffer": {
-    "months": 1
   }
 }

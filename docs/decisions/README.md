@@ -15,6 +15,29 @@ renumbers.
 
 ## Log
 
+- [`0032-automation-map-settled-freshness-and-counts.md`](0032-automation-map-settled-freshness-and-counts.md) — settled freshness despite dependency failures, selectable writer entities and honest inventory/gap counts.
+
+- [`0031-automation-map-history-and-deep-links.md`](0031-automation-map-history-and-deep-links.md) —
+  one history entry per open map, bounded hash sync, Back closes in place, boundary-checked writes.
+
+- [`0030-automation-map-design-review-conventions.md`](0030-automation-map-design-review-conventions.md) —
+  selection/focus, safe framing, trace layers, fog, contrast and settled announcements.
+
+- [`0029-automation-map-freshness-and-coverage.md`](0029-automation-map-freshness-and-coverage.md) —
+  15-minute freshness, explicit refresh and shared coverage/writer identities; freshness refined by 0032.
+
+- [`0028-automation-map-integration.md`](0028-automation-map-integration.md) — lazy packaged map
+  integration, one-flow/four-detail teaser, consistent board/List filters and fixed NEW expiry.
+
+- [`0027-automation-map-indexeddb-cache.md`](0027-automation-map-indexeddb-cache.md) — worker-only
+  extension IndexedDB for the bounded Automation Map cache without competing for local-storage quota.
+
+- [`0026-automation-map.md`](0026-automation-map.md) — Pro/Max Automation Map overlay, same-origin
+  reads/local analysis, possible-writer evidence, bounded fog teaser and lanes/dagre layout.
+
+- [`0025-plan-feature-capabilities.md`](0025-plan-feature-capabilities.md) — server capability
+  lists, contract fallback and baseline-only unknown paid keys; refines 0023 for tiered features.
+
 - [`0024-paid-workflow-search.md`](0024-paid-workflow-search.md) — additive paid workflow search,
   same-origin indexing, progressive coverage, compressed origin/org warm graph and revalidation,
   exact API-name joins, and new-tab editor handoff.

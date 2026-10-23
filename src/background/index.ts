@@ -13,12 +13,14 @@ import {
   protectLocalStorage,
   registerWorkerMessages,
 } from '../shared/browser';
+import { registerAutomationMapCache } from './automation-map-cache';
 import { registerFunctionCache } from './function-cache';
 import { registerWorkflowCache } from './workflow-cache';
 
 const ready = protectLocalStorage();
 registerFunctionCache(ready);
 registerWorkflowCache(ready);
+registerAutomationMapCache(ready);
 const client = new BillingClient(billingPlatform);
 const signIn = new TabSignIn(client, authTabPlatform);
 const NOTICE_KEY = 'billingNotice2026';

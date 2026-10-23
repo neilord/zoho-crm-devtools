@@ -41,6 +41,11 @@ export async function retryRequest(
       (response.status !== 429 && (response.status < 500 || response.status > 599))
     ) {
       // Keep the network body inside the slot too; fetch resolves when only headers arrive.
+      // Null-body statuses must stay bodyless, including transports that expose an empty stream.
+      if ([204, 205, 304].includes(response.status)) {
+        await response.body?.cancel();
+        return new Response(null, { status: response.status, headers: response.headers });
+      }
       if (response.ok && response.body) {
         const body = await response.arrayBuffer();
         signal.throwIfAborted();

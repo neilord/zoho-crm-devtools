@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Automation Map harness</title>
+    <style>
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+        font: 14px/1.4 "Segoe UI", system-ui, sans-serif;
+        color: #313949;
+        background: #f4f6fa;
+      }
+      .zoho-mock {
+        padding: 24px 32px;
+      }
+      .zoho-mock h1 {
+        margin: 0 0 6px;
+        font-size: 20px;
+      }
+      .zoho-mock button {
+        height: 34px;
+        padding: 0 12px;
+        border: 1px solid #b9c0cf;
+        border-radius: 4px;
+        background: #fff;
+        font: inherit;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="zoho-mock">
+      <h1>Zoho CRM (mock page behind the overlay)</h1>
+      <p>Development harness for the Automation Map shell. Synthetic data only.</p>
+      <p>
+        <button id="open-map" type="button">Open Automation Map</button>
+        Query: <code>?mode=full|teaser|loading|checking|failed|empty|large</code>, add
+        <code>&amp;animate=1</code> for progressive loading, and a <code>#zcdt-map=…</code> hash for state.
+      </p>
+    </div>
+    <script type="module" src="./automation-map.ts"></script>
+  </body>
+</html>

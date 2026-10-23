@@ -337,3 +337,124 @@ Source-refresh failures retain cached text but do not persist the new timestamp 
 Actions/templates/metadata are re-read because no reliable independent change signal is known.
 Settled cached coverage shows its complete/gap state plus “refreshing…” until revalidation settles;
 refresh failures retain cached search data and expose retryable failures. Cache I/O and workflow API I/O both require current paid access first.
+
+## Automation Map indexing
+
+The following shapes were observed in authenticated, read-only US-org research on 2026-10-24.
+The adapters in `automation-map/data/zoho-api.ts` use same-origin session GETs through the shared
+four-request budget, org/CSRF headers, redirect rejection, 15-second timeout and 429/5xx retry
+policy. They never fetch configured webhook/button URLs, source-code URLs or destinations.
+All new tests use invented fixtures. Other DCs and legacy UIs remain unverified; current
+packaged and authenticated acceptance results live in `STATE.md`.
+
+| GET path | Mapping and observed quirks |
+| --- | --- |
+| `/crm/v2/settings/functions?type=org&start=<n>&limit=200` | Full catalogue, including unbound, button, scheduler and API functions. This legacy list has no `info`; short-page/204 terminates it. Conflicting identities and repeated pages fail. Patch unquoted integer tokens of 16+ digits to strings **before** JSON parsing; strings, decimals and exponents stay untouched. |
+| `/crm/v2/settings/functions/<id>?language=<own language>&source=<own source>` | Existing strict matching-id detail helper; absent/blank `script`/`workflow` or 204 is source unavailable. All catalogue sources are attempted in full mode. |
+| `/crm/v2.2/settings/modules?feature_name=workflow` | Workflow-capable module set; restrict button fan-out to this set. |
+| `/crm/v8/settings/modules` | API names, singular/plural labels. Function `associated_place[].module` is the **plural label**, not the API name; preserve it explicitly. |
+| `/crm/v8/settings/fields?module=<api>` | Field API names and confirmed labels; 204 means an empty field list. |
+| `/crm/v8/settings/custom_buttons?module=<api>` | Per-module only. `position`, `action`, and `details.custom_function.id` map placements/type/catalogue identity. 204 is empty; 400 `NOT_SUPPORTED` and `NO_PERMISSION` are unsupported, other errors remain failures. URL and `cscript` actions remain configuration data. |
+| `/crm/v9/settings/automation/schedules?page=<n>&per_page=200` | `status` is `active` or `deactive`; preserve recurrence/raw frequency. `function.id` is a different namespace from catalogue IDs. Use exact API name when present, or catalogue reverse `associated_place` schedule IDs. |
+| `/crm/v8/settings/blueprints?page=<n>&per_page=200` | Blueprint name, module, active status and stage field. |
+| `/crm/v8/settings/blueprints/<id>/transitions?page=<n>&per_page=200` | Discover transition IDs. Blueprint detail itself has graph connections but no actions, so this loader does not request it. |
+| `/crm/v8/settings/blueprints/transitions/<id>` | `during_inputs` field entries plus the blueprint stage field are declared writes. Resolve `actions[]` through existing automation resource reads and `normalizeAction`. Transition field-update and task actions were observed; other types remain open-ended. |
+| `/crm/v9/settings/approval_process?page=<n>&per_page=200` | Approval identity, module and active state. |
+| `/crm/v9/settings/approval_process/<id>/rules?page=<n>&per_page=200` | Final-approval/rejection action arrays and approver-stage `on_approve`/`on_approval_trigger` arrays. Stage references may use `rid`. Functions, field updates and tasks resolve through `/crm/v8/settings/automation/<resource>/<id>`. Function binding IDs remain distinct from catalogue IDs; exact API-name joins only. |
+
+For every endpoint with `info.more_records`, continue on `true` even after a short page. Zoho can
+filter *after* paging, so neither a short page nor `info.count` establishes completeness. 204 is
+always an empty success. The shared transport preserves null-body statuses before buffering:
+an empty readable stream must not become a non-null Response body with status 204. Retries stay
+inside the tab slot; map-path timer regressions assert exponential delays plus jitter and numeric
+Retry-After, and a fifth request stays queued during the first four requests' backoff. List identities are deduplicated, repeated pages rejected, and pagination
+has a defensive ceiling. Catalogue `associated_place` uses `_type`, stringified ID and plural-label
+module; it is supplementary because some button reverse associations are absent. Catalogue
+`rest_api` entries preserve `oauth`/`zapikey` activation, and `tasks.integrations` provides cheap
+CRM write-call counts without reading source. Schedule IDs must never be treated as function IDs.
+
+Full mode reuses WorkflowIndex for workflows, resources and templates. New transition and approval
+reads publish progressively with isolated retry handles. The second live pass observed persistent
+HTTP 503s on some transition-detail, approval-rules and field-metadata reads. Comparing the adapter
+to Q4/Q5 research found matching v8 blueprint/transition and v9 approval paths, correct list-derived
+ID namespaces (including lossless 19-digit parsing), and no observed requirement for a module
+parameter on those detail endpoints. There is no evidence for changing version or adding guessed
+parameters. Transport retries remain bounded; after a full pass settles the map caches its timestamp
+and failed identities, so automatic opens within 15 minutes make zero CRM requests even with these
+failures. They remain visible and explicit Retry/Refresh re-requests them. Source analysis is local, serialized and
+revision/version cached. Coverage includes pending/unavailable/limited/unsupported/failed sources
+and all retryable dependencies; settled coverage does not imply exhaustive possible writers.
+
+Non-Pro teaser reads only function catalogue, workflow rule list and both module lists, followed
+by one rule detail, at most two action resources and one exactly joined function source for a
+single representative active rule chain. Reverse catalogue write-task associations prefer a
+useful rule without probing others; omitted sibling rules/functions stay numeric fog counts. Selection
+is a pure policy: most active rules among modules with 2–12 active rules, then label/API-name order. No
+qualifying module means metadata-only fog. It reads no fields, buttons, schedules, blueprints,
+approvals, templates or cache. Fog contains only numeric counts, record-write
+counts and opaque per-snapshot slots; no configuration names/IDs/labels/code enter that structure.
+Architecture/cache bounds and public store methods live in architecture §12.
+
+For a large org with roughly 900 catalogue functions and 300 rules, expect about 2,200 cold full
+GETs before retries: catalogue pages + every source, rule list/details, referenced workflow
+resources/templates, module/field/button fan-out, schedules, transitions and approval rules/actions.
+This is an estimate; shared references, permissions and source failures change the count. Workflow
+and map share catalogue/source reads; metadata and non-workflow action readers can overlap.
+
+### Automation Map entry hooks
+
+Setup home is `/crm/org<id>/settings/index`; `/crm/org<id>/settings` (with optional trailing
+slash) is also accepted during Zoho's redirect. Q8 research observed
+`.crmSetupHomeGroupCards[aria-label="Developer Hub"]`, containing
+`.listItems#devSpace_functions > link-to[data-zcqa="devSpace_functions"] > a.setupMenulink`.
+`settings-page.ts` places the inert extension entry immediately after that Functions tile, copying
+its row and anchor classes without native Lyte route bindings. The label is “Automation Map”.
+Live acceptance (2026-10-24) observed Zoho's 18×18 twin sparkle, not a text pill. The native markup
+is `span > crm-ui-loaders > div.crmNewReleaseLoader`, with three child divs
+`.crmNewReleaseLoader_1`, `_2`, `_3` (**not** `._1/._2/._3`). Zoho's `crm-ui-loaders` stylesheet
+(loaded lazily, with the first native marker on the page) gives the wrapper `position:relative;
+18×18` and every child `div` the NEW SVG as `background-image`, 14px absolute (`_1` at 0/0; `_2`
+and `_3` 9px at left 10px, top −3px and 7px), animated `1.5s linear infinite`: `_1`
+`newReleaseAnimate_1` (scale 1, opacity 1 at 0/100%), `_2` and `_3` `newReleaseAnimate_2` (scale
+.6, opacity .5), `_3` delayed 0.2s. The extension must reuse these exact class names so Zoho's
+CSS sizes and animates the sparkle; the short classes it used before stacked all three at 14px
+in one static star, because `.crmNewReleaseLoader div` alone matches them.
+
+The two surfaces differ, and the badge follows each:
+
+- **Setup home:** the native span (`dIB pR right0 top2`) is a **sibling after `link-to`**, inside
+  `.listItems`, separated by a text space (about 2.8px); it is not inside `a.setupMenulink`. That
+  anchor is `inline-block`, `line-height:18px`, `padding:7px 0`: a badge inside it stretched the
+  row from 32px to 50px and pushed the label down. The row is 32px, the label 8px below its top,
+  the span 3.7px below the row top.
+- **Left navigation:** the span (`dIB pR mL2`, no `right0 top2`) is a flex child of
+  `a.left-setup-menu` after the label (`lyte-text.setup-menus-text`), 2px away (`mL2`), 7px below
+  the row top in a 32px row. Without `.setup-menus-text` a bare label takes the link colour
+  (blue) instead of the dark label colour, so the extension wraps its label in a `span` with that
+  class (a span, not `lyte-text`, so no custom element upgrades).
+
+Ours matches both to the pixel with the exact classes (verified live: row heights, offsets and
+animation names equal the native rows). The wrapper has no route/loader attributes or Lyte
+bindings. On Setup home the marker also opens the map when clicked; the native one is inert.
+`.zcdt-map-new` remains the expiry hook. Only a marker without a computed background image on
+its native loader/children (Zoho's loader stylesheet absent) receives the extension's 18×18
+sparkle fallback, which has the native box (inline-block 18×18) and no margin. The date expiry is
+unchanged.
+
+Inner settings pages expose
+`crm-left-menu-setup lyte-accordion-item link-to[data-zcqa="devSpace_functions"]`, inside
+`.setting-list-td` with `.setupLeftMenuList.lft-menu-modules` and `a.left-setup-menu`.
+The same adapter adds an entry after that verified Functions row. Missing hooks fail closed;
+module-settings navigation is not guessed. Entries carry `[data-zcdt-map-entry="home|nav"]`.
+A MutationObserver plus route polling repairs replaced/removed entries without duplicates and
+removes each entry when its route no longer applies.
+
+On Workflow Rules the map button follows `#zcdt-workflow-search-button`, sharing its secondary
+button styles. The rule inspector's “Show on map” action passes rule identity and module API name
+through a content-world UX event, never source/configuration. The native rule and fresh-tab
+function handoffs remain the existing `workflows-page.ts` / ADR 0024 paths. Toolbar opening uses
+the Board overview: no verified selected-module filter hook is currently available.
+
+Only an explicit `zcdt-map` hash key auto-opens the overlay; its complete hash is passed to the UI
+without decoding. No other URL opens it automatically. Hash/history behavior is described in
+architecture §12; current live acceptance lives in `STATE.md`.

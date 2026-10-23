@@ -39,6 +39,11 @@ export type WorkflowIndexListener = (snapshot: WorkflowIndexSnapshot) => void;
 export interface WorkflowIndexDependencies {
   context: Readonly<CrmContext>;
   fetch: typeof fetch;
+  /** Map composition owns access, route lifetime and its all-function source pool. */
+  hasAccess?: () => Promise<boolean>;
+  isCurrentRoute?: () => boolean;
+  getCatalogue?: () => Promise<ZohoFunctionSummary[]>;
+  getFunctionSource?: (summary: ZohoFunctionSummary) => Promise<string | null>;
 }
 const initialProgress = (): WorkflowIndexProgress => ({
   phase: 'idle',
@@ -105,7 +110,9 @@ export class WorkflowIndex {
     this.controller.signal.throwIfAborted();
     if (
       this.disposed ||
-      (this.routeGuard && !isWorkflowsListLocation()) ||
+      (this.dependencies.isCurrentRoute
+        ? !this.dependencies.isCurrentRoute()
+        : this.routeGuard && !isWorkflowsListLocation()) ||
       (this.locationGuard &&
         (location.origin !== this.context.origin ||
           parseOrgId(location.pathname) !== this.context.orgId))
@@ -386,7 +393,8 @@ export class WorkflowIndex {
   private async loadIndex(): Promise<void> {
     try {
       this.guard();
-      if (!(await hasWorkflowSearchAccess())) throw new Error('Paid workflow access required');
+      if (!(await (this.dependencies.hasAccess ?? hasWorkflowSearchAccess)()))
+        throw new Error('Paid workflow access required');
       this.guard();
       let cached: WorkflowRule[] = [];
       let graph: WorkflowGraphCache | null = null;
@@ -505,7 +513,8 @@ export class WorkflowIndex {
       if (this.controller.signal.aborted) {
         if (
           !this.disposed &&
-          (!this.routeGuard || isWorkflowsListLocation()) &&
+          (!this.dependencies.isCurrentRoute || this.dependencies.isCurrentRoute()) &&
+          (!this.routeGuard || this.dependencies.isCurrentRoute || isWorkflowsListLocation()) &&
           (!this.locationGuard ||
             (location.origin === this.context.origin &&
               parseOrgId(location.pathname) === this.context.orgId))
@@ -668,7 +677,8 @@ export class WorkflowIndex {
         { kind: 'functionCatalogue' },
         [...new Set(bindings.map((b) => b.rule))],
         async () => {
-          const catalogue = await fetchAllFunctions(this.context, request);
+          const catalogue = await (this.dependencies.getCatalogue?.() ??
+            fetchAllFunctions(this.context, request));
           this.guard();
           const previous = new Map(this.catalogue?.map((entry) => [entry.id, entry]));
           for (const entry of catalogue) {
@@ -707,14 +717,17 @@ export class WorkflowIndex {
               { kind: 'functionSource', delugeFunctionId: id },
               [...new Set(ref.owners)],
               async () => {
-                const detail = await fetchFunctionDetail(this.context, ref.summary, request, true);
+                const source = this.dependencies.getFunctionSource
+                  ? await this.dependencies.getFunctionSource(ref.summary)
+                  : await fetchFunctionDetail(this.context, ref.summary, request, true).then(
+                      (detail) =>
+                        typeof detail?.script === 'string'
+                          ? detail.script
+                          : typeof detail?.workflow === 'string'
+                            ? detail.workflow
+                            : null,
+                    );
                 this.guard();
-                const source =
-                  typeof detail?.script === 'string'
-                    ? detail.script
-                    : typeof detail?.workflow === 'string'
-                      ? detail.workflow
-                      : null;
                 this.sources.set(id, source?.trim() ? source : null);
                 this.invalidate(ref.owners);
               },
@@ -776,7 +789,8 @@ export class WorkflowIndex {
     const stopMonitoring = this.monitorContext();
     this.running = (async () => {
       this.guard();
-      if (!(await hasWorkflowSearchAccess())) throw new Error('Paid workflow access required');
+      if (!(await (this.dependencies.hasAccess ?? hasWorkflowSearchAccess)()))
+        throw new Error('Paid workflow access required');
       this.guard();
       await Promise.all(
         keys.map((key) => {

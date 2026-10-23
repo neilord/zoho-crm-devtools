@@ -1,7 +1,7 @@
 import { contract, WEBSITE_BASE } from '../../billing/config';
-import { resolvedPlan } from '../../billing/entitlement';
+import { hasPlanFeature, resolvedPlan } from '../../billing/entitlement';
 import { planName, trialPriceCopy } from '../../billing/plans';
-import type { BillingAction, BillingResults } from '../../billing/protocol';
+import type { BillingAction, BillingPayloads, BillingResults } from '../../billing/protocol';
 import { billingMessage } from '../../shared/browser';
 import { checkIcon, closeIcon, downloadIcon, el, searchIcon, spinnerIcon } from '../functions/dom';
 import {
@@ -13,7 +13,7 @@ import modalCss from './upgrade-modal.css?inline';
 
 export const UPGRADE_REQUIRED_EVENT = 'billing:upgradeRequired';
 export interface UpgradeRequiredDetail {
-  featureId: 'exportFunctions' | 'workflowSearch';
+  featureId: 'exportFunctions' | 'workflowSearch' | 'automationMap';
   reason: 'paid-required';
 }
 
@@ -34,7 +34,10 @@ export interface UpgradeModalState {
 }
 
 export interface UpgradeModalDependencies {
-  send<A extends BillingAction>(type: A): Promise<BillingResults[A]>;
+  send<A extends BillingAction>(
+    type: A,
+    payload?: BillingPayloads[keyof BillingPayloads],
+  ): Promise<BillingResults[A]>;
 }
 
 export interface UpgradeFeatureConfig {
@@ -61,6 +64,23 @@ export const workflowSearchUpgradeCopy = {
   icon: () => searchIcon(22),
 };
 
+/** Pro prices are projected from the synced contract, independently of the Plus trial. */
+const proPlan = contract.plans.find((plan) => plan.key === 'pro');
+if (!proPlan) throw new Error('Pro plan missing from product contract');
+const proPriceCopy = `$${proPlan.introPriceUsdFirstMonth} for the first month, $${proPlan.priceUsdMonthly}/month after`;
+export const automationMapUpgradeCopy = {
+  featureId: 'automationMap' as const,
+  title: 'Automation Map is a Pro feature',
+  body: 'See everything that runs in your CRM and every way a field can change, mapped locally in your browser.',
+  freeBody: `Automation Map is included in Pro: ${proPriceCopy} on your first subscription.`,
+  benefits: [
+    'Every rule, function, button, schedule and API entry point',
+    'Field lens: all possible writers and reactors',
+    'Trace any automation upstream and downstream',
+  ],
+  icon: () => searchIcon(22),
+};
+
 const STYLE_ID = 'zcdt-upgrade-modal-style';
 
 /** Plan facts come from the shared contract; never restate them here. */
@@ -79,6 +99,12 @@ function signInErrorMessage(error: unknown): string {
     : 'We could not reach the account service. Check your connection and try again.';
 }
 
+const openModalClosers = new Set<() => void>();
+/** Overlay handoff cancels pending account work through each modal's normal close path. */
+export function closeUpgradeModals(): void {
+  for (const close of [...openModalClosers]) close();
+}
+
 const FOCUSABLE = 'button:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])';
 
 /**
@@ -92,6 +118,11 @@ export function mountUpgradeHook(
   config?: UpgradeFeatureConfig,
 ): () => void {
   const doc = host.ownerDocument;
+  const isMap = config?.featureId === 'automationMap';
+  const eligible = (account: AccountState) =>
+    isMap
+      ? !account.failed && account.signedIn && hasPlanFeature(account.entitlement, 'automationMap')
+      : isPaid(account);
   if (!doc.getElementById(STYLE_ID)) {
     const style = doc.createElement('style');
     style.id = STYLE_ID;
@@ -110,6 +141,7 @@ export function mountUpgradeHook(
   const descId = `${titleId}-desc`;
   const backdrop = el('div', { className: 'zx-backdrop' });
   backdrop.dataset.zcdtUpgradeModal = '';
+  if (isMap) backdrop.dataset.feature = 'automationMap';
   backdrop.hidden = true;
   const dialog = el('div', {
     className: 'zx-dialog',
@@ -170,7 +202,7 @@ export function mountUpgradeHook(
     const { view, error } = state;
     const { trialName, trialDays } = planFacts();
     const children: Node[] = [closeButton()];
-    const proPill = el('span', { className: 'zx-pro', text: 'PAID' });
+    const proPill = el('span', { className: 'zx-pro', text: isMap ? 'PRO' : 'PAID' });
     const mark = el('div', { className: 'zx-mark', attrs: { 'aria-hidden': 'true' } }, [
       config?.icon() ?? downloadIcon(22),
     ]);
@@ -222,10 +254,10 @@ export function mountUpgradeHook(
           waiting
             ? action('I have upgraded, check again', 'zx-primary', 'check', () => void recheck())
             : action(
-                `Upgrade to ${trialName}`,
+                isMap ? 'Upgrade to Pro' : `Upgrade to ${trialName}`,
                 'zx-primary',
                 'plans',
-                () => void openExternal('billing:openUpgrade'),
+                () => void (isMap ? checkoutPro() : openExternal('billing:openUpgrade')),
               ),
           action(
             'Manage account',
@@ -257,26 +289,36 @@ export function mountUpgradeHook(
       if (note) children.push(note);
       children.push(
         el('div', { className: 'zx-actions' }, [
-          action(
-            `Start free ${trialDays}-day ${trialName} trial`,
-            'zx-primary',
-            'sign-in',
-            () => void signIn('billing:signUp'),
-            `No card required · then ${trialPriceCopy}`,
-          ),
-          el('p', { className: 'zx-alt' }, [
-            document.createTextNode('Already have an account? '),
-            el('button', {
-              className: 'zx-inline',
-              type: 'button',
-              text: 'Log in',
-              dataset: { zcdtUpgradeAction: 'sign-in-existing' },
-              onClick: (event) => {
-                event.preventDefault();
-                void signIn();
-              },
-            }),
-          ]),
+          isMap
+            ? action(
+                'Log in',
+                'zx-primary',
+                'sign-in',
+                () => void signIn(),
+                `Pro · ${proPriceCopy}`,
+              )
+            : action(
+                `Start free ${trialDays}-day ${trialName} trial`,
+                'zx-primary',
+                'sign-in',
+                () => void signIn('billing:signUp'),
+                `No card required · then ${trialPriceCopy}`,
+              ),
+          isMap
+            ? null
+            : el('p', { className: 'zx-alt' }, [
+                document.createTextNode('Already have an account? '),
+                el('button', {
+                  className: 'zx-inline',
+                  type: 'button',
+                  text: 'Log in',
+                  dataset: { zcdtUpgradeAction: 'sign-in-existing' },
+                  onClick: (event) => {
+                    event.preventDefault();
+                    void signIn();
+                  },
+                }),
+              ]),
         ]),
       );
     }
@@ -369,7 +411,7 @@ export function mountUpgradeHook(
     try {
       const account = await readAccount();
       if (mine !== generation) return;
-      if (isPaid(account)) {
+      if (eligible(account)) {
         finishEntitled();
         return;
       }
@@ -394,7 +436,7 @@ export function mountUpgradeHook(
         host.dispatchEvent(new CustomEvent(ACCOUNT_CHANGED_EVENT, { bubbles: true }));
         return;
       }
-      if (isPaid(account)) return finishEntitled();
+      if (eligible(account)) return finishEntitled();
       if (account.signedIn) {
         host.dispatchEvent(new CustomEvent(ACCOUNT_CHANGED_EVENT, { bubbles: true }));
         return set({ view: classify(account), error: null });
@@ -422,13 +464,24 @@ export function mountUpgradeHook(
     }
   }
 
+  async function checkoutPro(): Promise<void> {
+    const mine = generation;
+    try {
+      await deps.send('billing:openCheckout', { plan: 'pro' });
+      if (mine === generation) set({ view: 'awaiting-checkout', error: null });
+    } catch {
+      if (mine === generation)
+        set({ error: 'The account page could not be opened. Please try again.' });
+    }
+  }
+
   async function recheck(): Promise<void> {
     const mine = generation;
     set({ view: 'checking', error: null });
     try {
       const account = await readAccount();
       if (mine !== generation) return;
-      if (isPaid(account)) return finishEntitled();
+      if (eligible(account)) return finishEntitled();
       if (classify(account) === 'unavailable') return set({ view: 'unavailable', error: null });
       set({
         view: 'awaiting-checkout',
@@ -490,8 +543,10 @@ export function mountUpgradeHook(
   backdrop.addEventListener('keydown', onKeydown);
   doc.addEventListener(UPGRADE_REQUIRED_EVENT, onRequired);
   host.addEventListener(EXPORT_STATE_EVENT, onExportState);
+  openModalClosers.add(close);
 
   return () => {
+    openModalClosers.delete(close);
     close();
     disposed = true;
     generation++;

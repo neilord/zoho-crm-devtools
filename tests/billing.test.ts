@@ -122,6 +122,19 @@ describe('OAuth boundary', () => {
 });
 
 describe('worker session lifecycle', () => {
+  it('preserves server capabilities through persistent cache and a worker restart', async () => {
+    const f = fixture();
+    const entitlement = {
+      ...pro,
+      features: ['exportFunctions', 'workflowSearch', 'automationMap'],
+    };
+    f.request.mockResolvedValueOnce(Response.json(entitlement));
+    expect((await f.client.getEntitlement()).entitlement).toEqual(entitlement);
+    expect(f.data.billingSession).toMatchObject({ cache: { value: entitlement } });
+    const restarted = new BillingClient(f.platform, f.request, () => 1_000_001);
+    expect((await restarted.getEntitlement()).entitlement).toEqual(entitlement);
+    expect(f.request).toHaveBeenCalledOnce();
+  });
   it.each([
     undefined,
     'offline_access',

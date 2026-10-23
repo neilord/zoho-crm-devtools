@@ -1,4 +1,4 @@
-import { type Entitlement, resolvedPlan } from '../billing/entitlement';
+import { type Entitlement, hasPlanFeature, resolvedPlan } from '../billing/entitlement';
 
 export type FeatureTier = 'free' | 'premium';
 export type FeatureStatus = 'planned' | 'beta' | 'released';
@@ -12,6 +12,7 @@ export interface FeatureDefinition {
     | 'functionSearch'
     | 'workflowSearch'
     | 'exportFunctions'
+    | 'automationMap'
     | 'githubSync'
     | 'bulkImportExport';
   tier: FeatureTier;
@@ -26,6 +27,7 @@ export const features: readonly FeatureDefinition[] = [
   { id: 'functionSearch', tier: 'free', status: 'beta' },
   { id: 'workflowSearch', tier: 'premium', status: 'beta' },
   { id: 'exportFunctions', tier: 'premium', status: 'beta' },
+  { id: 'automationMap', tier: 'premium', status: 'beta' },
   { id: 'githubSync', tier: 'premium', status: 'planned' },
   { id: 'bulkImportExport', tier: 'premium', status: 'planned' },
 ] as const;
@@ -45,14 +47,24 @@ export const PREMIUM_GATE_ENABLED = false;
 export const EXPORT_FUNCTIONS_GATE_ENFORCED = true;
 // Search All Workflows is independently paid from launch.
 export const WORKFLOW_SEARCH_GATE_ENFORCED = true;
+// ADR 0025: Automation Map requires an explicit plan capability from first availability.
+export const AUTOMATION_MAP_GATE_ENFORCED = true;
 export function isFeatureAvailable(
   feature: FeatureDefinition,
   entitlement: Entitlement,
-  gateEnabled: boolean = feature.id === 'workflowSearch'
-    ? WORKFLOW_SEARCH_GATE_ENFORCED
-    : feature.id === 'exportFunctions'
-      ? EXPORT_FUNCTIONS_GATE_ENFORCED
-      : PREMIUM_GATE_ENABLED,
+  gateEnabled: boolean = feature.id === 'automationMap'
+    ? AUTOMATION_MAP_GATE_ENFORCED
+    : feature.id === 'workflowSearch'
+      ? WORKFLOW_SEARCH_GATE_ENFORCED
+      : feature.id === 'exportFunctions'
+        ? EXPORT_FUNCTIONS_GATE_ENFORCED
+        : PREMIUM_GATE_ENABLED,
 ): boolean {
-  return feature.tier === 'free' || !gateEnabled || resolvedPlan(entitlement) !== 'free';
+  return (
+    feature.tier === 'free' ||
+    !gateEnabled ||
+    (feature.id === 'automationMap'
+      ? hasPlanFeature(entitlement, feature.id)
+      : resolvedPlan(entitlement) !== 'free')
+  );
 }

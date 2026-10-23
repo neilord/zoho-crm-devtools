@@ -3,7 +3,7 @@
 The single living state document for this repository. It is a snapshot, not a changelog; completed
 history lives in git and durable reasoning lives in ADRs.
 
-_Last updated: 2026-10-24 — popup redesign, feature-led notice and sign-up hint landed on `main` (unreleased); 2.4.0 store submission remains pending._
+_Last updated: 2026-10-24 — Automation Map implementation and review fixes consolidated on `feat/automation-map`; landing and release remain pending._
 
 ## Current status
 
@@ -37,10 +37,38 @@ Listing copy and paste-ready dashboard/privacy/reviewer/What's new fields are in
 | Paid tier and Export functions | release ready (2.4.0) | Optional account via normal-tab OAuth/PKCE, entitlement with Free fallback, Paid-entitlement-gated Export (JSON/CSV/Markdown) beside Search All Functions, upgrade modal, popup account card, one-time notice. Live-checked in an authenticated org. |
 | Popup redesign | release ready | Landed on `main`: compact account sheet, Plus/Pro/Max checkout columns from the contract (`billing:openCheckout {plan}`, validated against paid keys → `/app/billing?checkout=<plan>`), single Manage billing (`/app/billing`), signed-out Start free trial + Log in, paywall link renamed "Log in". Trial buttons (popup and paywall) send `billing:signUp`, which adds `screen_hint=signup` so the account site opens /signup; Log in keeps /login (cloud PR #16, deployed and smoke-checked 2026-10-24). The once-only notice now leads with Export functions and Search All Workflows, keeping the account/data disclosure as a fine-print line. 503 tests and `npm run verify` pass; stubbed-`chrome` screenshots of every state. Owner reviewed the reloaded dev popup on 2026-10-23. Not clicked live: Manage billing, plan-column checkout (incl. plan change for an existing subscriber), sign-in-then-checkout. Signed-out + once-only notice is ~760px, so Chrome scrolls once. The sign-up hint was not clicked through in a real extension session. |
 | Search All Workflows | release ready | Landed on `main` for any paid plan (ADR 0024); 493 tests and the Chromium harness (`npm run test:e2e:workflows`) pass. Authenticated US-org live acceptance passed on 2026-10-21: 327 rules, ~50 s cold index, cached search usable in ~3 s on reopen, 6 function-source gaps (1 unavailable, 5 name-only). Not verified live: free-user upgrade modal (jsdom only), other DCs, 1024/1280 widths, delete/score/Cliq types. Known nit: after Esc, a scope-chip click then immediate typing can miss search focus. Unreleased; upgrade-modal copy needs owner approval. |
+| Automation Map | implemented on `feat/automation-map`, not landed, not released | Integrated Pro/Max map and bounded fog teaser; acceptance and remaining owner steps below. |
 | Agent context | done | Closed docs taxonomy, ADR log, living state, and guardrails are installed. |
 | Rare Zoho surfaces | in-progress | Editor mount/settings selectors and less common overlays still need observation as they appear. |
 
 ## In flight
+
+- **Automation Map** — implemented, reviewed and integrated on `feat/automation-map` (ADRs
+  0025–0032); not landed, not released. Latest automated verification: `npm run verify` passed
+  **1,242 tests across 75 files**, TypeScript, Biome (one existing bridge warning) and production
+  build; `npm run test:e2e:automation-map` **5/5** (incl. read-free warm reopen with persistent
+  503s, targeted cached Retry, browser/worker restart, Back/Copy link); `npm run test:e2e:workflows`
+  passed. Three authenticated, read-only passes in a US org (**327 rules / 923 functions**)
+  confirmed: progressive cold indexing (~73–110 s, ~800 requests), warm reopen with **0 Zoho
+  requests** inside the 15-minute window (data in ~130–230 ms, also after tab reload); declared and
+  inferred writers checked against native configuration and source; chip/lens/group/aria-live
+  counts agree; hash/Back/Forward and deep links; Show on map framing; search incl. code; native
+  handoffs; no extension console errors; 1280×657 layout. Teaser: one revealed flow, 11 CRM reads,
+  0 hidden workflow/function names across Board/List/Fields, Pro-only upgrade copy. The native
+  NEW sparkle (Zoho's own `crmNewReleaseLoader_1/2/3` classes and animation, 32 px rows) was
+  verified live by computed geometry; fresh live screenshots of the final build and fog were not
+  possible (the display stopped rendering), so final fog/framing visuals are verified headless only.
+  Persistent Zoho HTTP 503s on some blueprint-transition, approval-rule, custom-button and
+  field-metadata reads remain explicit, retryable coverage gaps (paths match research; no
+  client-side fix evidenced); 271 gaps live are mostly functions with partial/limited analysis.
+  Not verified: other DCs, legacy Workflow UIs, very large orgs beyond this one.
+  Remaining: owner approval to land; push/deploy cloud `feat/plan-features` for authoritative
+  server feature lists (contract **0.2.0**); store release with matching version bump and
+  CHANGELOG; owner approval of Pro-specific upgrade copy. Other DCs and legacy UIs, a real
+  screen reader and trackpad remain unverified; client-script analysis is out of scope.
+  Keep [`plans/automation-map.md`](plans/automation-map.md) and
+  [`plans/automation-map-ux.md`](plans/automation-map-ux.md) until release, then fold remaining
+  durable facts into their reference/ADR homes and delete both plans.
 
 - **Three-tier pricing before 2.4.0 submission** — implemented in `fix/billing-three-tiers`
   worktree. Plus/Pro/Max and future non-empty plan keys use server paid entitlement; popup
@@ -94,7 +122,8 @@ Listing copy and paste-ready dashboard/privacy/reviewer/What's new fields are in
 
 ## Next
 
-1. **CRM functionality map (next major feature)** — a flowchart of everything configured in the CRM (functions, workflows and their relations) to view, sort, filter and understand in one place. Not started; plan it under `docs/plans/` and record scope decisions as an ADR.
+1. **CRM functionality map — in progress** as [Automation Map](plans/automation-map.md) on
+   `feat/automation-map`; see its In flight entry for acceptance and owner landing/release steps.
 2. After 2.3.0 is published, watch the AI Assistant listing's `utm_source=zoho-crm-devtools`
    traffic to judge whether in-extension promotion is worth repeating.
 3. Ship the deferred theme-following for the preview: persist the observed Zoho editor theme

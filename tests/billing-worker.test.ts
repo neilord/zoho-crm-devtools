@@ -81,6 +81,25 @@ it('returns a signed-out Free snapshot without credentials', async () => {
     value: { signedIn: false, entitlement: { plan: 'free' } },
   });
 });
+it('preserves capabilities through the worker response and popup account helper', async () => {
+  const entitlement = {
+    plan: 'pro',
+    entitled: true,
+    status: 'active',
+    currentPeriodEnd: null,
+    cancelAtPeriodEnd: false,
+    checkedAt: '2026-10-24T00:00:00Z',
+    features: ['automationMap'],
+  };
+  data.billingSession = {
+    tokens: { access: 'opaque-access', refresh: 'opaque-refresh', expiresAt: Date.now() + 100000 },
+    cache: { at: Date.now(), value: entitlement },
+  };
+  const reply = await call('billing:getEntitlement');
+  expect(reply).toEqual({ ok: true, value: { signedIn: true, entitlement } });
+  sendMessage.mockResolvedValue(structuredClone(reply));
+  expect(await account.getEntitlement()).toEqual({ signedIn: true, entitlement });
+});
 it('persists notice dismissal separately from settings and sessions', async () => {
   expect(await call('billing:getNotice')).toEqual({ ok: true, value: { pending: true } });
   await call('billing:dismissNotice');

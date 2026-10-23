@@ -320,3 +320,9 @@
     animation: none;
   }
 }
+
+[data-zcdt-upgrade-modal][data-feature="automationMap"] {
+  --zx-accent: #7656c9;
+  --zx-accent-hover: #6142b1;
+  --zx-accent-soft: #f0ebfa;
+}

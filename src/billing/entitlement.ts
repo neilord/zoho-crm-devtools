@@ -1,3 +1,5 @@
+import contract from './product-contract.json';
+
 export interface Entitlement {
   plan: string;
   entitled: boolean;
@@ -5,6 +7,7 @@ export interface Entitlement {
   currentPeriodEnd: string | null;
   cancelAtPeriodEnd: boolean;
   checkedAt: string;
+  features?: string[];
 }
 export const FREE: Entitlement = {
   plan: 'free',
@@ -40,9 +43,24 @@ export function parseEntitlement(value: unknown): Entitlement {
     currentPeriodEnd: e.currentPeriodEnd,
     cancelAtPeriodEnd: e.cancelAtPeriodEnd,
     checkedAt: e.checkedAt,
+    ...(Array.isArray(e.features) &&
+    e.features.every((feature) => typeof feature === 'string' && feature.trim().length > 0)
+      ? { features: [...e.features] }
+      : {}),
   };
 }
 
 export function resolvedPlan(e: Entitlement): string {
   return e.entitled && e.plan !== 'free' ? e.plan : 'free';
+}
+
+/** Server capabilities take precedence, including an explicitly empty list (ADR 0025). */
+export function hasPlanFeature(entitlement: Entitlement, featureId: string): boolean {
+  const plan = resolvedPlan(entitlement);
+  if (plan === 'free') return false;
+  if (entitlement.features !== undefined) return entitlement.features.includes(featureId);
+  const definition = contract.plans.find((candidate) => candidate.key === plan);
+  if (definition) return definition.features.some((feature) => feature === featureId);
+  // Future paid keys retain existing paid access but cannot implicitly unlock tiered features.
+  return featureId === 'exportFunctions' || featureId === 'workflowSearch';
 }

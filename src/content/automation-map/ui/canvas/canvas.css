@@ -1,0 +1,1264 @@
+/*
+ * Automation Map canvas: board, nodes, edges, chrome (UX spec §4-§6).
+ * Every class and keyframe is prefixed `amc-`: the shell shares this shadow root. Tokens
+ * (--fs-*, --am-*) are defined by the shell on `.am-root` and are only consumed here.
+ */
+.amc-root {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+  font-family: var(--fs-font, "Segoe UI", system-ui, sans-serif);
+  font-size: 14px;
+  line-height: 1.4;
+  color: var(--fs-text, #1d2638);
+  box-sizing: border-box;
+}
+.amc-root *,
+.amc-root *::before,
+.amc-root *::after {
+  box-sizing: border-box;
+}
+.amc-root [hidden] {
+  /* biome-ignore lint/complexity/noImportantStyles: the hidden attribute must beat every component display rule */
+  display: none !important;
+}
+.amc-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+.amc-skip:focus {
+  position: absolute;
+  z-index: 60;
+  left: 12px;
+  top: 12px;
+  width: auto;
+  height: auto;
+  margin: 0;
+  padding: 6px 10px;
+  clip: auto;
+  border-radius: 6px;
+  background: var(--fs-text, #1d2638);
+  color: #fff;
+}
+.amc-i {
+  flex: 0 0 auto;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* ---------- canvas + world ---------- */
+.amc-canvas {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  cursor: grab;
+  touch-action: none;
+  outline: none;
+  background-color: var(--am-canvas, #f3f5f9);
+  background-image: radial-gradient(circle, var(--am-grid-dot, #d9dfea) 1px, transparent 1.3px);
+  background-size: var(--gs, 24px) var(--gs, 24px);
+  background-position: var(--gx, 0) var(--gy, 0);
+  --z: 1;
+}
+.amc-canvas:focus-visible {
+  box-shadow: inset 0 0 0 2px var(--fs-accent, #2f6df0);
+}
+.amc-canvas.amc-nogrid {
+  background-image: none;
+}
+.amc-canvas.amc-panning {
+  cursor: grabbing;
+}
+.amc-world {
+  position: absolute;
+  left: 0;
+  top: 0;
+  transform-origin: 0 0;
+  will-change: transform;
+}
+/*
+ * Zoomed far out the world is hundreds of screens wide at 1:1. A will-change layer keeps the raster
+ * scale it started with, so the compositor tried to hold the estate at full size, ran out of tile
+ * memory and left whole rectangles unpainted: straight-edged seams in the backdrop (live, and
+ * reproduced headless: a fifth of the canvas unpainted, about half the loads). Without the hint
+ * the layer rasters at the current scale, which is cheap this far out.
+ */
+.amc-far .amc-world {
+  will-change: auto;
+}
+.amc-layer {
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+.amc-svg {
+  position: absolute;
+  left: 0;
+  top: 0;
+  overflow: visible;
+  pointer-events: none;
+}
+
+/* ---------- islands ---------- */
+.amc-isl {
+  position: absolute;
+  border: 1px solid var(--am-island-border, #e2e6ee);
+  border-radius: 16px;
+  background: var(--am-island, #fff);
+  box-shadow: var(
+    --am-island-shadow,
+    0 1px 2px rgba(15, 23, 42, 0.05),
+    0 10px 30px rgba(15, 23, 42, 0.06)
+  );
+  transition:
+    opacity 0.2s,
+    box-shadow 0.2s;
+}
+.amc-isl.amc-flash {
+  animation: amc-islflash 1.1s ease;
+}
+@keyframes amc-islflash {
+  30% {
+    box-shadow:
+      0 0 0 4px rgba(47, 109, 240, 0.35),
+      var(--am-island-shadow);
+  }
+}
+.amc-head {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 0 20px;
+  border-bottom: 1px solid #f0f2f7;
+  cursor: pointer;
+  overflow: hidden;
+}
+.amc-av {
+  width: 30px;
+  height: 30px;
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  background: #eef1f6;
+  color: var(--am-k-module, #3d4657);
+  font: 700 11.5px / 1 var(--fs-font, sans-serif);
+  letter-spacing: 0.02em;
+}
+.amc-av.amc-org {
+  background: var(--am-pro-soft, #f1edfd);
+  color: var(--am-pro, #6741d9);
+}
+.amc-head-main {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+.amc-name {
+  font-size: 15px;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.amc-cnt {
+  font-size: 12px;
+  color: var(--fs-muted, #5f687b);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.amc-hubs {
+  display: flex;
+  flex: 0 1 auto;
+  min-width: 0;
+  gap: 6px;
+  overflow: hidden;
+}
+.amc-hubchip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 190px;
+  height: 22px;
+  padding: 0 8px;
+  border-radius: 999px;
+  background: var(--am-pro-soft, #f1edfd);
+  color: #4b2fb0;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.amc-hubchip > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+/* The caller count leads and never shrinks: a long name must not push it out of the chip. */
+.amc-hubchip > .amc-hc-n {
+  flex: 0 0 auto;
+}
+.amc-ismatch {
+  display: none;
+  flex: 0 0 auto;
+  min-width: 24px;
+  height: 22px;
+  padding: 0 7px;
+  border-radius: 11px;
+  background: var(--fs-highlight, #fde68a);
+  color: #7a5a00;
+  font: 700 11.5px / 22px var(--fs-font, sans-serif);
+  text-align: center;
+}
+.amc-searching .amc-ismatch {
+  display: inline-block;
+}
+.amc-searching .amc-isl.amc-nomatch {
+  opacity: 0.45;
+}
+.amc-searching .amc-isl.amc-nomatch .amc-ismatch {
+  background: #eef1f6;
+  color: var(--fs-muted, #5f687b);
+}
+.amc-lane-lbl {
+  position: absolute;
+  top: 70px;
+  font: 700 10px / 1 var(--fs-font, sans-serif);
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--am-lane-label, #646d82);
+  white-space: nowrap;
+}
+.amc-lane-sep {
+  position: absolute;
+  top: 66px;
+  bottom: 14px;
+  border-left: 1px dashed var(--am-lane-sep, #e9edf4);
+}
+
+/* Overview frame title: sits above the island in the gap the layout reserves for it. */
+.amc-ttl {
+  position: absolute;
+  left: 0;
+  bottom: 100%;
+  display: none;
+  align-items: center;
+  gap: min(calc(9px / var(--z)), 70px);
+  max-width: 100%;
+  margin-bottom: min(calc(8px / var(--z)), 40px);
+  font-size: min(calc(15px / var(--z)), 120px);
+  font-weight: 700;
+  line-height: 1.1;
+  white-space: nowrap;
+  color: var(--fs-text, #1d2638);
+  cursor: pointer;
+}
+.amc-ttl .amc-av {
+  width: 1.6em;
+  height: 1.6em;
+  font-size: 0.62em;
+  border-radius: 0.45em;
+}
+/* The Org-wide avatar is an icon with fixed pixel attributes: size it with the title instead. */
+.amc-ttl .amc-av .amc-i {
+  width: 1em;
+  height: 1em;
+}
+.amc-ttl-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.amc-ttl .amc-ismatch {
+  font-size: 0.7em;
+  height: auto;
+  line-height: 1.5;
+  padding: 0 0.5em;
+  border-radius: 1em;
+}
+.amc-tier-overview .amc-ttl {
+  display: flex;
+}
+
+/* Overview summary card with silhouettes of the real node rects. */
+.amc-sum {
+  position: absolute;
+  inset: 0;
+  display: none;
+  border-radius: 16px;
+  background: #fff;
+  cursor: pointer;
+  overflow: hidden;
+  /* Text must fit the card: ~11 lines of height for tall islands, ~7.5 for short ones, ~20em wide. */
+  --fz: max(
+    min(calc(12px / var(--z)), calc(var(--sh, 600) * 0.09px), calc(var(--sw, 1296) * 0.045px)),
+    calc(8.5px / var(--z))
+  );
+}
+.amc-sum:hover {
+  box-shadow: inset 0 0 0 calc(2px / var(--z)) var(--fs-accent, #2f6df0);
+}
+.amc-sil {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+}
+.amc-sumtxt {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--fz) * 0.7);
+  padding: calc(var(--fz) * 1.2) calc(var(--fz) * 1.6) calc(var(--fz) * 2.4);
+  background: linear-gradient(180deg, #fff 72%, rgba(255, 255, 255, 0));
+}
+.amc-sc {
+  font-size: var(--fz);
+  line-height: 1.35;
+  color: var(--fs-muted, #5f687b);
+  overflow: hidden;
+  overflow-wrap: anywhere;
+}
+.amc-sc b {
+  color: var(--fs-text, #1d2638);
+}
+.amc-sbar {
+  display: flex;
+  height: calc(var(--fz) * 0.45);
+  border-radius: 99px;
+  overflow: hidden;
+  background: #eef1f6;
+}
+.amc-sbar i {
+  background: var(--fs-ok, #2e9e5b);
+}
+.amc-sbar i + i {
+  background: var(--fs-off, #c2c8d4);
+}
+.amc-shubs {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: calc(var(--fz) * 0.5);
+  overflow: hidden;
+}
+.amc-short .amc-shubs,
+.amc-short .amc-sbar {
+  display: none;
+}
+/* The floor (8.5px on screen) wins over the box-fit terms: a short island shows its first line
+   readable instead of three lines at 3-5px; whatever does not fit is clipped under the fade. */
+.amc-short .amc-sum {
+  --fz: max(
+    min(calc(12px / var(--z)), calc(var(--sh, 600) * 0.14px), calc(var(--sw, 1296) * 0.06px)),
+    calc(8.5px / var(--z))
+  );
+}
+.amc-short .amc-sc + .amc-sc {
+  display: none;
+}
+/* One line, cut with an ellipsis: wrapped to a sliver it showed only its first word. */
+.amc-short .amc-sc {
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.amc-shubs .amc-hubchip {
+  height: calc(var(--fz) * 1.9);
+  max-width: 48%;
+  font-size: calc(var(--fz) * 0.95);
+  padding: 0 calc(var(--fz) * 0.7);
+  gap: calc(var(--fz) * 0.4);
+}
+.amc-shubs .amc-hubchip svg {
+  width: var(--fz);
+  height: var(--fz);
+}
+.amc-smatch {
+  font-size: var(--fz);
+  font-weight: 700;
+  color: #7a5a00;
+}
+.amc-tier-overview .amc-sum {
+  display: block;
+}
+.amc-tier-overview .amc-nodes,
+.amc-tier-overview .amc-edges,
+.amc-tier-overview .amc-head,
+.amc-tier-overview .amc-lane-lbl,
+.amc-tier-overview .amc-lane-sep {
+  display: none;
+}
+
+/* Module -> module flows (overview only). */
+.amc-flows {
+  display: none;
+}
+.amc-tier-overview .amc-flows {
+  display: block;
+}
+.amc-ov {
+  fill: none;
+  stroke: #c4ccd9;
+  stroke-linecap: round;
+  opacity: 0.6;
+  vector-effect: non-scaling-stroke;
+}
+.amc-ov.amc-loop {
+  stroke: var(--am-cascade, #d97706);
+  opacity: 0.65;
+}
+.amc-ov.amc-on {
+  stroke: var(--fs-accent, #2f6df0);
+  opacity: 0.9;
+}
+.amc-ov-head {
+  fill: #c4ccd9;
+  opacity: 0.85;
+}
+.amc-ov-head.amc-loop {
+  fill: var(--am-cascade, #d97706);
+}
+.amc-ov-head.amc-on {
+  fill: var(--fs-accent, #2f6df0);
+  opacity: 1;
+}
+/* One card per hovered island in place of curve labels. */
+.amc-flowcard {
+  position: absolute;
+  z-index: 41;
+  width: 232px;
+  padding: 10px 12px 11px;
+  border: 1px solid var(--fs-border, #e2e6ee);
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.16);
+  font-size: 12px;
+  line-height: 1.4;
+  pointer-events: none;
+}
+.amc-flowcard > b {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 13px;
+}
+.amc-flowcard h6 {
+  margin: 8px 0 2px;
+  color: var(--fs-muted, #5f687b);
+  font: 700 10.5px / 1.2 var(--fs-font, sans-serif);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.amc-flowcard .amc-fr {
+  display: flex;
+  gap: 8px;
+  justify-content: space-between;
+}
+.amc-flowcard .amc-fr > span:first-child {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.amc-flowcard .amc-fr > span:last-child {
+  color: var(--fs-muted, #5f687b);
+  font-variant-numeric: tabular-nums;
+}
+.amc-flowcard .amc-loopnote {
+  margin-top: 6px;
+  color: #9a4f00;
+}
+
+/* ---------- nodes ---------- */
+.amc-nd {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 10px 0 8px;
+  color: var(--fs-text, #1d2638);
+  cursor: pointer;
+  isolation: isolate;
+  box-sizing: border-box;
+  transition: opacity 0.18s ease;
+  --k: var(--am-k-rule, #2f6df0);
+  --bd: var(--am-node-border, #dfe4ee);
+  --shape: none;
+}
+.amc-nd::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: 8px;
+  background: #fff;
+  border: 1px solid var(--bd);
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
+}
+.amc-nd:hover {
+  --bd: var(--k);
+}
+.amc-nd:hover::before {
+  box-shadow: var(--am-node-hover-shadow, 0 4px 14px rgba(15, 23, 42, 0.1));
+}
+.amc-nd.amc-sel {
+  --bd: var(--fs-accent, #2f6df0);
+}
+.amc-nd.amc-sel::before {
+  box-shadow: var(--am-select-ring, 0 0 0 2px #2f6df0, 0 0 0 6px rgba(47, 109, 240, 0.16));
+}
+.amc-nd.amc-match {
+  --bd: #e0b400;
+}
+.amc-nd.amc-match::before {
+  box-shadow:
+    0 0 0 2px var(--am-match, #f2c94c),
+    0 0 0 7px var(--am-match-glow, rgba(253, 230, 138, 0.65));
+}
+.amc-nd.amc-sel.amc-match::before {
+  box-shadow:
+    var(--am-select-ring, 0 0 0 2px #2f6df0, 0 0 0 6px rgba(47, 109, 240, 0.16)),
+    0 0 0 9px var(--am-match-glow, rgba(253, 230, 138, 0.65));
+}
+.amc-nd.amc-flash::before {
+  animation: amc-ndflash 0.6s ease 2;
+}
+@keyframes amc-ndflash {
+  50% {
+    box-shadow: 0 0 0 4px rgba(47, 109, 240, 0.45);
+  }
+}
+.amc-nd:focus-visible {
+  outline: 2px solid var(--fs-accent, #2f6df0);
+  outline-offset: 2px;
+}
+.amc-ic {
+  width: 28px;
+  height: 28px;
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  background: color-mix(in srgb, var(--k) 12%, #fff);
+  color: var(--k);
+  border-radius: 7px;
+}
+.amc-tx {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.amc-t1-solo {
+  flex: 1;
+  min-width: 0;
+}
+.amc-t1 {
+  font: 600 12.5px / 1.25 var(--fs-font, sans-serif);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.amc-t2 {
+  font-size: 11px;
+  line-height: 1.3;
+  color: var(--fs-muted, #5f687b);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.amc-mi {
+  display: flex;
+  gap: 3px;
+  color: #8a93a6;
+}
+.amc-tag {
+  flex: 0 0 auto;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: #eef1f6;
+  color: var(--fs-muted, #5f687b);
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 16px;
+}
+.amc-tag-sch {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  background: #f6edfa;
+  color: #8a2aa3;
+}
+.amc-warnic {
+  display: inline-flex;
+  color: var(--fs-warn, #8f5f00);
+}
+.amc-hub {
+  position: absolute;
+  top: -9px;
+  right: 12px;
+  z-index: 2;
+  height: 18px;
+  padding: 0 7px;
+  border-radius: 9px;
+  background: var(--am-k-function, #6741d9);
+  color: #fff;
+  font: 700 10px / 18px var(--fs-font, sans-serif);
+  white-space: nowrap;
+  box-shadow: 0 0 0 2px #fff;
+}
+.amc-hub-here {
+  display: none;
+}
+.amc-tier-detail .amc-hub-here {
+  display: inline;
+}
+.amc-port {
+  position: absolute;
+  right: -4px;
+  top: 50%;
+  width: 8px;
+  height: 8px;
+  margin-top: -4px;
+  border-radius: 50%;
+  background: var(--am-k-function, #6741d9);
+  box-shadow: 0 0 0 2px #fff;
+  z-index: 2;
+}
+.amc-skel-line {
+  display: block;
+  width: 62%;
+  height: 8px;
+  margin-top: 3px;
+  border-radius: 5px;
+  color: transparent;
+  overflow: hidden;
+  background: linear-gradient(90deg, #eef1f6, #f8f9fc, #eef1f6);
+  background-size: 200% 100%;
+  animation: amc-shimmer 1.2s linear infinite;
+}
+@keyframes amc-shimmer {
+  to {
+    background-position: -200% 0;
+  }
+}
+.amc-still .amc-skel-line {
+  animation: none;
+}
+
+/* kinds */
+.amc-k-event {
+  --k: var(--am-k-event, #b7791f);
+}
+.amc-k-button {
+  --k: var(--am-k-button, #2b8a3e);
+}
+.amc-k-schedule {
+  --k: var(--am-k-schedule, #ae3ec9);
+}
+.amc-k-api {
+  --k: var(--am-k-api, #e8590c);
+}
+.amc-k-transition {
+  --k: var(--am-k-transition, #0b7285);
+  padding-right: 16px;
+}
+.amc-k-approval {
+  --k: var(--am-k-approval, #5c940d);
+}
+.amc-k-rule {
+  --k: var(--am-k-rule, #2f6df0);
+  padding-left: 11px;
+}
+.amc-k-action {
+  --k: var(--am-k-action, #5c677d);
+  gap: 7px;
+  padding: 0 8px 0 5px;
+}
+.amc-k-function {
+  --k: var(--am-k-function, #6741d9);
+  padding-left: 14px;
+  padding-right: 14px;
+}
+.amc-k-template {
+  --k: var(--am-k-template, #d6336c);
+}
+.amc-k-external {
+  --k: var(--am-k-external, #8a6d3b);
+  padding-left: 16px;
+  padding-right: 16px;
+}
+.amc-k-field {
+  --k: var(--am-k-field, #0c8599);
+  padding: 0 12px 0 5px;
+  gap: 6px;
+}
+.amc-k-portal {
+  --k: var(--am-k-portal, #6b7488);
+  padding: 0 12px 0 6px;
+  gap: 6px;
+}
+.amc-k-event,
+.amc-k-api {
+  padding-left: 15px;
+  padding-right: 16px;
+}
+
+.amc-k-rule::after {
+  content: "";
+  position: absolute;
+  left: -1px;
+  top: -1px;
+  bottom: -1px;
+  z-index: -1;
+  width: 4px;
+  border-radius: 8px 0 0 8px;
+  background: var(--fs-ok, #2e9e5b);
+}
+/* Record events list every watched field ("Field changed: Stage, Closing_Date, ..."): wrap, then cut. */
+.amc-k-event .amc-t1,
+.amc-k-api .amc-t1 {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  line-height: 1.2;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+/* Rule names often differ only at the end ("... opportunities 7"): wrap to two lines before cutting. */
+.amc-k-rule .amc-t1 {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  line-height: 1.2;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.amc-k-rule.amc-inactive::after {
+  background: var(--fs-off, #c2c8d4);
+}
+.amc-inactive .amc-t1 {
+  color: var(--fs-muted, #5f687b);
+}
+.amc-k-action::before {
+  border-radius: 5px;
+}
+.amc-k-action .amc-ic {
+  width: 22px;
+  height: 22px;
+  border-radius: 5px;
+}
+.amc-k-schedule::before {
+  border-radius: 22px;
+}
+.amc-k-schedule .amc-ic {
+  border-radius: 50%;
+}
+.amc-k-button::before {
+  border-radius: 6px;
+  border-bottom-width: 3px;
+}
+.amc-k-button .amc-ic {
+  border-radius: 6px;
+  box-shadow: inset 0 -2px 0 color-mix(in srgb, var(--k) 25%, #fff);
+}
+.amc-k-field::before,
+.amc-k-portal::before {
+  border-radius: 999px;
+}
+.amc-k-field .amc-ic,
+.amc-k-portal .amc-ic {
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+}
+.amc-k-portal::before {
+  border-style: dashed;
+  background: #fbfcfe;
+}
+.amc-k-portal .amc-t1 {
+  font-weight: 600;
+  color: #3d4657;
+}
+.amc-k-portal.amc-inport::before {
+  background: #fff;
+}
+.amc-k-field.amc-bucket::before {
+  border-style: dashed;
+  border-width: 1.5px;
+}
+.amc-k-template::before {
+  border-radius: 6px;
+}
+.amc-k-template::after {
+  content: "";
+  position: absolute;
+  right: -1px;
+  top: -1px;
+  z-index: -1;
+  width: 12px;
+  height: 12px;
+  background: linear-gradient(
+    225deg,
+    var(--am-canvas, #f3f5f9) 0 50%,
+    color-mix(in srgb, var(--k) 22%, #fff) 50%
+  );
+  border-bottom-left-radius: 3px;
+}
+.amc-k-approval::before {
+  box-shadow:
+    inset 0 0 0 3px #fff,
+    inset 0 0 0 4px color-mix(in srgb, var(--k) 35%, #fff);
+}
+.amc-k-approval.amc-sel::before {
+  box-shadow:
+    var(--am-select-ring, 0 0 0 2px #2f6df0),
+    inset 0 0 0 3px #fff,
+    inset 0 0 0 4px color-mix(in srgb, var(--k) 35%, #fff);
+}
+
+/* Clip-path kinds draw their border as two stacked clipped layers. */
+.amc-k-function {
+  --shape: polygon(11px 0, calc(100% - 11px) 0, 100% 50%, calc(100% - 11px) 100%, 11px 100%, 0 50%);
+}
+.amc-k-external {
+  --shape: polygon(12px 0, 100% 0, calc(100% - 12px) 100%, 0 100%);
+}
+.amc-k-event,
+.amc-k-api {
+  --shape: polygon(0 0, calc(100% - 9px) 0, 100% 50%, calc(100% - 9px) 100%, 0 100%, 9px 50%);
+}
+.amc-k-transition {
+  --shape: polygon(0 0, calc(100% - 12px) 0, 100% 50%, calc(100% - 12px) 100%, 0 100%);
+}
+.amc-k-function::before,
+.amc-k-external::before,
+.amc-k-event::before,
+.amc-k-api::before,
+.amc-k-transition::before {
+  border: 0;
+  border-radius: 0;
+  background: var(--bd);
+  /* biome-ignore lint/complexity/noImportantStyles: clipped kinds cannot show a box-shadow ring, so the hover/selection/match rings must lose */
+  box-shadow: none !important;
+  clip-path: var(--shape);
+}
+.amc-k-function::after,
+.amc-k-external::after,
+.amc-k-event::after,
+.amc-k-api::after,
+.amc-k-transition::after {
+  content: "";
+  position: absolute;
+  inset: 1px;
+  z-index: -1;
+  background: #fff;
+  clip-path: var(--shape);
+}
+.amc-k-function.amc-sel::after,
+.amc-k-external.amc-sel::after,
+.amc-k-event.amc-sel::after,
+.amc-k-api.amc-sel::after,
+.amc-k-transition.amc-sel::after,
+.amc-k-function.amc-match::after,
+.amc-k-external.amc-match::after,
+.amc-k-event.amc-match::after,
+.amc-k-api.amc-match::after,
+.amc-k-transition.amc-match::after {
+  inset: 2px;
+}
+.amc-k-function.amc-match::after,
+.amc-k-external.amc-match::after,
+.amc-k-event.amc-match::after,
+.amc-k-api.amc-match::after,
+.amc-k-transition.amc-match::after {
+  background: #fffbea;
+}
+.amc-k-function .amc-ic {
+  border-radius: 0;
+  clip-path: polygon(25% 0, 75% 0, 100% 50%, 75% 100%, 25% 100%, 0 50%);
+}
+.amc-k-external .amc-ic {
+  width: 32px;
+  border-radius: 0;
+  clip-path: polygon(18% 0, 100% 0, 82% 100%, 0 100%);
+}
+.amc-k-event .amc-ic {
+  border-radius: 0;
+  clip-path: polygon(0 0, 76% 0, 100% 50%, 76% 100%, 0 100%);
+}
+.amc-k-api .amc-ic {
+  border-radius: 7px;
+}
+.amc-port-api {
+  background: var(--am-k-api, #e8590c);
+  right: -3px;
+}
+.amc-gap {
+  --bd: #e7c3a0;
+}
+.amc-gap::before {
+  border-style: dashed;
+}
+.amc-k-function.amc-gap::before {
+  background: repeating-linear-gradient(90deg, #e7c3a0 0 6px, transparent 6px 10px);
+}
+
+/*
+ * Semantic zoom: compact tier keeps shape and icon, drops secondary text. The text that stays
+ * is counter-scaled by the zoom (--z) so it lands near 10.5px on screen instead of 5-8px; the
+ * clamps keep it from outgrowing its card at either end.
+ */
+.amc-tier-compact .amc-k-action {
+  justify-content: center;
+  padding: 0 4px;
+}
+.amc-tier-compact .amc-t1 {
+  font-size: clamp(12.5px, calc(10.5px / var(--z, 0.6)), 22px);
+}
+.amc-tier-compact .amc-lane-lbl {
+  font-size: clamp(11px, calc(9.5px / var(--z, 0.6)), 19px);
+}
+.amc-tier-compact .amc-name {
+  font-size: clamp(15px, calc(11.5px / var(--z, 0.6)), 22px);
+}
+.amc-tier-compact .amc-cnt {
+  font-size: clamp(12px, calc(9.5px / var(--z, 0.6)), 17px);
+}
+.amc-tier-compact .amc-hubchip {
+  font-size: clamp(11px, calc(9.5px / var(--z, 0.6)), 16px);
+}
+.amc-tier-compact .amc-hub {
+  font-size: clamp(10px, calc(9px / var(--z, 0.6)), 15px);
+  height: auto;
+  line-height: 1.7;
+}
+
+/* ---------- dimming ---------- */
+.amc-world.amc-focusing .amc-nd:not(.amc-lit) {
+  opacity: var(--am-dim, 0.2);
+}
+.amc-world.amc-searching .amc-nd:not(.amc-match):not(.amc-lit) {
+  opacity: var(--am-dim, 0.2);
+}
+.amc-world.amc-hovering .amc-nd.amc-hv-dim {
+  opacity: 0.55;
+}
+.amc-world.amc-focusing .amc-e-local,
+.amc-world.amc-searching .amc-e-local {
+  opacity: 0.12;
+}
+.amc-world.amc-hovering .amc-e-local {
+  opacity: 0.35;
+}
+
+/* ---------- edges ---------- */
+.amc-e {
+  fill: none;
+  stroke: var(--am-edge, #b3bccb);
+  stroke-width: 1.5;
+  vector-effect: non-scaling-stroke;
+  transition:
+    opacity 0.18s,
+    stroke 0.15s;
+}
+.amc-e-inf {
+  stroke-dasharray: 6 4;
+}
+.amc-e-call {
+  stroke: #c3b8ee;
+}
+.amc-e-ur-o {
+  stroke: var(--am-edge-unresolved, #a9b2c3);
+  stroke-width: 4.5;
+}
+.amc-e-ur-i {
+  stroke: #fff;
+  stroke-width: 2.5;
+}
+.amc-e-casc {
+  stroke: var(--am-cascade, #d97706);
+  stroke-dasharray: 7 4;
+  stroke-width: 1.6;
+  opacity: 0.85;
+}
+.amc-e-react {
+  stroke: var(--am-cascade, #d97706);
+  stroke-dasharray: 1.5 4;
+  stroke-linecap: round;
+  stroke-width: 1.4;
+}
+.amc-e-lit {
+  stroke: var(--am-edge-hl, #2f6df0);
+  stroke-width: 2.25;
+  opacity: 1;
+}
+.amc-e-lit.amc-e-ur-i {
+  stroke: #fff;
+  stroke-width: 2.5;
+}
+.amc-e-lit.amc-e-ur-o {
+  stroke: var(--am-edge-hl, #2f6df0);
+  stroke-width: 4.5;
+}
+.amc-e-trunk {
+  stroke-width: 2.4;
+}
+.amc-trunk-n {
+  font: 700 10.5px var(--fs-font, sans-serif);
+  fill: #5f687b;
+  paint-order: stroke;
+  stroke: #fff;
+  stroke-width: 3px;
+  stroke-linejoin: round;
+}
+.amc-tier-compact .amc-trunk-n {
+  font-size: clamp(10.5px, calc(9.5px / var(--z, 0.6)), 17px);
+}
+.amc-e-lit.amc-e-casc {
+  stroke: var(--am-cascade, #d97706);
+  stroke-width: 2.4;
+}
+.amc-e-lit.amc-e-react {
+  stroke: var(--am-cascade, #d97706);
+}
+.amc-e-ghost {
+  stroke: var(--am-edge-hl, #2f6df0);
+  stroke-width: 1.6;
+  opacity: 0.6;
+  stroke-dasharray: 2 5;
+  stroke-linecap: round;
+}
+.amc-tier-compact .amc-e,
+.amc-tier-overview .amc-e {
+  marker-end: none;
+}
+.amc-elabel {
+  font: 700 11px var(--fs-font, sans-serif);
+  fill: #9a4f00;
+  paint-order: stroke;
+  stroke: #fff;
+  stroke-width: 4px;
+  stroke-linejoin: round;
+}
+.amc-tier-compact .amc-elabel {
+  font-size: clamp(11px, calc(9.5px / var(--z, 0.6)), 17px);
+}
+.amc-badge-pq {
+  font: 700 10px var(--fs-font, sans-serif);
+  fill: #6741d9;
+  paint-order: stroke;
+  stroke: #fff;
+  stroke-width: 3px;
+}
+
+/* ---------- chrome ---------- */
+.amc-chrome {
+  position: absolute;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.amc-chrome[hidden] {
+  display: none;
+}
+.amc-zoom {
+  left: 12px;
+  bottom: 12px;
+  padding: 4px;
+  border: 1px solid var(--fs-border, #e2e6ee);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 2px 10px rgba(15, 23, 42, 0.08);
+}
+.amc-zoom button {
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--fs-muted, #5f687b);
+  cursor: pointer;
+}
+.amc-zoom button:hover {
+  background: var(--fs-surface, #f7f9fc);
+  color: var(--fs-accent, #2f6df0);
+}
+.amc-zoom button[aria-pressed="true"] {
+  color: var(--fs-accent, #2f6df0);
+}
+.amc-zoom button:focus-visible {
+  outline: 2px solid var(--fs-accent, #2f6df0);
+  outline-offset: 1px;
+}
+.amc-pct {
+  min-width: 46px;
+  text-align: center;
+  font: 600 12px var(--fs-font, sans-serif);
+  color: var(--fs-muted, #5f687b);
+  font-variant-numeric: tabular-nums;
+}
+.amc-tierlbl {
+  padding: 0 8px 0 6px;
+  border-left: 1px solid var(--fs-border, #e2e6ee);
+  font-size: 11.5px;
+  color: var(--fs-muted, #5f687b);
+  white-space: nowrap;
+}
+.amc-mini {
+  left: 12px;
+  bottom: 60px;
+  padding: 0;
+  border: 1px solid var(--fs-border, #e2e6ee);
+  border-radius: 10px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 2px 10px rgba(15, 23, 42, 0.08);
+  cursor: pointer;
+}
+.amc-mini canvas {
+  display: block;
+  width: 184px;
+  height: 124px;
+}
+.amc-tip {
+  position: absolute;
+  z-index: 40;
+  max-width: 300px;
+  padding: 7px 10px;
+  border-radius: 8px;
+  background: #1d2638;
+  color: #fff;
+  font-size: 12px;
+  line-height: 1.4;
+  pointer-events: none;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.3);
+}
+.amc-tip b {
+  font-weight: 700;
+}
+.amc-tip .amc-mut {
+  color: #b7c0d3;
+}
+.amc-empty {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 6px;
+  text-align: center;
+  color: var(--fs-muted, #5f687b);
+  pointer-events: none;
+}
+.amc-empty h3 {
+  margin: 0;
+  font-size: 16px;
+  color: var(--fs-text, #1d2638);
+}
+.amc-empty p {
+  margin: 0;
+  font-size: 13px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .amc-nd,
+  .amc-isl,
+  .amc-e {
+    transition: none;
+  }
+}
+
+/* ---------- legend ---------- */
+.amc-zoom .amc-lgbtn {
+  width: auto;
+  height: 30px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0 9px 0 8px;
+  border: 0;
+  border-left: 1px solid var(--fs-border, #e2e6ee);
+  border-radius: 0 7px 7px 0;
+  background: transparent;
+  color: var(--fs-muted, #5f687b);
+  font: 600 11.5px var(--fs-font, sans-serif);
+  cursor: pointer;
+}
+.amc-lgbtn:hover,
+.amc-lgbtn[aria-expanded="true"] {
+  background: var(--fs-surface, #f7f9fc);
+  color: var(--fs-accent, #2f6df0);
+}
+.amc-lgbtn:focus-visible {
+  outline: 2px solid var(--fs-accent, #2f6df0);
+  outline-offset: -2px;
+}
+.amc-legend {
+  position: absolute;
+  z-index: 30;
+  left: 12px;
+  bottom: 56px;
+  display: flex;
+  gap: 18px;
+  max-height: calc(100% - 80px);
+  padding: 12px 14px 10px;
+  overflow: auto;
+  border: 1px solid var(--fs-border, #e2e6ee);
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.16);
+  font-size: 12px;
+}
+.amc-lg-col h6 {
+  margin: 0 0 6px;
+  color: var(--fs-muted, #5f687b);
+  font: 700 10.5px / 1.2 var(--fs-font, sans-serif);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.amc-lg-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 24px;
+  white-space: nowrap;
+}
+.amc-lg-row .amc-ic {
+  width: 20px;
+  height: 20px;
+  display: grid;
+  place-items: center;
+}
+.amc-lg-line {
+  flex: 0 0 auto;
+  overflow: visible;
+}

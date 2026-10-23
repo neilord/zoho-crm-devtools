@@ -48,6 +48,34 @@ unknown timestamps and failed-refresh persistence. A controlled four-source
 failure changes six durable gaps to ten; targeted retry returns to six. Content/worker consoles
 are collected. It takes approximately 15 seconds; no real org/account access is needed.
 
+### Built-extension Automation Map integration
+
+Run `npm run test:e2e:automation-map`. It builds two isolated development packages (full unlock
+and forced teaser, the latter under `dist-dev/teaser`) and loads each actual extension in
+Chromium. Synthetic Zoho fixtures cover every store endpoint, unquoted 19-digit catalogue IDs,
+204 empty results, unsupported-button 400, templates, sources, workflows, schedules, blueprints
+and approvals. Unknown requests fail the harness. No real org/account access is needed.
+
+The checks cover the Settings entry/NEW, Fields start and declared/inferred lens writers, Board,
+Trace, source-only search, toolbar, hash and dashboard handoffs, Upgrade Pro copy, Escape and focus.
+CDP records executed runtime/dagre scripts and asserts extension-origin URLs; the runtime is absent
+before first open. A real extension-worker IndexedDB partition must persist. During warm reopen and
+page reload, all CRM responses are held until cached counts and source search paint within two
+seconds. A separate persistent-profile browser restart proves cached source search works with a
+new worker before any CRM response is released. Teaser reads exactly the eight allowed endpoints,
+publishes one rule, scans hidden DOM and attributes for fogged identities, and never opens the map database. Key-state screenshots go
+to the task's requested scratchpad integration directory. Authenticated Zoho remains release acceptance.
+
+### Automation Map integration review regressions
+
+`automation-map-review.test.ts` and the entry lifecycle tests cover teaser identities from explicit
+entry options, later state and graph changes, debounced hashes and Copy link; workflow/map/modal
+handoffs; asynchronous source-index readiness and typing during progress; explicit hash restoration
+and canonical entry detection; counted node visits at 100/200 functions; and lifting or cancelling
+either pinch pointer followed by continued pan and capture cleanup. The packaged teaser also
+launches from a fogged workflow rule and checks that the dashboard is gone, the rule ID is absent
+from the map hash/DOM, and Upgrade wins hit-testing over the map.
+
 ### Workflow cache contract fixtures
 
 `workflow-cache-shapes.test.ts` uses type-exhaustive action/trigger/load/join/source records to

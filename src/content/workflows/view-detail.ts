@@ -1,3 +1,5 @@
+import { mapIcon } from '../automation-map/entry/icon';
+import { requestAutomationMap } from '../automation-map/entry/request';
 import type { WorkflowSearchResult } from './search';
 import type {
   WorkflowAction,
@@ -572,7 +574,7 @@ export function renderDetail(input: DetailInput): HTMLElement {
   const openable = all.filter((l) => isOpenableFunction(l.action));
   const primary = openable.find((l) => matched.has(l.key)) ?? openable[0];
   const anyFunction = all.some((l) => l.action.kind === 'function');
-  const footer = el('div', { className: 'fs-info-footer' }, [
+  const footer = el('div', { className: 'fs-info-footer wf-detail-footer' }, [
     button(
       'fs-edit-button',
       'Open in Zoho',
@@ -581,6 +583,17 @@ export function renderDetail(input: DetailInput): HTMLElement {
       {
         attrs: { 'data-act': 'open-rule', 'data-fk': 'open-rule' },
       },
+    ),
+    button(
+      'fs-edit-button sec2',
+      'Show on map',
+      () =>
+        requestAutomationMap({
+          entry: 'rule',
+          focus: { ruleId: rule.id, moduleApiName: rule.module.apiName },
+        }),
+      [mapIcon(15)],
+      { attrs: { 'data-act': 'show-on-map', 'data-fk': 'show-on-map' } },
     ),
     anyFunction
       ? button(

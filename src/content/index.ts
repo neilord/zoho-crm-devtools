@@ -1,3 +1,4 @@
+import { startAutomationMapEntryPoints } from './automation-map/bootstrap';
 import { bootstrapEditorIntegration } from './editor/bootstrap';
 import { bootstrapFunctionSearch } from './functions/bootstrap';
 import { bootstrapAiAssistantPromo } from './promo/bootstrap';
@@ -12,3 +13,5 @@ void bootstrapEditorIntegration();
 void bootstrapFunctionSearch();
 void bootstrapWorkflowSearch();
 void bootstrapAiAssistantPromo();
+
+startAutomationMapEntryPoints();
