@@ -3,7 +3,7 @@
 The single living state document for this repository. It is a snapshot, not a changelog; completed
 history lives in git and durable reasoning lives in ADRs.
 
-_Last updated: 2026-10-24 — Automation Map landed on `main` (`b270898`), unreleased; store release, cloud deploy and privacy copy remain._
+_Last updated: 2026-10-24 — production worker fix on `claude/production-build-connection-4b7ffb`: every production build before it shipped a dead service worker; the pending 2.4.0 ZIP must not be uploaded._
 
 ## Current status
 
@@ -42,6 +42,23 @@ Listing copy and paste-ready dashboard/privacy/reviewer/What's new fields are in
 | Rare Zoho surfaces | in-progress | Editor mount/settings selectors and less common overlays still need observation as they appear. |
 
 ## In flight
+
+- **Production service-worker fix** — on branch `claude/production-build-connection-4b7ffb`, not
+  landed. Every production build since the worker was added had `service-worker-loader.js` import
+  the content-script chunk: CRXJS named both `src/background/index.ts` and `src/content/index.ts`
+  chunks `index.ts-*` and the loader picked the wrong one. The worker never answered, so the
+  popup account card and the Automation Map stayed on "Checking your plan…". Dev builds were
+  unaffected (their worker entry has another name), which is why live acceptance missed it. The
+  repo-root `zoho-crm-devtools.zip` (2.4.0) has the defect — **do not upload it**. Fix: worker
+  entry renamed to `src/background/worker.ts`, a build guard fails when a loader imports the wrong
+  chunk (proved by reintroducing the collision), and `npm run build:local` builds production code
+  with the pinned unpacked key into `dist-local`. Verified: `npm run verify` (1,242 tests); headless
+  Chromium with `dist` and `dist-local` both answer `billing:getEntitlement` and render the
+  signed-out account card; an API call from the path-id `dist` worker fails CORS while the pinned
+  id (`lkgcneekmlnpcjcfeieehpokgmefpdde`) gets HTTP 401 (allowed). Not verified: owner's Chrome
+  with `dist-local`, sign-in, and the 2.4.0 line (the fix must also reach whatever tree the 2.4.0
+  ZIP is rebuilt from). The popup showed "Open Zoho CRM to use tools" on a CRM tab in the owner's
+  report; not investigated.
 
 - **Automation Map** — landed on `main` as one squashed commit (`b270898`, ADRs
   0025–0032); not released. Latest automated verification: `npm run verify` passed

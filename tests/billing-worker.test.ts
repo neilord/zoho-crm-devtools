@@ -53,7 +53,7 @@ beforeEach(async () => {
       create,
     },
   });
-  await import('../src/background/index');
+  await import('../src/background/worker');
 });
 afterEach(() => {
   vi.unstubAllGlobals();

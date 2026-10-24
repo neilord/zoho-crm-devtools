@@ -57,7 +57,7 @@ describe('development-only extension reload tooling', () => {
     );
 
     expect(productionManifest.background).toEqual({
-      service_worker: 'src/background/index.ts',
+      service_worker: 'src/background/worker.ts',
       type: 'module',
     });
     expect(productionManifest.key).toBeUndefined();

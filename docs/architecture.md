@@ -72,6 +72,11 @@ OAuth and export abort-signal composition. Refresh is on demand; no scheduler or
 
 - Vite and CRXJS build production output to `dist`; `npm run zip` packages that directory for a
   manual Chrome Web Store release. Release mechanics live in [`conventions.md`](conventions.md) §4.
+- The build fails unless each CRXJS loader imports the chunk built from its own entry (a guard in
+  `vite.config.ts`); entry files with the same basename once made the worker load content code.
+- `npm run build:local` writes production code to `dist-local` with the pinned unpacked key, so a
+  locally loaded copy keeps the id the account API allowlists (ADR 0012). A plain `dist` loaded
+  unpacked gets a path-derived id whose API calls fail CORS. Never zip `dist-local`.
 - `npm run build:dev` writes a separate unpacked build to `dist-dev`. It retains the production background worker and adds dev reload handling,
   a hidden self-reload control (`[data-zcdt-dev-reload-extension]`), and a CSS experimentation
   bridge. Production builds omit the development handler and both hidden controls.
@@ -98,7 +103,7 @@ The controls are intentionally hidden automation surfaces. Trigger reload with
 
 ## 9. Optional accounts and entitlement (Stage 1)
 
-`src/background/index.ts` registers the production MV3 worker. The development entry statically
+`src/background/worker.ts` registers the production MV3 worker. The development entry statically
 imports this worker alongside the reload listener; no dynamic imports run in the service worker. Popup and content scripts call
 `billingMessage(type)` from `src/shared/browser.ts`. Chrome supplies the sender id; the router
 accepts only its own extension contexts and exact one-field `{ type }` envelopes, never URLs,

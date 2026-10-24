@@ -53,7 +53,7 @@ manual:
 3. Run `npm run zip`; this rebuilds production output and creates `zoho-crm-devtools.zip`.
 4. Upload the zip through the Chrome Web Store release process when explicitly authorized.
 
-Keep package and manifest versions identical. Never publish a development build from `dist-dev`.
+Keep package and manifest versions identical. Never publish a development build from `dist-dev` or the key-pinned `dist-local`.
 
 ## 5. Verification
 

@@ -17,6 +17,7 @@
     "dev": "vite",
     "build": "vite build",
     "build:dev": "vite build --mode development --outDir dist-dev",
+    "build:local": "ZCDT_PIN_DEV_KEY=true vite build --outDir dist-local",
     "typecheck": "tsc --noEmit",
     "check": "biome check .",
     "format": "biome format --write .",

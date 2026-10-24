@@ -1,4 +1,4 @@
-import '../../background';
+import '../../background/worker';
 import { isOwnSender } from '../../shared/browser';
 import { handleDevReloadMessage } from './background-handler';
 
