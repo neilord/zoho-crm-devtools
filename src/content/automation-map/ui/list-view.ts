@@ -18,7 +18,7 @@ import {
   type Windowing,
 } from './list-model';
 import { graphVersion, type ShellModel } from './model';
-import { badge, emptyState, statusMark, upgradeButton } from './parts';
+import { badge, emptyState, LOCKED_AREAS_SHOWN, statusMark, upgradeButton } from './parts';
 
 export interface ListView {
   el: HTMLElement;
@@ -320,6 +320,7 @@ export function createListView(env: RegionEnv): ListView {
         if (row.canExpand) node.setAttribute('aria-expanded', String(row.expanded));
       }
       node.classList.toggle('active', activeKey === row.key);
+      node.classList.toggle('alt', row.type === 'node' && i % 2 === 1);
       fragment.push(node);
     }
     for (const [key, entry] of rendered)
@@ -557,7 +558,7 @@ export function createListView(env: RegionEnv): ListView {
 }
 
 /** At most this many locked areas are listed; the rest are one line. */
-const LOCKED_ROWS = 8;
+const LOCKED_ROWS = LOCKED_AREAS_SHOWN;
 
 /**
  * What the preview does not show, as plainly locked rows rather than blank placeholders: a lock,

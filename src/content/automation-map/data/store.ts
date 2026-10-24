@@ -143,6 +143,10 @@ export class AutomationMapStore {
   private analysisQueue: Promise<unknown> = Promise.resolve();
   private lastYield = 0;
   private lastBuild = -Infinity;
+  /** How long the last graph build took; progressive rebuilds back off in proportion. */
+  private lastBuildMs = 0;
+  /** The next emit must publish a fresh graph now (loading just settled). */
+  private forceBuild = false;
   private graphTimer: ReturnType<typeof setTimeout> | undefined;
   private monitor: ReturnType<typeof setInterval> | undefined;
   private settled = false;
@@ -392,7 +396,17 @@ export class AutomationMapStore {
   }
   private emit(rebuild = true) {
     this.guard();
-    if (rebuild && Date.now() - this.lastBuild < 500) {
+    const force = this.forceBuild;
+    this.forceBuild = false;
+    if (force && this.graphTimer) {
+      clearTimeout(this.graphTimer);
+      this.graphTimer = undefined;
+    }
+    // Progressive rebuilds cost O(graph): wait at least three build-times between them (500ms to
+    // 2s) so a large org spends most of its load fetching, not rebuilding. The settling emit
+    // falls back to the base 500ms, so the final graph and its counts land no later than ever.
+    const interval = force ? 500 : Math.min(2000, Math.max(500, this.lastBuildMs * 3));
+    if (rebuild && Date.now() - this.lastBuild < interval) {
       if (!this.graphTimer) {
         const run = this.generation;
         this.graphTimer = setTimeout(
@@ -405,12 +419,14 @@ export class AutomationMapStore {
               /* obsolete run */
             }
           },
-          500 - (Date.now() - this.lastBuild),
+          interval - (Date.now() - this.lastBuild),
         );
       }
     } else if (rebuild) {
-      this.lastBuild = Date.now();
+      const started = Date.now();
+      this.lastBuild = started;
       let graph = this.deps.buildGraph(this.inputs);
+      this.lastBuildMs = Date.now() - started;
       if (this.snapshot.access.level === 'teaser')
         graph = revealedGraph(
           graph,
@@ -501,6 +517,7 @@ export class AutomationMapStore {
       phase: this.failures.has('catalogue') || this.failures.has('list') ? 'failed' : 'complete',
       coverage: { ...this.snapshot.coverage, refreshing: false },
     };
+    this.forceBuild = true;
     this.emit();
     if (this.graphTimer) {
       await pause(Math.max(0, 505 - (Date.now() - this.lastBuild)), this.controller.signal);
@@ -1427,6 +1444,7 @@ export class AutomationMapStore {
       ...this.snapshot,
       phase: this.failures.has('catalogue') || this.failures.has('list') ? 'failed' : 'complete',
     };
+    this.forceBuild = true;
     this.emit();
     if (this.graphTimer)
       await pause(Math.max(0, 505 - (Date.now() - this.lastBuild)), this.controller.signal);

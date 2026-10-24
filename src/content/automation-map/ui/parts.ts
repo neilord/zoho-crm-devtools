@@ -106,3 +106,6 @@ export function skeletonBlock(lines = 3): HTMLElement {
 export function kbd(...keys: string[]): HTMLElement[] {
   return keys.map((k) => el('span', { className: 'kbd', text: k }));
 }
+
+/** How many locked module areas the rail and the List name before collapsing into one "N more" line. */
+export const LOCKED_AREAS_SHOWN = 8;

@@ -682,4 +682,25 @@ describe('fog teaser', () => {
     expect(fogChipText(large)).toBe('30 rules · 50 functions · 2 buttons');
     expect(fogChipText(org)).toBe('3 schedules · 12 API functions');
   });
+
+  it('caps fog height so a huge module is a bank of cloud, not four screens of layer', () => {
+    const huge = {
+      slot: 4,
+      counts: { rules: 140, functions: 140, buttons: 0, schedules: 0 },
+      recordWrites: 9,
+    };
+    const huger = { ...huge, counts: { ...huge.counts, rules: 900, functions: 900 } };
+    expect(fogGeometry(huge).h).toBeLessThanOrEqual(1500);
+    expect(fogGeometry(huger).h).toBe(fogGeometry(huge).h);
+  });
+
+  it('keeps the fog stylesheet cheap: no filter, no pinned layers, no backdrop blur', () => {
+    // Live: pinned multi-megapixel layers ran the compositor out of tile memory and dropped
+    // rectangles of fog at overview zoom.
+    const css = canvasCssSource('fog').replace(/\/\*[\s\S]*?\*\//g, '');
+    expect(css).not.toMatch(/will-change/);
+    expect(css).not.toMatch(/backdrop-filter/);
+    expect(css).not.toMatch(/(^|[;{\s])filter\s*:/);
+    expect(css).not.toMatch(/clip-path|content-visibility|contain\s*:/);
+  });
 });

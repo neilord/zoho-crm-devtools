@@ -39,10 +39,13 @@ export function resolvePalette(root: Element): Palette {
   return palette;
 }
 
-function mix(hex: string, base: string, amount: number): string {
-  const c = (h: string, i: number) => Number.parseInt(h.slice(1 + i * 2, 3 + i * 2), 16);
-  const out = [0, 1, 2].map((i) => Math.round(c(base, i) + (c(hex, i) - c(base, i)) * amount));
-  return `rgb(${out[0]},${out[1]},${out[2]})`;
+/** Fills `el` with `text`, every run of digits wrapped in a `<b>`. */
+function boldNumbers(el: HTMLElement, text: string): void {
+  for (const part of text.split(/(\d+)/)) {
+    if (!part) continue;
+    if (/^\d+$/.test(part)) el.append(h('b', null, null, part));
+    else el.append(document.createTextNode(part));
+  }
 }
 
 export interface IslandShell {
@@ -149,24 +152,39 @@ export function createIslandShell(I: BoardIsland, opts: ShellOptions): IslandShe
   const sil = h('canvas', 'amc-sil', { 'aria-hidden': 'true' });
   const txt = h('div', 'amc-sumtxt');
   const s = I.stats;
+  // Every count is bold, whatever the island has: a 0-rule "written from N modules" island reads
+  // the same as a 2-rule one (and the wording comes from `plural`, so "1 rule", never "1 rules").
   const line = h('div', 'amc-sc');
-  const bold = (n: number | string, tail: string) => {
-    line.append(h('b', null, null, String(n)), document.createTextNode(tail));
-  };
   if (I.org || !s.rules) {
-    line.textContent = countsText(I);
+    // "written from 2 modules" is "from 2 modules" here: a 640px island is ~100px on screen.
+    boldNumbers(line, countsText(I).replace(/^written from /, 'from '));
   } else {
-    bold(s.rules, ' rules · ');
-    bold(s.activeRules, ' active · ');
-    bold(s.functions, ' functions');
+    boldNumbers(
+      line,
+      `${plural(s.rules, 'rule')} · ${s.activeRules} active · ${plural(s.functions, 'function')}`,
+    );
   }
   txt.append(line);
+  // Far out an island is a few dozen screen px wide: one short count instead of a cut-off line
+  // (empty islands carry nothing there; their title says what they are).
+  const shortText = I.org
+    ? s.schedules
+      ? plural(s.schedules, 'schedule')
+      : plural(s.functions, 'function')
+    : s.rules
+      ? plural(s.rules, 'rule')
+      : '';
+  line.classList.add('amc-sc-full');
+  if (shortText) {
+    const short = h('div', 'amc-sc amc-sc-short');
+    boldNumbers(short, shortText);
+    txt.append(short);
+  }
   if (!I.org && s.rules) {
-    const line2 = h('div', 'amc-sc');
-    line2.append(
-      document.createTextNode('writes '),
-      h('b', null, null, String(s.fields)),
-      document.createTextNode(` fields${s.buttons ? ` · ${plural(s.buttons, 'button')}` : ''}`),
+    const line2 = h('div', 'amc-sc amc-sc-full');
+    boldNumbers(
+      line2,
+      `writes ${plural(s.fields, 'field')}${s.buttons ? ` · ${plural(s.buttons, 'button')}` : ''}`,
     );
     txt.append(line2);
   }
@@ -195,41 +213,77 @@ export function createIslandShell(I: BoardIsland, opts: ShellOptions): IslandShe
   return { island: I, el, sil, silDrawn: false, badges, smatch };
 }
 
-/** Paints the island's real node rects as soft kind-coloured silhouettes (overview tier). */
+/**
+ * Kind colour as an rgb() triplet for `rgba(...)` fills, pulled toward the island's cool slate
+ * so the wash reads as a tint of the kind, not a bar of it (and no kind outshouts its neighbours).
+ */
+function rgbOf(hex: string, keep = 0.55): string {
+  const slate = [150, 162, 190];
+  const c = (i: number) =>
+    Math.round(Number.parseInt(hex.slice(1 + i * 2, 3 + i * 2), 16) * keep + slate[i] * (1 - keep));
+  return `${c(0)},${c(1)},${c(2)}`;
+}
+
+/**
+ * Paints the island's real node rects as soft, feathered kind-coloured blobs (overview tier).
+ * Semantic zoom: far out, cards would be hairline-edged slivers, so the body of an island is a
+ * wash of colour (a wide, faint glow under a tighter one) that crossfades into crisp cards as you
+ * zoom in. The blur is baked into this one bitmap once per island: nothing filters at paint time.
+ */
 export function drawSilhouettes(shell: IslandShell, palette: Palette): void {
   if (shell.silDrawn) return;
   shell.silDrawn = true;
   const I = shell.island;
-  // Bound the bitmap: large islands render at a lower resolution (they are only seen small).
-  const scale = Math.min(0.5, Math.sqrt(1_200_000 / Math.max(1, I.w * I.h)));
+  // Soft shapes need few pixels: large islands render at a lower resolution.
+  const scale = Math.min(0.35, Math.sqrt(900_000 / Math.max(1, I.w * I.h)));
   const cv = shell.sil;
   cv.width = Math.max(1, Math.round(I.w * scale));
   cv.height = Math.max(1, Math.round(I.h * scale));
   let ctx: CanvasRenderingContext2D | null = null;
+  let src: HTMLCanvasElement | null = null;
+  let sctx: CanvasRenderingContext2D | null = null;
   try {
     ctx = cv.getContext('2d');
+    src = document.createElement('canvas');
+    src.width = cv.width;
+    src.height = cv.height;
+    sctx = src.getContext('2d');
   } catch {
     ctx = null;
   }
-  if (!ctx) return;
-  const cache = new Map<ItemKind, string>();
+  if (!ctx || !src || !sctx) return;
+  // Items are drawn once as full pills, one alpha per kind; the blur is applied to the whole layer.
+  const inset = 3;
   for (const item of I.items) {
-    let fill = cache.get(item.kind);
-    if (!fill) {
-      fill = mix(palette[item.kind], '#f4f6fa', 0.16);
-      cache.set(item.kind, fill);
-    }
-    ctx.fillStyle = fill;
-    ctx.beginPath();
-    ctx.roundRect(
-      item.x * scale,
-      item.y * scale,
-      item.w * scale,
-      item.h * scale,
-      Math.min(10 * scale, item.h * scale * 0.4),
-    );
-    ctx.fill();
+    const w = Math.max(2, item.w - inset * 2) * scale;
+    const h = Math.max(2, item.h - inset * 2) * scale;
+    // The org-wide island is one dense stack of rows: it gets less colour and alpha than the rest
+    // so it never outshouts them.
+    const alpha =
+      (item.kind === 'action' || item.kind === 'field' ? 0.26 : 0.46) * (I.org ? 0.6 : 1);
+    sctx.fillStyle = `rgba(${rgbOf(palette[item.kind], I.org ? 0.35 : 0.55)},${alpha})`;
+    sctx.beginPath();
+    sctx.roundRect((item.x + inset) * scale, (item.y + inset) * scale, w, h, h * 0.5);
+    sctx.fill();
   }
+  const blurPx = (world: number) => `blur(${Math.max(0.6, world * scale).toFixed(2)}px)`;
+  if (typeof ctx.filter === 'string') {
+    // Three radii so detail resolves gradually as the zoom rises (no switch at a threshold).
+    ctx.filter = blurPx(40);
+    ctx.globalAlpha = 0.5;
+    ctx.drawImage(src, 0, 0);
+    ctx.filter = blurPx(18);
+    ctx.globalAlpha = 0.6;
+    ctx.drawImage(src, 0, 0);
+    ctx.filter = blurPx(8);
+    ctx.globalAlpha = 0.5;
+    ctx.drawImage(src, 0, 0);
+    ctx.filter = 'none';
+  } else {
+    ctx.globalAlpha = 0.7;
+    ctx.drawImage(src, 0, 0);
+  }
+  ctx.globalAlpha = 1;
 }
 
 /** `count === null` clears search state. */

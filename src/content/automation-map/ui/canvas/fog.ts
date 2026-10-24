@@ -60,16 +60,25 @@ export interface FogOptions {
 }
 
 const FOG_ID = (slot: number) => `fog-${slot}`;
-const MAX_ROWS = 60;
+/**
+ * Fog is a cloud bank, not a to-scale plan: its height grows with the square root of what it
+ * holds and stops here. A 70-rule module used to be four screens of fog, which dragged the fit
+ * zoom down (the one real flow shrank to a postage stamp) and pushed multi-megapixel animated
+ * layers at the compositor, which dropped tiles and left straight-edged slabs.
+ */
+const MAX_ROWS = 16;
+const MIN_ROWS = 4;
 
 export { isOrgLike };
 
 export function fogGeometry(f: FoggedIsland): { w: number; h: number; org: boolean } {
   const org = isOrgLike(f);
-  const rows = Math.min(
-    MAX_ROWS,
-    Math.max(f.counts.rules, Math.ceil(f.counts.functions / 1.4), org ? f.counts.schedules : 0, 4),
+  const held = Math.max(
+    f.counts.rules,
+    Math.ceil(f.counts.functions / 1.4),
+    org ? f.counts.schedules : 0,
   );
+  const rows = clamp(Math.round(Math.sqrt(held) * 2.2), MIN_ROWS, MAX_ROWS);
   return { w: org ? 960 : 1296, h: LANE_TOP + rows * 64 + ISLAND_BOTTOM, org };
 }
 
@@ -289,12 +298,14 @@ export function paintFogSilhouettes(
       for (let j = 0; j < lobesN; j++) {
         const m = k * 7 + j * 5;
         const rgb = lav ? LAVENDER[j % LAVENDER.length] : COOL[(i + j + li) % COOL.length];
+        const rx = w * (0.22 + r(m + 2) * 0.18);
         puff(
           cx + (r(m) - 0.5) * w * 0.8,
           cy + (r(m + 1) - 0.5) * Math.min(hh, 260) * 0.6,
-          w * (0.26 + r(m + 2) * 0.22),
-          // Rounder puffs (the old flat ones read as lenses and eyes when they stacked).
-          Math.min(hh, 300) * (0.5 + r(m + 3) * 0.35),
+          rx,
+          // Round-ish puffs: ry follows rx (never a flat lens or a tall smear) and the room a lane
+          // gives it, so stacked puffs merge into one bank.
+          clamp(Math.max(hh, rx * 0.8) * (0.55 + r(m + 3) * 0.3), rx * 0.62, rx * 1.05),
           rgb,
           0.07 + r(m + 4) * 0.08,
         );
@@ -311,10 +322,11 @@ export function paintFogSilhouettes(
 export function fogOutline(slot: number, w: number, h: number): string {
   const px = (n: number) => `${n.toFixed(0)}px`;
   return fogLobes(slot, w, h)
-    .map(
-      (l) =>
-        `radial-gradient(ellipse ${px(l.rx)} ${px(l.ry)} at ${px(l.cx)} ${px(l.cy)}, rgba(${FILL},0.62) 0%, rgba(${FILL},0.5) ${(l.solid * 100).toFixed(0)}%, rgba(${FILL},0.2) ${(l.solid * 55 + 45).toFixed(0)}%, rgba(${FILL},0) 100%)`,
-    )
+    .map((l) => {
+      const mid = l.solid * 55 + 45;
+      // Five stops, easing out: a bell, so no lobe shows a rim where the plateau ends.
+      return `radial-gradient(ellipse ${px(l.rx)} ${px(l.ry)} at ${px(l.cx)} ${px(l.cy)}, rgba(${FILL},0.5) 0%, rgba(${FILL},0.42) ${(l.solid * 100).toFixed(0)}%, rgba(${FILL},0.22) ${mid.toFixed(0)}%, rgba(${FILL},0.08) ${((mid + 100) / 2).toFixed(0)}%, rgba(${FILL},0) 100%)`;
+    })
     .join(', ');
 }
 
@@ -390,14 +402,15 @@ function buildHaze(
   sheet.style.cssText = `left:${bounds.x}px;top:${bounds.y}px;width:${bounds.w}px;height:${bounds.h}px`;
   layer.append(sheet);
   const span = Math.min(bounds.w, bounds.h * 1.6);
-  const count = clamp(Math.round((bounds.w * bounds.h) / 5_000_000), 5, 12);
+  // Each puff is its own animated layer: few, and none larger than a couple of megapixels.
+  const count = clamp(Math.round((bounds.w * bounds.h) / 6_000_000), 5, 8);
   for (let i = 0; i < count; i++) {
-    const size = clamp(span * (0.22 + seeded(i * 7 + 1) * 0.2), 1100, 2600);
+    const size = clamp(span * (0.2 + seeded(i * 7 + 1) * 0.16), 900, 1700);
     const x = bounds.x + seeded(i * 11 + 2) * (bounds.w - size * 0.6) - size * 0.2;
     const y = bounds.y + seeded(i * 13 + 3) * (bounds.h - size * 0.5) - size * 0.2;
     const el = h('div', 'amc-haze', { 'aria-hidden': 'true' });
     el.style.cssText = `left:${x}px;top:${y}px;width:${size}px;height:${size * (0.55 + seeded(i * 5 + 4) * 0.25)}px;--d:${-((i * 17) % 71)}s;--dur:${60 + ((i * 9) % 34)}s`;
-    el.dataset.tone = i % 3 === 0 ? 'lav' : 'cool';
+    el.dataset.tone = ['lav', 'cool', 'sky'][i % 3];
     layer.append(el);
     puffs.push({ el, rect: { x, y, w: size, h: size } });
   }
@@ -469,14 +482,19 @@ export function createFogPlugin(options: FogOptions): BoardPlugin {
       const sum = el.querySelector('.amc-sumtxt');
       if (sum) {
         sum.textContent = '';
-        const line = h('div', 'amc-sc');
+        const line = h('div', 'amc-sc amc-sc-full');
+        const short = h('div', 'amc-sc amc-sc-short');
+        short.append(
+          h('b', null, null, String(shown)),
+          document.createTextNode(shown === 1 ? ' flow shown' : ' flows shown'),
+        );
         line.append(
           h('b', null, null, String(shown)),
           document.createTextNode(shown === 1 ? ' flow shown · ' : ' flows shown · '),
           h('b', null, null, String(rest)),
           document.createTextNode(rest === 1 ? ' more rule in the fog' : ' more rules in the fog'),
         );
-        sum.append(line);
+        sum.append(line, short);
       }
       // The rest of the module: silhouettes under a drifting veil, with a lock chip.
       const veil = h('div', 'amc-veil amc-fog-hit');

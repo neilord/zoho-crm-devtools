@@ -7,9 +7,11 @@ import {
   sourceNeedle,
   workflowsHtml,
 } from '../fixtures/automation-map-zoho';
+import { largeOrgResponse } from '../fixtures/automation-map-zoho-large';
 
-const screenshots =
-  '/private/tmp/claude-501/-Users-admin-Developer-zoho-crm-devtools/6343591f-b07c-4a8b-81de-7a58a586da91/scratchpad/integration';
+declare const process: { env: Record<string, string | undefined> };
+// Key-state screenshots stay out of the repo; point AM_SHOTS at a scratchpad directory.
+const screenshots = process.env.AM_SHOTS ?? 'test-results/automation-map-shots';
 const host = '#zcdt-automation-map-overlay';
 const setupUrl = 'https://crm.zoho.com/crm/org123/settings/index';
 const shot = async (page: Page, name: string) =>
@@ -673,5 +675,202 @@ test('warm open with persistent HTTP 503 failures performs zero Zoho requests', 
     expect(paths.slice(beforeRefresh).some((p) => p.endsWith('/settings/functions'))).toBe(true);
   } finally {
     await context.close();
+  }
+});
+
+// Visual-state screenshots of a large, mostly quiet org (~80 modules, 25 rules, 100 functions).
+// Vitest cannot see CSS, so this is the before/after instrument for UI polish passes. Regenerate:
+//   AM_SHOTS=<dir> npx playwright test --config playwright.automation-map.config.ts -g "visual states"
+// (after the two dev builds in `npm run test:e2e:automation-map`). Files: <state>-<width>.png.
+test.describe('automation map visual states', () => {
+  const widths = [
+    { width: 1440, height: 900 },
+    { width: 1024, height: 768 },
+  ];
+  const launch = async (teaser: boolean, width: number, height: number) => {
+    const dist = new URL(teaser ? '../../dist-dev/teaser' : '../../dist-dev', import.meta.url)
+      .pathname;
+    const context = await chromium.launchPersistentContext('', {
+      channel: 'chromium',
+      headless: true,
+      // Fog animates only without reduced motion; the stills below disable animations explicitly.
+      reducedMotion: 'no-preference',
+      viewport: { width, height },
+      args: [`--disable-extensions-except=${dist}`, `--load-extension=${dist}`],
+    });
+    await context.route('https://crm.zoho.com/**', async (route) => {
+      const url = new URL(route.request().url());
+      if (url.pathname.startsWith('/crm/org123/')) {
+        await route.fulfill({
+          contentType: 'text/html',
+          body: url.pathname.endsWith('workflow-rules') ? workflowsHtml : settingsHtml,
+        });
+        return;
+      }
+      const response = url.pathname === '/favicon.ico' ? { status: 204 } : largeOrgResponse(url);
+      if (!response) {
+        await route.fulfill({ status: 404 });
+        return;
+      }
+      await route.fulfill({
+        status: response.status ?? 200,
+        contentType: 'application/json',
+        ...(response.status === 204 || response.status === 404
+          ? {}
+          : { body: response.raw ?? JSON.stringify(response.body) }),
+      });
+    });
+    const page = await context.newPage();
+    await page.goto(setupUrl);
+    await page.locator('[data-zcdt-map-entry="home"] a').click();
+    await expect(page.locator(`${host} .footstatus`)).toContainText(
+      teaser ? 'Preview' : '25 rules',
+      {
+        timeout: 30_000,
+      },
+    );
+    // The extension's own promo card floats over the map's corner in a fresh profile; dismiss it
+    // so every state is measured on the map itself (the card is not part of what is under review).
+    const later = page.getByRole('button', { name: 'Remind me later' });
+    if (
+      await later.waitFor({ timeout: 6000 }).then(
+        () => true,
+        () => false,
+      )
+    )
+      await later.click();
+    return { context, page };
+  };
+  const settle = (page: Page) => page.waitForTimeout(500);
+  const view = (page: Page, name: string) =>
+    page.getByRole('button', { name, exact: true }).click();
+  const pct = async (page: Page) =>
+    Number.parseInt(await page.locator(`${host} .amc-pct`).innerText(), 10);
+  /** Steps the zoom bar (x1.25 / x0.8) near `target`, then a pinch step makes it exact. */
+  const zoomNear = async (page: Page, target: number) => {
+    for (let i = 0; i < 40; i++) {
+      const now = await pct(page);
+      const dir = now < target ? 'Zoom in (+)' : 'Zoom out (−)';
+      const next = Math.round(now * (now < target ? 1.25 : 0.8));
+      if (Math.abs(Math.log(next / target)) >= Math.abs(Math.log(now / target))) break;
+      await page.locator(`${host} [aria-label="${dir}"]`).click();
+    }
+    // Trackpad-pinch step (ctrl+wheel, factor exp(-dy * 0.0015)) lands the percentage exactly.
+    const now = await pct(page);
+    const box = await page
+      .locator(`${host} .amc-canvas, ${host} [aria-label="Automation map board"]`)
+      .first()
+      .boundingBox();
+    if (box && now !== target) {
+      await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+      await page.keyboard.down('Control');
+      await page.mouse.wheel(0, -Math.log(target / now) / 0.0015);
+      await page.keyboard.up('Control');
+    }
+    await settle(page);
+    return pct(page);
+  };
+
+  for (const { width, height } of widths) {
+    test(`full large org at ${width}x${height}`, async () => {
+      test.setTimeout(180_000);
+      const { context, page } = await launch(false, width, height);
+      try {
+        await expect(page.locator(`${host} [data-fk="coverage-pill"]`)).toContainText('gap', {
+          timeout: 30_000,
+        });
+        await shot(page, `fields-${width}`);
+        await page.getByRole('combobox', { name: 'Pick a field' }).fill('Leads.Stage');
+        await page.getByRole('option').first().click();
+        await settle(page);
+        await shot(page, `fields-lens-${width}`);
+
+        await view(page, 'Board');
+        await expect(page.locator(`${host} [data-island]`).first()).toBeAttached();
+        await settle(page);
+        await expect(page.locator(`${host} .am-banner`)).toContainText('gap');
+        await page.screenshot({
+          animations: 'disabled',
+          clip: { x: 0, y: 0, width, height: 260 },
+          path: `${screenshots}/gap-banner-${width}.png`,
+        });
+        console.log(`board fit at ${width}: ${await pct(page)}%`);
+        await shot(page, `board-fit-${width}`);
+        console.log(`board 32 at ${width}: ${await zoomNear(page, 32)}%`);
+        await shot(page, `board-32-${width}`);
+
+        // Overview hover card: the first island in view whose flows list opens the card.
+        const islands = page.locator(`${host} [data-island] .amc-ttl`);
+        let hovered = false;
+        for (let i = 0; i < Math.min(await islands.count(), 60) && !hovered; i++) {
+          const title = islands.nth(i);
+          const box = await title.boundingBox();
+          if (!box || box.y < 120 || box.y > height - 80 || box.x < 290 || box.x > width - 300)
+            continue;
+          await title.hover();
+          hovered = await page
+            .locator(`${host} .amc-flowcard`)
+            .evaluate((el) => !(el as HTMLElement).hidden);
+        }
+        console.log(`hover card shown at ${width}: ${hovered}`);
+        await shot(page, `overview-hover-${width}`);
+        await page.mouse.move(width / 2, 4);
+
+        // The two zooms between the stills above: far enough out for the sparse summaries, and
+        // just past the overview tier boundary.
+        console.log(`board 20 at ${width}: ${await zoomNear(page, 20)}%`);
+        await shot(page, `board-20-${width}`);
+        console.log(`board 45 at ${width}: ${await zoomNear(page, 45)}%`);
+        await shot(page, `board-45-${width}`);
+
+        console.log(`board 60 at ${width}: ${await zoomNear(page, 60)}%`);
+        await shot(page, `board-60-${width}`);
+        console.log(`board 100 at ${width}: ${await zoomNear(page, 100)}%`);
+        await shot(page, `board-100-${width}`);
+
+        await page.evaluate(() => {
+          location.hash = '#zcdt-map=v1;view=board;sel=rule:1001';
+        });
+        await expect(page.locator(`${host} .am-insp.open`)).toBeVisible();
+        await settle(page);
+        await shot(page, `inspector-${width}`);
+
+        await page.evaluate(() => {
+          location.hash = '#zcdt-map=v1;view=trace;sel=rule:1001;trace=rule:1001,2,3';
+        });
+        await expect(page.getByRole('group', { name: 'Trace flowchart' })).toBeVisible();
+        await expect(page.locator(`${host} #am-trace .amc-nd`).first()).toBeVisible();
+        await settle(page);
+        await shot(page, `trace-${width}`);
+
+        await view(page, 'List');
+        await expect(page.locator(`${host} [role="treegrid"]`)).toBeVisible();
+        await settle(page);
+        await shot(page, `list-${width}`);
+      } finally {
+        await context.close();
+      }
+    });
+
+    test(`teaser large org at ${width}x${height}`, async () => {
+      test.setTimeout(120_000);
+      const { context, page } = await launch(true, width, height);
+      try {
+        await view(page, 'Board');
+        await expect(page.locator(`${host} .amc-fog`).first()).toBeVisible();
+        await settle(page);
+        console.log(`teaser board at ${width}: ${await pct(page)}%`);
+        await shot(page, `teaser-board-${width}`);
+        // Fog is the one thing worth seeing in motion: animations stay on for this frame.
+        await page.waitForTimeout(1500);
+        await page.screenshot({ path: `${screenshots}/teaser-board-fog-animated-${width}.png` });
+        await view(page, 'List');
+        await expect(page.locator(`${host} [role="treegrid"]`)).toBeVisible();
+        await settle(page);
+        await shot(page, `teaser-list-${width}`);
+      } finally {
+        await context.close();
+      }
+    });
   }
 });

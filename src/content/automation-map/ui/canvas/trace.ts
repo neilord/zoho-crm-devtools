@@ -73,6 +73,8 @@ class TraceView implements TraceController {
   private pending: Promise<void> = Promise.resolve();
   private generation = 0;
   private disposed = false;
+  /** The user moved the camera by hand: the shell's inset changes no longer re-frame. */
+  private userMoved = false;
   ready: Promise<void>;
 
   constructor(
@@ -92,7 +94,16 @@ class TraceView implements TraceController {
       safeRight: () =>
         this.ctx.view.get().inspectorOpen ? cssPx(this.canvas, '--am-insp-w') || INSPECTOR_W : 0,
       isInteractive: (el) => !!el.closest('.amc-nd'),
+      onUserMove: () => {
+        this.userMoved = true;
+      },
     });
+    // The inspector opened or closed (or the banner changed): an automatic frame follows it.
+    const onInsets = () => {
+      if (!this.userMoved && this.vm) this.centre(false);
+    };
+    container.addEventListener('am:insets', onInsets);
+    this.cleanups.push(() => container.removeEventListener('am:insets', onInsets));
     this.canvas.addEventListener('click', (e) => {
       if (this.vp.lastDragMoved) {
         this.vp.lastDragMoved = false;
@@ -202,6 +213,7 @@ class TraceView implements TraceController {
       this.drawBar(vm);
       if (this.renderedRoot !== rootId) {
         this.renderedRoot = rootId;
+        this.userMoved = false;
         this.centre(false);
       } else if (before) {
         const after = this.baseScreenPoint();
@@ -522,10 +534,12 @@ class TraceView implements TraceController {
     const base = vm.nodes.find((n) => n.id === vm.rootId);
     if (!base) return;
     const size = this.vp.size();
+    // The open inspector covers the right of the canvas: frame inside what it leaves free.
+    const free = Math.max(160, size.w - this.vp.safeRightPx());
     const z = FIT_MIN_ZOOM;
-    // 30% from the left, or further right when the upstream columns need the room.
+    // Leftmost column 24px from the left: all the room goes to the downstream columns.
     const upstream = (base.x + base.w / 2 - lay.bounds.x) * z;
-    const sx = Math.min(size.w * 0.55, Math.max(size.w * 0.3, upstream + 40));
+    const sx = Math.min(free * 0.55, upstream + 24);
     // A chart shorter than the view is centred as a whole. A taller one starts at the top (the
     // base sits near it, so the most chart shows) unless that pushes the base out of view.
     const baseY = (base.y + base.h / 2) * z;

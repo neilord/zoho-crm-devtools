@@ -4,12 +4,22 @@
  * speeds, and a crisp lock chip. Motion is transform/opacity only (no filters, no blend modes) and
  * pauses under reduced motion and while the tab is hidden.
  *
- * No seams, by construction: no mask and no clip hides a rectangle here. Every gradient on every
- * element fades to alpha 0 before its own box edge, so a layer that has not painted (or a mask a
- * GPU skips) can never leave a straight edge. Keep that when adding a layer.
+ * No seams, by construction: no mask and no clip hides a rectangle here. Every gradient on every element fades to
+ * alpha 0 before its own box edge, so a layer that has not painted (or a mask a GPU skips) can
+ * never leave a straight edge. Keep that when adding a layer.
+ *
+ * Cost: no backdrop-filter, no filter: blur, no will-change on any fog layer. A running animation
+ * is promoted by the compositor anyway; a pinned multi-megapixel layer per island is what ran it
+ * out of tile memory at overview zoom and dropped whole rectangles.
  */
 .amc-canvas.amc-teaser {
   background-color: #eff1f7;
+}
+/* Under fog the dot grid is off (nogrid): one soft wash fills the backdrop instead, untiled. */
+.amc-canvas.amc-teaser.amc-nogrid {
+  background-image: var(--am-grad-canvas);
+  background-size: 100% 100%;
+  background-position: 0 0;
 }
 .amc-fog {
   position: absolute;
@@ -33,17 +43,26 @@
   inset: 0;
   pointer-events: none;
   opacity: 0.86;
-  transition: opacity 0.35s ease;
+  transition: opacity var(--am-dur-3, 320ms) var(--am-ease-out, ease);
 }
 .amc-fog:hover .amc-clouds,
 .amc-veil:hover .amc-clouds {
-  opacity: 0.6;
+  opacity: 0.62;
 }
 .amc-cloud {
   position: absolute;
+  left: 1%;
+  top: 50%;
+  /*
+   * Wide and flat islands used to stretch every percentage ellipse into a horizontal streak with
+   * pointed ends. The cloud keeps a 2:1 box at least (and still fills a tall island), centred by the
+   * independent `translate` property, so its puffs stay round.
+   */
+  translate: 0 -50%;
   width: 98%;
-  height: 88%;
-  will-change: transform, opacity;
+  height: auto;
+  aspect-ratio: 2 / 1;
+  min-height: 88%;
   animation-duration: 46s;
   animation-timing-function: ease-in-out;
   animation-iteration-count: infinite;
@@ -52,127 +71,187 @@
 }
 /*
  * Each ellipse below ends (alpha 0 at 74-76% of its radius) inside the cloud's own box, so the
- * cloud never has an edge to show, wherever it drifts. The pale slate puffs are round and faint:
- * the old wide, dark ones read as lenses and ink blots.
+ * cloud never has an edge to show, wherever it drifts. Every puff falls off in five stops (a
+ * bell, not a cone) and is tinted from the cool blue / lavender / pale-cyan fog tokens, so two
+ * overlapping puffs read as one mesh gradient rather than a stack of discs.
  */
 .amc-c1 {
   animation-name: amc-drift-a;
   background:
     radial-gradient(
-      ellipse 30% 22% at 24% 46%,
-      rgba(255, 255, 255, 0.9),
+      ellipse 30% 24% at 24% 46%,
+      rgba(255, 255, 255, 0.384),
+      rgba(255, 255, 255, 0.36) 24%,
+      rgba(255, 255, 255, 0.174) 48%,
+      rgba(255, 255, 255, 0.043) 66%,
       rgba(255, 255, 255, 0) 74%
     ),
     radial-gradient(
-      ellipse 22% 20% at 30% 62%,
-      rgba(130, 144, 196, 0.07),
-      rgba(130, 144, 196, 0) 76%
+      ellipse 30% 26% at 36% 64%,
+      var(--am-grad-fog-a),
+      color-mix(in srgb, var(--am-grad-fog-a) 58%, transparent) 26%,
+      color-mix(in srgb, var(--am-grad-fog-a) 26%, transparent) 50%,
+      color-mix(in srgb, var(--am-grad-fog-a) 6%, transparent) 68%,
+      transparent 76%
     ),
     radial-gradient(
-      ellipse 28% 24% at 52% 62%,
-      rgba(250, 251, 255, 0.85),
+      ellipse 28% 24% at 56% 40%,
+      rgba(250, 251, 255, 0.372),
+      rgba(250, 251, 255, 0.322) 26%,
+      rgba(250, 251, 255, 0.149) 50%,
+      rgba(250, 251, 255, 0.037) 68%,
       rgba(250, 251, 255, 0) 74%
     ),
     radial-gradient(
-      ellipse 22% 18% at 56% 76%,
-      rgba(130, 144, 196, 0.06),
-      rgba(130, 144, 196, 0) 76%
+      ellipse 26% 24% at 76% 62%,
+      var(--am-grad-fog-b),
+      color-mix(in srgb, var(--am-grad-fog-b) 58%, transparent) 26%,
+      color-mix(in srgb, var(--am-grad-fog-b) 26%, transparent) 50%,
+      color-mix(in srgb, var(--am-grad-fog-b) 6%, transparent) 68%,
+      transparent 76%
     ),
     radial-gradient(
-      ellipse 26% 22% at 78% 36%,
-      rgba(243, 240, 255, 0.85),
-      rgba(243, 240, 255, 0) 74%
-    ),
-    radial-gradient(
-      ellipse 18% 16% at 38% 22%,
-      rgba(255, 255, 255, 0.75),
-      rgba(255, 255, 255, 0) 74%
+      ellipse 22% 20% at 40% 24%,
+      var(--am-grad-fog-c),
+      color-mix(in srgb, var(--am-grad-fog-c) 50%, transparent) 30%,
+      color-mix(in srgb, var(--am-grad-fog-c) 14%, transparent) 56%,
+      transparent 76%
     );
 }
 .amc-c2 {
   animation-name: amc-drift-b;
   animation-duration: 58s;
   width: 88%;
-  height: 96%;
+  left: 6%;
+  min-height: 96%;
   background:
     radial-gradient(
       ellipse 26% 26% at 72% 40%,
-      rgba(240, 236, 255, 0.86),
-      rgba(240, 236, 255, 0) 74%
+      var(--am-grad-fog-b),
+      color-mix(in srgb, var(--am-grad-fog-b) 56%, transparent) 26%,
+      color-mix(in srgb, var(--am-grad-fog-b) 24%, transparent) 50%,
+      color-mix(in srgb, var(--am-grad-fog-b) 5%, transparent) 68%,
+      transparent 76%
     ),
     radial-gradient(
-      ellipse 22% 20% at 70% 60%,
-      rgba(138, 128, 192, 0.07),
-      rgba(138, 128, 192, 0) 76%
-    ),
-    radial-gradient(
-      ellipse 34% 20% at 34% 66%,
-      rgba(252, 252, 255, 0.85),
+      ellipse 32% 24% at 34% 64%,
+      rgba(252, 252, 255, 0.384),
+      rgba(252, 252, 255, 0.335) 26%,
+      rgba(252, 252, 255, 0.149) 50%,
+      rgba(252, 252, 255, 0.037) 68%,
       rgba(252, 252, 255, 0) 74%
     ),
     radial-gradient(
-      ellipse 20% 24% at 56% 24%,
-      rgba(255, 255, 255, 0.78),
-      rgba(255, 255, 255, 0) 74%
+      ellipse 24% 24% at 52% 28%,
+      var(--am-grad-fog-a),
+      color-mix(in srgb, var(--am-grad-fog-a) 54%, transparent) 28%,
+      color-mix(in srgb, var(--am-grad-fog-a) 20%, transparent) 52%,
+      transparent 76%
     ),
     radial-gradient(
-      ellipse 22% 18% at 24% 30%,
-      rgba(238, 235, 252, 0.7),
-      rgba(238, 235, 252, 0) 74%
+      ellipse 22% 20% at 24% 34%,
+      rgba(246, 244, 255, 0.446),
+      rgba(246, 244, 255, 0.248) 30%,
+      rgba(246, 244, 255, 0.062) 58%,
+      rgba(246, 244, 255, 0) 74%
     );
 }
 @keyframes amc-drift-a {
   0% {
-    transform: translate3d(-12%, -8%, 0) scale(1);
+    transform: translate3d(-10%, -6%, 0) scale(1);
     opacity: 0.82;
   }
   50% {
-    transform: translate3d(8%, 6%, 0) scale(1.12);
+    transform: translate3d(7%, 5%, 0) scale(1.08);
     opacity: 1;
   }
   100% {
-    transform: translate3d(20%, 14%, 0) scale(0.96);
+    transform: translate3d(16%, 11%, 0) scale(0.97);
     opacity: 0.78;
   }
 }
 @keyframes amc-drift-b {
   0% {
-    transform: translate3d(16%, 8%, 0) scale(1.08);
+    transform: translate3d(13%, 6%, 0) scale(1.05);
     opacity: 0.9;
   }
   100% {
-    transform: translate3d(-18%, -10%, 0) scale(0.94);
+    transform: translate3d(-14%, -8%, 0) scale(0.95);
     opacity: 0.72;
   }
 }
 .amc-fog-sheet {
   position: absolute;
   pointer-events: none;
-  /* One continuous haze under every island: static, so it costs nothing while panning. */
-  background: radial-gradient(
-    closest-side at 50% 50%,
-    rgba(205, 213, 235, 0.86),
-    rgba(205, 213, 235, 0.62) 55%,
-    rgba(205, 213, 235, 0) 100%
-  );
+  /*
+   * One continuous haze under every island, static so it costs nothing while panning. A seven-stop
+   * bell that reaches alpha 0 before the sheet's edge (closest-side), over a second, fainter
+   * lavender wash: two overlapping falloffs hide any seam a single gradient would show.
+   */
+  background:
+    radial-gradient(
+      closest-side at 50% 50%,
+      rgba(206, 214, 238, 0.8),
+      rgba(206, 214, 238, 0.68) 22%,
+      rgba(206, 214, 238, 0.5) 40%,
+      rgba(206, 214, 238, 0.3) 58%,
+      rgba(206, 214, 238, 0.13) 74%,
+      rgba(206, 214, 238, 0.04) 88%,
+      rgba(206, 214, 238, 0) 100%
+    ),
+    radial-gradient(
+      closest-side at 38% 44%,
+      rgba(186, 176, 238, 0.28),
+      rgba(186, 176, 238, 0.12) 50%,
+      rgba(186, 176, 238, 0) 100%
+    );
 }
 .amc-haze {
   position: absolute;
   pointer-events: none;
   border-radius: 50%;
-  background: radial-gradient(closest-side, rgba(255, 255, 255, 0.62), rgba(255, 255, 255, 0));
-  will-change: transform, opacity;
+  background: radial-gradient(
+    closest-side,
+    rgba(255, 255, 255, 0.58),
+    rgba(255, 255, 255, 0.4) 30%,
+    rgba(255, 255, 255, 0.18) 58%,
+    rgba(255, 255, 255, 0.05) 82%,
+    rgba(255, 255, 255, 0)
+  );
   animation: amc-drift-b var(--dur, 72s) ease-in-out infinite alternate;
   animation-delay: var(--d, 0s);
 }
 .amc-haze[data-tone="lav"] {
-  background: radial-gradient(closest-side, rgba(228, 222, 250, 0.7), rgba(228, 222, 250, 0));
+  background: radial-gradient(
+    closest-side,
+    var(--am-grad-fog-b),
+    color-mix(in srgb, var(--am-grad-fog-b) 62%, transparent) 30%,
+    color-mix(in srgb, var(--am-grad-fog-b) 26%, transparent) 58%,
+    color-mix(in srgb, var(--am-grad-fog-b) 6%, transparent) 82%,
+    transparent
+  );
+}
+.amc-haze[data-tone="sky"] {
+  background: radial-gradient(
+    closest-side,
+    var(--am-grad-fog-a),
+    color-mix(in srgb, var(--am-grad-fog-a) 62%, transparent) 30%,
+    color-mix(in srgb, var(--am-grad-fog-a) 26%, transparent) 58%,
+    color-mix(in srgb, var(--am-grad-fog-a) 6%, transparent) 82%,
+    transparent
+  );
 }
 .amc-clearing {
   position: absolute;
   pointer-events: none;
   border-radius: 50%;
-  background: radial-gradient(closest-side, rgba(47, 109, 240, 0.1), rgba(47, 109, 240, 0));
+  background: radial-gradient(
+    closest-side,
+    rgba(255, 255, 255, 0.5),
+    rgba(255, 255, 255, 0.3) 40%,
+    rgba(255, 255, 255, 0.1) 70%,
+    rgba(255, 255, 255, 0)
+  );
 }
 .amc-fog-paused .amc-cloud,
 .amc-fog-paused .amc-haze,
@@ -196,7 +275,11 @@
   }
 }
 
-/* Lock chip */
+/*
+ * Lock chip: a frosted card made without backdrop-filter (thirteen of them inside a scaled world
+ * would each force an offscreen pass). A white-to-glass vertical wash, a lavender hairline, the
+ * elevation tokens and an inner top highlight stand in for the blur.
+ */
 .amc-lock {
   position: absolute;
   left: 50%;
@@ -205,17 +288,28 @@
   /* --lk: this island's chip weight (by its counts); --ls: the zoom-out scale, capped to fit it. */
   transform: translate(-50%, -50%) scale(calc(min(var(--ls, 1), var(--lcap, 6)) * var(--lk, 1)));
   transform-origin: 50% 50%;
+  /* The lift is the independent `translate` property, so it never fights the scale above. */
+  translate: 0 0;
   /* --lo: resting opacity by weight; a tiny island's chip is 0 until hover or focus. */
   opacity: var(--lo, 1);
-  transition: opacity 0.3s ease;
+  transition:
+    opacity var(--am-dur-3, 320ms) var(--am-ease-out, ease),
+    translate var(--am-dur-2, 200ms) var(--am-ease-out, ease),
+    box-shadow var(--am-dur-2, 200ms) var(--am-ease-out, ease);
   display: flex;
   align-items: center;
   gap: 10px;
   padding: 10px 14px 10px 10px;
-  border: 1px solid rgba(103, 65, 217, 0.28);
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.92);
-  box-shadow: 0 10px 30px rgba(103, 65, 217, 0.14);
+  border: 1px solid rgba(103, 65, 217, 0.16);
+  border-radius: var(--am-r-lg, 14px);
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.96) 0%,
+    var(--am-glass-bg, rgba(255, 255, 255, 0.78)) 100%
+  );
+  box-shadow:
+    var(--am-elev-3),
+    inset 0 1px 0 var(--am-glass-border, rgba(255, 255, 255, 0.65));
   color: #3f2a99;
   white-space: nowrap;
   pointer-events: none;
@@ -225,8 +319,9 @@
   height: 34px;
   display: grid;
   place-items: center;
-  border-radius: 10px;
-  background: var(--am-pro-soft, #f1edfd);
+  border-radius: var(--am-r-md, 10px);
+  background: linear-gradient(145deg, #f7f4ff, #ebe5fc);
+  box-shadow: inset 0 0 0 1px rgba(103, 65, 217, 0.1);
   color: var(--am-pro, #6741d9);
 }
 .amc-lock-text {
@@ -236,6 +331,7 @@
 .amc-l1 {
   font-size: 13px;
   font-weight: 700;
+  letter-spacing: -0.005em;
 }
 .amc-l2 {
   font-size: 12px;
@@ -260,25 +356,40 @@
   display: block;
 }
 .amc-pro {
-  padding: 1px 7px;
-  border-radius: 999px;
-  background: var(--am-pro, #6741d9);
+  padding: 1px 8px;
+  border-radius: var(--am-r-pill, 999px);
+  background: var(--am-grad-pro, var(--am-pro, #6741d9));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.28),
+    0 1px 2px rgba(79, 95, 224, 0.35);
   color: #fff;
   font-size: 10.5px;
   font-weight: 700;
+  letter-spacing: 0.02em;
 }
 .amc-fog[data-tier="sm"] .amc-pro,
 .amc-fog[data-tier="tiny"] .amc-pro {
   display: none;
 }
 
+/* Hover: the chip comes up to full strength and lifts a little (scaled with the zoom-out). */
 .amc-fog:hover .amc-lock,
-.amc-fog:focus-visible .amc-lock {
+.amc-fog:focus-visible .amc-lock,
+.amc-veil:hover .amc-lock {
   opacity: 1;
+  translate: 0 calc(-3px * var(--ls, 1));
+  box-shadow:
+    var(--am-elev-4),
+    inset 0 1px 0 var(--am-glass-border, rgba(255, 255, 255, 0.65));
 }
 @media (prefers-reduced-motion: reduce) {
   .amc-lock {
     transition: none;
+  }
+  .amc-fog:hover .amc-lock,
+  .amc-fog:focus-visible .amc-lock,
+  .amc-veil:hover .amc-lock {
+    translate: 0 0;
   }
 }
 
@@ -288,25 +399,25 @@
   top: calc(12px + var(--am-safe-top, 0px));
   padding: 4px 11px;
   border: 1px solid var(--fs-border, #e2e6ee);
-  border-radius: 999px;
+  border-radius: var(--am-r-pill, 999px);
   background: rgba(255, 255, 255, 0.9);
+  box-shadow: var(--am-elev-1);
   color: var(--fs-muted, #5f687b);
   font: 600 11.5px var(--fs-font, sans-serif);
   pointer-events: none;
 }
 
 .amc-fog:focus-visible .amc-lock {
-  box-shadow:
-    0 0 0 3px var(--am-pro, #6741d9),
-    0 10px 30px rgba(103, 65, 217, 0.2);
+  box-shadow: var(--am-focus-ring), var(--am-elev-3);
 }
 
 /* The revealed island: a Preview chip, and the rest of the module under a veil. */
 .amc-preview-rib {
   flex: 0 0 auto;
   padding: 3px 9px;
-  border-radius: 999px;
+  border-radius: var(--am-r-pill, 999px);
   background: var(--am-pro-soft, #f1edfd);
+  box-shadow: inset 0 0 0 1px rgba(103, 65, 217, 0.12);
   color: var(--am-pro, #6741d9);
   font-size: 11px;
   font-weight: 700;
@@ -324,13 +435,21 @@
   border-radius: 0 0 16px 16px;
   cursor: pointer;
 }
+/* A smooth ramp from the card into the veil (several stops: no visible start line). */
 .amc-veil::before {
   content: "";
   position: absolute;
   inset: 0;
   z-index: 1;
   pointer-events: none;
-  background: linear-gradient(180deg, rgba(244, 246, 251, 0), rgba(244, 246, 251, 0.78) 90px);
+  background: linear-gradient(
+    180deg,
+    rgba(244, 246, 251, 0),
+    rgba(244, 246, 251, 0.2) 22px,
+    rgba(244, 246, 251, 0.5) 52px,
+    rgba(244, 246, 251, 0.74) 96px,
+    rgba(244, 246, 251, 0.82)
+  );
 }
 .amc-veil .amc-fog-sil {
   z-index: 0;
@@ -340,4 +459,13 @@
 }
 .amc-lock-rest {
   left: 30%;
+}
+
+/*
+ * Below 30% zoom the nested "N more rules" chip would be 6px text over the island's own summary
+ * (which already says it): it steps aside there and returns as the island grows readable.
+ */
+.amc-sparse .amc-lock-rest {
+  opacity: 0;
+  pointer-events: none;
 }

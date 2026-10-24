@@ -16,7 +16,7 @@ import {
   shownKinds,
   toggleKind,
 } from './model';
-import { badge, lockRow, upgradeButton } from './parts';
+import { badge, LOCKED_AREAS_SHOWN, lockRow, upgradeButton } from './parts';
 
 export interface Rail {
   el: HTMLElement;
@@ -575,7 +575,8 @@ function teaserRail(env: RegionEnv, m: ShellModel): Node[] {
   const revealed = m.graph.modules;
   // Largest first; modules without automation are one note, not rows of zeros.
   const { areas: fogged, quiet } = t ? summarizeFog(t) : { areas: [], quiet: 0 };
-  const shownFog = fogged.slice(0, 10);
+  // Same cap as the List's locked rows, so both name the same "N more modules in the fog".
+  const shownFog = fogged.slice(0, LOCKED_AREAS_SHOWN);
   const out: Node[] = compact([
     el('div', { className: 'fac' }, [
       el('h5', { text: 'Preview' }),
@@ -630,7 +631,7 @@ function teaserRail(env: RegionEnv, m: ShellModel): Node[] {
       fogged.length > shownFog.length
         ? el('div', {
             className: 'lens-empty small',
-            text: `+${fogged.length - shownFog.length} more modules in the fog`,
+            text: `${fogged.length - shownFog.length} more ${fogged.length - shownFog.length === 1 ? 'module' : 'modules'} in the fog`,
           })
         : null,
       quiet > 0 ? el('div', { className: 'lens-empty small', text: quietNote(quiet) }) : null,

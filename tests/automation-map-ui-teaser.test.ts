@@ -376,7 +376,7 @@ describe('teaser chrome', () => {
       const rail = map.q('.am-rail') as HTMLElement;
       expect(rail.textContent).toContain('9 other modules without automation');
       const counts = map.qa('.am-rail .opt.locked .n').map((n) => Number(n.textContent));
-      expect(counts.length).toBe(10);
+      expect(counts.length).toBe(8);
       expect(counts.every((n) => n > 0)).toBe(true);
       expect(counts).toEqual([...counts].sort((a, b) => b - a));
     });

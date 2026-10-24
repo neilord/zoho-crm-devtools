@@ -37,7 +37,12 @@ export function renderFlows(svg: SVGElement, model: BoardModel, zoom: number): F
         Math.abs((R.w / 2 + 14) / (dx || 1e-6)),
         Math.abs((R.h / 2 + 14) / (dy || 1e-6)),
       );
-      return [cx + dx * k, cy + dy * k];
+      const x = cx + dx * k;
+      const y = cy + dy * k;
+      // The title sits above the island's left edge: a curve that lands on the top edge keeps to
+      // its right 60% so an arrow tip never ends on the name.
+      if (y < R.y) return [Math.max(x, Math.min(R.x + R.w * 0.4, cx)), y];
+      return [x, y];
     };
     const [ax, ay] = clip(A, B.x + B.w / 2, B.y + B.h / 2);
     const [bx, by] = clip(B, A.x + A.w / 2, A.y + A.h / 2);
@@ -51,7 +56,7 @@ export function renderFlows(svg: SVGElement, model: BoardModel, zoom: number): F
       'path',
       {
         d: `M${ax},${ay} Q${cx},${cy} ${bx},${by}`,
-        'stroke-width': 1.5 + Math.log2(f.count + 1) * 1.6,
+        'stroke-width': 1 + Math.log2(f.count + 1) * 0.85,
       },
       both ? 'amc-ov amc-loop' : 'amc-ov',
     );
@@ -63,7 +68,7 @@ export function renderFlows(svg: SVGElement, model: BoardModel, zoom: number): F
     const tx = 2 * (1 - t) * (cx - ax) + 2 * t * (bx - cx);
     const ty = 2 * (1 - t) * (cy - ay) + 2 * t * (by - cy);
     const tl = Math.hypot(tx, ty) || 1;
-    const size = 5.5 / Math.max(zoom, 0.05);
+    const size = 4.5 / Math.max(zoom, 0.05);
     const ux = tx / tl;
     const uy = ty / tl;
     const head = s(

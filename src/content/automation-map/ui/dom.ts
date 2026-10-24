@@ -60,9 +60,15 @@ export const cssEscape = (value: string): string =>
 export const plural = (n: number, one: string, many = `${one}s`): string =>
   `${n} ${n === 1 ? one : many}`;
 
+/**
+ * Trailing debounce. With `leading`, the first call after a quiet period runs at once (a single
+ * keystroke answers immediately) and only the calls that follow inside the window are held back
+ * to its trailing edge.
+ */
 export function debounce<A extends unknown[]>(
   fn: (...args: A) => void,
   ms: number,
+  opts: { leading?: boolean } = {},
 ): ((...args: A) => void) & { cancel(): void; flush(): void } {
   let timer: ReturnType<typeof setTimeout> | null = null;
   let pending: A | null = null;
@@ -73,6 +79,11 @@ export function debounce<A extends unknown[]>(
     if (args) fn(...args);
   };
   const debounced = (...args: A) => {
+    if (opts.leading && !timer) {
+      timer = setTimeout(run, ms);
+      fn(...args);
+      return;
+    }
     pending = args;
     if (timer) clearTimeout(timer);
     timer = setTimeout(run, ms);

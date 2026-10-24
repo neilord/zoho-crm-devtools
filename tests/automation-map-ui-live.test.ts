@@ -493,10 +493,10 @@ describe('Show on map frames its target once the graph has loaded', () => {
     vi.useFakeTimers();
     late = mountLate(target);
     const l = late;
-    const overview = l.board().camera().zoom;
     l.publish({ ...l.full, phase: 'complete' });
     await settle();
-    expect(l.board().camera().zoom).toBeGreaterThan(overview);
+    // Framed on the target's island beside the inspector: compact or detail, never the overview.
+    expect(l.board().camera().zoom).toBeGreaterThanOrEqual(0.5);
     expect(l.board().tier()).not.toBe('overview');
   });
 

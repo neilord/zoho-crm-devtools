@@ -39,6 +39,8 @@ import {
   TITLE_ZONE_H,
   type Tier,
   unionRects,
+  ZOOM_MAX,
+  ZOOM_MIN,
 } from './geometry';
 import {
   createIslandShell,
@@ -64,6 +66,8 @@ import { computeVisibility, scopeOnlyFilters } from './visibility';
 /** Hard ceiling on cards in the DOM (UX spec §18: ≤ 1,500 board nodes at any zoom). */
 export const MAX_CARDS = 1500;
 const CAMERA_WRITE_MS = 160;
+/** Overview <-> cards crossfade; matches `--am-dur-3` in canvas.css. */
+const LEAVE_MS = 340;
 const CULL_MARGIN_PX = 90;
 const INSPECTOR_W = 400;
 /** Board DOM nodes the render budget aims for (UX spec §18), and what a mounted island costs. */
@@ -76,8 +80,8 @@ const TRUNK_MIN = 8;
 const TRUNK_RUN = 26;
 /** Bottom-left chrome (minimap above the zoom bar) that a fit keeps island content out from under. */
 const NOTCH = {
-  /** Minimap: 184x124 above the zoom bar. */
-  map: { w: 204, h: 196 },
+  /** Minimap: 152x103 above the zoom bar. */
+  map: { w: 176, h: 176 },
   /** Zoom bar with minimap toggle, tier label and Legend button: wide and short. */
   bar: { w: 364, h: 56 },
 };
@@ -194,6 +198,7 @@ class Board implements BoardController {
   });
   private legendButton: HTMLButtonElement | null = null;
   private readonly live = h('div', 'amc-sr', { 'aria-live': 'polite', 'aria-atomic': 'true' });
+  private miniWas: boolean | null = null;
   private readonly pct = h('span', 'amc-pct', null, '100%');
   private readonly tierLabel = h('span', 'amc-tierlbl', null, 'Detail');
   private readonly empty = h('div', 'amc-empty');
@@ -217,6 +222,8 @@ class Board implements BoardController {
   private baseAnchors: ReadonlyMap<string, Anchor> | null = null;
   private fog: FogHandle | null = null;
   private bounds: Rect = { x: 0, y: 0, w: 1, h: 1 };
+  /** World y of the topmost island (a button zoom keeps its title row below the banner). */
+  private contentTop: number | null = null;
   private version = 0;
   private layoutMs = 0;
   private currentTier: Tier | null = null;
@@ -245,6 +252,8 @@ class Board implements BoardController {
   private focusIid: string | null = null;
 
   private rafId = 0;
+  private leaveCardsTimer = 0;
+  private leaveFlowsTimer = 0;
   private cameraTimer = 0;
   private lastWritten: Camera | null = null;
   private userMoved = false;
@@ -304,6 +313,7 @@ class Board implements BoardController {
         view.get().inspectorOpen ? cssPx(this.canvas, '--am-insp-w') || INSPECTOR_W : 0,
       safeTop: () => cssPx(this.canvas, '--am-safe-top') ?? 0,
       avoid: () => this.notchRects(this.vp.z),
+      contentTop: () => this.contentTop,
       isInteractive: (el) =>
         !!el.closest('.amc-nd, .amc-head, .amc-sum, .amc-ttl, .amc-fog-hit, button, .amc-chrome'),
       onUserMove: () => {
@@ -414,6 +424,9 @@ class Board implements BoardController {
     }
     const rects: Rect[] = [...(this.fog?.rects ?? [])];
     this.bounds = this.worldBounds(rects);
+    this.contentTop = this.mdl.islands.length
+      ? Math.min(...this.mdl.islands.map((I) => I.y))
+      : null;
     this.updateMatches();
     this.updateSelection();
     this.updateEmptyState(snapshot.phase, filters);
@@ -622,10 +635,11 @@ class Board implements BoardController {
     }
 
     if (tier === 'overview') {
-      if (this.cards.size) this.removeCards(() => true);
+      this.leaveCards();
       for (const shell of this.shells.values()) drawSilhouettes(shell, this.palette);
       this.syncFlows(z);
     } else {
+      this.cancelLeave();
       this.syncCards(view, cull);
       if (this.pendingFlash) {
         const el = this.cards.get(this.pendingFlash);
@@ -635,18 +649,55 @@ class Board implements BoardController {
         }
       }
       // The module flows are an overview-only layer: leaving them in the DOM costs ~50 elements.
-      if (this.flowLayer) {
-        clear(this.flowsSvg);
-        this.flowLayer = null;
-        this.flowsVersion = -1;
-      }
+      this.leaveFlows();
     }
     this.fog?.update(view, z, tier);
     this.refreshEdges(view);
-    this.pct.textContent = `${Math.round(z * 100)}%`;
+    this.syncPct();
     this.syncMinimap();
     this.drawMinimap(view);
     this.scheduleCameraWrite();
+  }
+
+  /**
+   * Cards and flow curves outlive a tier change by the crossfade (their layers fade out over
+   * LEAVE_MS under CSS), then go: the DOM stays inside its budget while the swap reads as one
+   * soft dissolve instead of a cut.
+   */
+  private leaveCards() {
+    if (!this.cards.size || this.leaveCardsTimer) return;
+    if (reducedMotion()) {
+      this.removeCards(() => true);
+      return;
+    }
+    this.leaveCardsTimer = window.setTimeout(() => {
+      this.leaveCardsTimer = 0;
+      if (this.currentTier === 'overview') this.removeCards(() => true);
+    }, LEAVE_MS);
+  }
+
+  private leaveFlows() {
+    if (!this.flowLayer || this.leaveFlowsTimer) return;
+    const drop = () => {
+      this.leaveFlowsTimer = 0;
+      if (this.currentTier === 'overview' || !this.flowLayer) return;
+      clear(this.flowsSvg);
+      this.flowLayer = null;
+      this.flowsVersion = -1;
+    };
+    if (reducedMotion()) drop();
+    else this.leaveFlowsTimer = window.setTimeout(drop, LEAVE_MS);
+  }
+
+  private cancelLeave() {
+    window.clearTimeout(this.leaveCardsTimer);
+    this.leaveCardsTimer = 0;
+  }
+
+  /** The percentage shows where a gliding button zoom is headed, so repeated presses read true. */
+  private syncPct() {
+    const text = `${Math.round(this.vp.goalZoom() * 100)}%`;
+    if (this.pct.textContent !== text) this.pct.textContent = text;
   }
 
   private setTier(tier: Tier) {
@@ -820,7 +871,7 @@ class Board implements BoardController {
     this.flowCard.hidden = false;
     const r = anchor.getBoundingClientRect();
     const c = this.canvas.getBoundingClientRect();
-    const w = 232;
+    const w = this.flowCard.offsetWidth || 256;
     const height = this.flowCard.offsetHeight || 120;
     let left = r.right - c.left + 12;
     if (left + w > c.width - 8) left = r.left - c.left - w - 12;
@@ -1018,6 +1069,11 @@ class Board implements BoardController {
       drawn.add(e.id);
       const geo = this.edgePath(I, e);
       if (!geo) return;
+      // A wide faint underlay gives the lit chain its glow without a thick hard stroke.
+      if (e.evidence !== 'unresolved' || e.kind === 'cascades')
+        this.litEdges.append(
+          s('path', { d: geo.d }, `amc-e amc-e-glow${e.kind === 'cascades' ? ' amc-e-casc' : ''}`),
+        );
       const els = drawEdge(this.litEdges, geo.d, e, this.markers, 'amc-e-lit', geo.badge);
       for (const el of els) {
         if (el.getAttribute('marker-end') === `url(#${this.markers.arrow})`)
@@ -1228,8 +1284,60 @@ class Board implements BoardController {
 
   /* ------------------------------------------------------------ navigation */
 
+  /** The floating upgrade card / pill (bottom-right), in canvas coordinates; null when absent. */
+  private floatRect(): Rect | null {
+    const w = cssPx(this.canvas, '--am-safe-br-w') ?? 0;
+    const h = cssPx(this.canvas, '--am-safe-br-h') ?? 0;
+    if (w <= 0 || h <= 0) return null;
+    const size = this.vp.size();
+    return { x: size.w - w, y: size.h - h, w, h };
+  }
+
+  /**
+   * `t` moved up (or left) by the least that takes the revealed islands out from under the
+   * floating upgrade card. The fog may sit under it; real content may not. Unchanged when the
+   * islands are clear or no move keeps them on screen.
+   */
+  private clearFloat<T extends { zoom: number; tx: number; ty: number; x: number; y: number }>(
+    t: T,
+  ): T {
+    const fl = this.floatRect();
+    if (!fl || !this.mdl.islands.length) return t;
+    const boxes: Rect[] = this.mdl.islands.map((I) => ({
+      x: I.x,
+      y: I.y - 30,
+      w: I.w,
+      h: I.h + TITLE_ZONE_H,
+    }));
+    const on = (b: Rect, dx = 0, dy = 0): Rect => ({
+      x: b.x * t.zoom + t.tx + dx,
+      y: b.y * t.zoom + t.ty + dy,
+      w: b.w * t.zoom,
+      h: b.h * t.zoom,
+    });
+    const hits = (dx: number, dy: number) => boxes.some((b) => rectsIntersect(on(b, dx, dy), fl));
+    if (!hits(0, 0)) return t;
+    const under = boxes.map((b) => on(b)).filter((r) => rectsIntersect(r, fl));
+    const dy = fl.y - Math.max(...under.map((r) => r.y + r.h)) - 4;
+    const dx = fl.x - Math.max(...under.map((r) => r.x + r.w)) - 4;
+    const minTop = this.vp.safeTopPx() + 8;
+    const topMost = Math.min(...boxes.map((b) => on(b).y));
+    const leftMost = Math.min(...boxes.map((b) => on(b).x));
+    const options = [
+      { dx: 0, dy },
+      { dx, dy: 0 },
+    ].filter((o) => topMost + o.dy >= minTop && leftMost + o.dx >= 8 && !hits(o.dx, o.dy));
+    if (!options.length) return t;
+    const best = options.reduce((a, b) =>
+      Math.abs(a.dx) + Math.abs(a.dy) <= Math.abs(b.dx) + Math.abs(b.dy) ? a : b,
+    );
+    const tx = t.tx + best.dx;
+    const ty = t.ty + best.dy;
+    return { ...t, tx, ty, x: -tx / t.zoom, y: -ty / t.zoom };
+  }
+
   fitAll(animate = true) {
-    const best = this.frame(this.bounds, 48, 1, this.contentBoxes());
+    const best = this.clearFloat(this.frame(this.bounds, 48, 1, this.contentBoxes()));
     this.vp.flyTo({ x: best.tx, y: best.ty, z: best.zoom }, animate);
   }
 
@@ -1352,6 +1460,9 @@ class Board implements BoardController {
   /** Shows or hides the minimap for the current zoom and mode. */
   private syncMinimap() {
     const shown = this.miniShownAt(this.vp.z);
+    // Runs every camera frame: touch the DOM only when the answer changes.
+    if (this.minimap.el.hidden === !shown && this.miniWas === shown) return;
+    this.miniWas = shown;
     this.minimap.el.hidden = !shown;
     this.miniButton?.setAttribute('aria-pressed', String(shown));
     this.miniButton?.setAttribute('title', shown ? 'Hide minimap' : 'Show minimap');
@@ -1437,8 +1548,70 @@ class Board implements BoardController {
 
   private flyToItem(item: BoardItem, zoom?: number, animate = true) {
     const r = this.itemRect(item);
-    this.vp.centerOn(r.x + r.w / 2, r.y + r.h / 2, zoom ?? Math.max(this.vp.z, 0.95), animate);
+    if (this.frameSelectedIsland(item, r, zoom, animate)) return;
+    const z = clamp(zoom ?? Math.max(this.vp.z, 0.95), ZOOM_MIN, ZOOM_MAX);
+    const { w, h } = this.vp.size();
+    const top = this.vp.safeTopPx();
+    const free = w - this.vp.safeRightPx();
+    let tx = free / 2 - (r.x + r.w / 2) * z;
+    let ty = top + (h - top) / 2 - (r.y + r.h / 2) * z;
+    // Centring alone can leave the island's heading under the banner and its left edge off the
+    // canvas. When the node stays clear of the inspector and the bottom edge, slide so that the
+    // heading and the first lane are in view as well (the node is what you asked for; the island
+    // is where it is).
+    const I = this.islandOfIid(item.iid);
+    if (I) {
+      const edge = 16;
+      const headTop = I.y * z + ty;
+      if (headTop < top + edge) {
+        const dy = top + edge - headTop;
+        if ((r.y + r.h) * z + ty + dy <= h - edge - 40) ty += dy;
+      }
+      const headLeft = I.x * z + tx;
+      if (headLeft < edge) {
+        const dx = edge - headLeft;
+        if ((r.x + r.w) * z + tx + dx <= free - edge) tx += dx;
+      }
+    }
+    this.vp.flyTo({ x: tx, y: ty, z }, animate);
     this.reconcileSoon();
+  }
+
+  /**
+   * With the inspector open, a jump to a node frames its whole island in the area the inspector
+   * leaves free (zooming out a little, never below 45% or past 70%) instead of centring
+   * the node at 90-100% with half the island under the panel. The node itself stays on screen.
+   * False when no inspector covers the canvas or the island already fits at the asked zoom.
+   */
+  private frameSelectedIsland(
+    item: BoardItem,
+    r: Rect,
+    zoom: number | undefined,
+    animate: boolean,
+  ) {
+    if (!this.ctx.view.get().inspectorOpen || this.vp.safeRightPx() <= 0) return false;
+    const I = this.islandOfIid(item.iid);
+    if (!I) return false;
+    const want = clamp(zoom ?? Math.max(this.vp.z, 0.95), ZOOM_MIN, ZOOM_MAX);
+    const rect = { x: I.x, y: I.y - 24, w: I.w, h: I.h + 24 };
+    const fit = this.vp.target(rect, 24, Math.min(want, 0.7));
+    const z = Math.max(fit.zoom, Math.min(want, 0.45));
+    const cam = this.vp.place(rect, z, 24);
+    let { tx, ty } = cam;
+    const { w, h } = this.vp.size();
+    const free = w - this.vp.safeRightPx();
+    const top = this.vp.safeTopPx();
+    // A tall island starts at its top; keep the node itself clear of every edge.
+    const bottom = (r.y + r.h) * z + ty;
+    if (bottom > h - 24) ty -= bottom - (h - 24);
+    if (r.y * z + ty < top + 16) ty = top + 16 - r.y * z;
+    const right = (r.x + r.w) * z + tx;
+    if (right > free - 24) tx -= right - (free - 24);
+    if (r.x * z + tx < 16) tx = 16 - r.x * z;
+    this.userMoved = true;
+    this.vp.flyTo({ x: tx, y: ty, z }, animate);
+    this.reconcileSoon();
+    return true;
   }
 
   private reconcileSoon() {
@@ -1668,11 +1841,13 @@ class Board implements BoardController {
       case '=':
         this.userMoved = true;
         this.vp.zoomBy(1.25);
+        this.syncPct();
         return done();
       case '-':
       case '_':
         this.userMoved = true;
         this.vp.zoomBy(0.8);
+        this.syncPct();
         return done();
       case '0':
         this.userMoved = true;
@@ -1892,6 +2067,7 @@ class Board implements BoardController {
       b.addEventListener('click', () => {
         this.userMoved = true;
         fn();
+        this.syncPct();
       });
       return b;
     };
@@ -2020,6 +2196,8 @@ class Board implements BoardController {
     cancelAnimationFrame(this.rafId);
     window.clearTimeout(this.cameraTimer);
     window.clearTimeout(this.arrivalTimer);
+    window.clearTimeout(this.leaveCardsTimer);
+    window.clearTimeout(this.leaveFlowsTimer);
     for (const off of this.cleanups) off();
     this.minimap.dispose();
     this.vp.dispose();

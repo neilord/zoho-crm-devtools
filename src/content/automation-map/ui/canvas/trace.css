@@ -14,8 +14,10 @@
   align-items: center;
   gap: 14px;
   padding-left: 14px;
-  background: var(--fs-surface, #f7f9fc);
-  border-bottom: 1px solid var(--fs-border, #e2e6ee);
+  background: var(--am-glass-bg, rgba(255, 255, 255, 0.78));
+  -webkit-backdrop-filter: var(--am-glass-blur, blur(14px) saturate(1.4));
+  backdrop-filter: var(--am-glass-blur, blur(14px) saturate(1.4));
+  border-bottom: 1px solid rgba(15, 23, 42, 0.07);
   font-size: 12.5px;
   white-space: nowrap;
   overflow: hidden;
@@ -50,10 +52,13 @@
   place-items: center;
   padding: 0;
   border: 1px solid var(--fs-border, #e2e6ee);
-  border-radius: 6px;
+  border-radius: var(--am-r-sm, 6px);
   background: #fff;
   color: var(--fs-text, #1d2638);
   cursor: pointer;
+  transition:
+    border-color var(--am-dur-1, 120ms) var(--am-ease-out, ease),
+    color var(--am-dur-1, 120ms) var(--am-ease-out, ease);
 }
 .amc-stepper button:hover {
   border-color: var(--fs-accent, #2f6df0);
@@ -84,11 +89,15 @@
   height: 30px;
   padding: 0 12px;
   border: 1px solid var(--fs-border, #e2e6ee);
-  border-radius: 8px;
+  border-radius: var(--am-r-md, 10px);
   background: #fff;
+  box-shadow: var(--am-elev-1);
   color: var(--fs-text, #1d2638);
   font: 600 12.5px var(--fs-font, sans-serif);
   cursor: pointer;
+  transition:
+    border-color var(--am-dur-1, 120ms) var(--am-ease-out, ease),
+    color var(--am-dur-1, 120ms) var(--am-ease-out, ease);
 }
 .amc-btn:hover {
   border-color: var(--fs-accent, #2f6df0);
@@ -109,7 +118,8 @@
 }
 .amc-lvl-lbl {
   position: absolute;
-  font: 700 10px var(--fs-font, sans-serif);
+  /* Counter-scaled by the camera so it lands near 11px on screen at a fitted zoom. */
+  font: 700 clamp(11px, calc(11px / var(--z, 1)), 22px) var(--fs-font, sans-serif);
   letter-spacing: 0.09em;
   text-transform: uppercase;
   color: var(--am-lane-label, #646d82);
@@ -186,4 +196,20 @@
   .amc-sl {
     display: none;
   }
+}
+
+/* Keyboard focus: the soft double ring used across the shell, never a bare browser outline. */
+.amc-stepper button:focus-visible,
+.amc-btn:focus-visible,
+.amc-check input:focus-visible,
+.amc-tracebar a:focus-visible,
+.amc-tracebar button:focus-visible {
+  outline: none;
+  box-shadow: var(--am-focus-ring, 0 0 0 2px #fff, 0 0 0 4px #2f6df0);
+}
+.amc-trace .amc-t1 {
+  font-size: clamp(12.5px, calc(11px / var(--z, 1)), 15px);
+}
+.amc-trace .amc-t2 {
+  font-size: clamp(11px, calc(10.5px / var(--z, 1)), 13px);
 }

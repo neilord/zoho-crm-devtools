@@ -895,13 +895,13 @@ describe('design review: legend and preview search', () => {
 });
 
 describe('design review: keyboard path past the filter rail', () => {
-  it('offers a skip link that lands in the map, before any rail stop', () => {
+  it('offers a skip link that lands in the map, as the first tab stop', () => {
     const map = mountReal();
     const skip = map.q<HTMLButtonElement>('.am-skip') as HTMLButtonElement;
     expect(skip.textContent).toBe('Skip to the map');
-    // It sits between the header and the rail in tab order.
+    // It is the first stop in tab order, ahead of the header controls and the rail.
     const all = [...map.shadow.querySelectorAll('.am-head button, .am-skip, .am-rail button')];
-    expect(all.indexOf(skip)).toBeGreaterThan(0);
+    expect(all.indexOf(skip)).toBe(0);
     expect(all.indexOf(skip)).toBeLessThan(all.indexOf(map.q('.am-rail button') as Element));
     skip.focus();
     skip.click();

@@ -258,9 +258,9 @@ it('review 4 preserves pending typed text when index/coverage publishes before i
   if (!input) throw new Error('Missing map search');
   input.value = 'Review';
   input.dispatchEvent(new Event('input', { bubbles: true }));
-  await vi.advanceTimersByTimeAsync(60);
+  await vi.advanceTimersByTimeAsync(100);
   expect(input.value).toBe('Review');
-  await vi.advanceTimersByTimeAsync(40);
+  await vi.advanceTimersByTimeAsync(80);
   expect(map.recorded.store().get().query).toBe('Review');
   expect(map.qa('.ritem').length).toBeGreaterThan(0);
 });

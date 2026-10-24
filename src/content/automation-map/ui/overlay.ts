@@ -172,9 +172,11 @@ export function mountAutomationMap(options: MountAutomationMapOptions): { close(
       },
     },
     [
+      // First in tab order: the skip link is the first stop, before the header controls.
+      skip,
       header.el,
       stateBar,
-      el('div', { className: 'am-body' }, [skip, rail.el, drawerScrim, main]),
+      el('div', { className: 'am-body' }, [rail.el, drawerScrim, main]),
       footer,
       toastHost,
       live,
@@ -465,7 +467,33 @@ export function mountAutomationMap(options: MountAutomationMapOptions): { close(
     stopBannerWatch();
     stopBannerWatch = node ? observeResize(node, publishInsets) : () => {};
   }
+  // The floating upgrade card / pill sits bottom-right: it publishes how far it reaches in from the
+  // right and bottom edges (`--am-safe-br-w/h`) so an automatic fit keeps revealed content clear.
+  let stopFogWatch = () => {};
+  function watchFog(node: Element | null) {
+    stopFogWatch();
+    stopFogWatch = node ? observeResize(node, publishInsets) : () => {};
+  }
+  let lastInsetBr = '';
   function publishInsets() {
+    const fogEl = fogHost.firstElementChild as HTMLElement | null;
+    let brW = 0;
+    let brH = 0;
+    if (fogEl) {
+      const box = fogEl.getBoundingClientRect();
+      const base = main.getBoundingClientRect();
+      if (box.width > 0 && box.height > 0) {
+        brW = Math.ceil(base.right - box.left + 12);
+        brH = Math.ceil(base.bottom - box.top + 12);
+      }
+    }
+    const br = `${brW}x${brH}`;
+    const brChanged = br !== lastInsetBr; // republished with the next banner change or fit
+    if (brChanged) {
+      lastInsetBr = br;
+      main.style.setProperty('--am-safe-br-w', `${brW}px`);
+      main.style.setProperty('--am-safe-br-h', `${brH}px`);
+    }
     const bannerEl = bannerHost.firstElementChild as HTMLElement | null;
     let top = 0;
     if (bannerEl) {
@@ -670,6 +698,7 @@ export function mountAutomationMap(options: MountAutomationMapOptions): { close(
         watchBanner(bannerNode);
         const fog = fogCard(env, m);
         fogHost.replaceChildren(...(fog ? [fog] : []));
+        watchFog(fog);
         footStatus.textContent = footerStatus(m);
         publishInsets();
       });

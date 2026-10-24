@@ -16,6 +16,7 @@ renumbers.
 ## Log
 
 - [`0032-automation-map-settled-freshness-and-counts.md`](0032-automation-map-settled-freshness-and-counts.md) — settled freshness despite dependency failures, selectable writer entities and honest inventory/gap counts.
+- [`0033-automation-map-zoom-tiers-and-render-budget.md`](0033-automation-map-zoom-tiers-and-render-budget.md) — sparse zoom tier and tonal washes, fog size bounds, per-frame render budget, search and selection framing.
 
 - [`0031-automation-map-history-and-deep-links.md`](0031-automation-map-history-and-deep-links.md) —
   one history entry per open map, bounded hash sync, Back closes in place, boundary-checked writes.

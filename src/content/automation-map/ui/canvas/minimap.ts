@@ -1,4 +1,4 @@
-/** Minimap (184x124): islands as rounded rects, the viewport as an accent box, matches as dots. */
+/** Minimap (152x103): islands as rounded rects, the viewport as an accent box, matches as dots. */
 import { h } from './dom';
 import type { Rect } from './geometry';
 
@@ -19,8 +19,8 @@ export class Minimap {
     this.el.append(this.canvas);
     const go = (e: PointerEvent) => {
       const r = this.canvas.getBoundingClientRect();
-      const w = r.width || 184;
-      const hh = r.height || 124;
+      const w = r.width || 152;
+      const hh = r.height || 103;
       const sx = ((e.clientX - r.left) / w) * this.canvas.width;
       const sy = ((e.clientY - r.top) / hh) * this.canvas.height;
       this.onPan((sx - this.t.ox) / this.t.k, (sy - this.t.oy) / this.t.k);
@@ -71,32 +71,50 @@ export class Minimap {
     this.t = { k, ox, oy };
     if (!ctx) return;
     ctx.clearRect(0, 0, W, H);
-    ctx.lineWidth = 2;
+    // Islands are soft, tinted pills (no outlines): the same wash the overview paints inside them.
     for (const r of rects) {
-      ctx.fillStyle = r.fog ? '#e6e9f0' : '#ffffff';
-      ctx.strokeStyle = r.fog ? '#dfe3eb' : '#cfd6e2';
+      const w = r.w * k;
+      const h = r.h * k;
+      ctx.fillStyle = r.fog ? 'rgba(150,170,225,0.2)' : 'rgba(103,118,160,0.24)';
       ctx.beginPath();
-      ctx.roundRect(ox + r.x * k, oy + r.y * k, r.w * k, r.h * k, 5);
+      ctx.roundRect(ox + r.x * k, oy + r.y * k, w, h, Math.min(10, w / 2, h / 2));
       ctx.fill();
-      ctx.stroke();
     }
-    ctx.fillStyle = '#e0b400';
     for (const d of dots) {
+      ctx.fillStyle = 'rgba(224,180,0,0.28)';
+      ctx.beginPath();
+      ctx.arc(ox + d.x * k, oy + d.y * k, 6, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#e0b400';
       ctx.beginPath();
       ctx.arc(ox + d.x * k, oy + d.y * k, 3, 0, Math.PI * 2);
       ctx.fill();
     }
     if (selected) {
+      ctx.fillStyle = 'rgba(47,109,240,0.25)';
+      ctx.beginPath();
+      ctx.arc(ox + selected.x * k, oy + selected.y * k, 8, 0, Math.PI * 2);
+      ctx.fill();
       ctx.fillStyle = '#2f6df0';
       ctx.beginPath();
       ctx.arc(ox + selected.x * k, oy + selected.y * k, 4, 0, Math.PI * 2);
       ctx.fill();
     }
-    ctx.strokeStyle = '#2f6df0';
-    ctx.fillStyle = 'rgba(47,109,240,.08)';
+    // The viewport: a rounded, softly lit window onto the map.
+    const vx = ox + view.x * k;
+    const vy = oy + view.y * k;
+    const vw = view.w * k;
+    const vh = view.h * k;
+    ctx.save();
+    ctx.shadowColor = 'rgba(47,109,240,0.35)';
+    ctx.shadowBlur = 10;
+    ctx.fillStyle = 'rgba(47,109,240,0.1)';
     ctx.beginPath();
-    ctx.rect(ox + view.x * k, oy + view.y * k, view.w * k, view.h * k);
+    ctx.roundRect(vx, vy, vw, vh, Math.min(8, vw / 2, vh / 2));
     ctx.fill();
+    ctx.restore();
+    ctx.strokeStyle = 'rgba(47,109,240,0.75)';
+    ctx.lineWidth = 2;
     ctx.stroke();
   }
 

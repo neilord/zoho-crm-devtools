@@ -79,6 +79,8 @@ export const ZOOM_MAX = 2;
  * world's `will-change: transform` so the compositor rasters at the current scale (see canvas.css).
  */
 export const FAR_ZOOM = 0.2;
+/** Below this an overview island shows one short count instead of its full summary line. */
+export const SPARSE_ZOOM = 0.3;
 /** Semantic zoom thresholds with ±HYSTERESIS (UX spec §6.3). */
 export const TIER_OVERVIEW_BELOW = 0.42;
 export const TIER_DETAIL_FROM = 0.8;

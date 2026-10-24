@@ -66,17 +66,43 @@
   cursor: grab;
   touch-action: none;
   outline: none;
+  /*
+   * A soft wash with a faint dot grid on top. The grid fades with the zoom (--ga, published by the
+   * viewport) instead of switching off, so zooming out dissolves it rather than popping.
+   */
   background-color: var(--am-canvas, #f3f5f9);
-  background-image: radial-gradient(circle, var(--am-grid-dot, #d9dfea) 1px, transparent 1.3px);
-  background-size: var(--gs, 24px) var(--gs, 24px);
-  background-position: var(--gx, 0) var(--gy, 0);
+  background-image: var(--am-grad-canvas, linear-gradient(#f3f5f9, #f3f5f9));
+  background-size: 100% 100%;
   --z: 1;
+  /* Local tokens: the shared ones are read-only. */
+  --amc-sel-ring:
+    0 0 0 1.5px var(--fs-accent, #2f6df0), 0 0 0 5px rgba(47, 109, 240, 0.14),
+    0 4px 14px rgba(47, 109, 240, 0.16);
+  --amc-halo: var(--am-canvas, #f3f5f9);
 }
 .amc-canvas:focus-visible {
   box-shadow: inset 0 0 0 2px var(--fs-accent, #2f6df0);
 }
-.amc-canvas.amc-nogrid {
-  background-image: none;
+/*
+ * The dot grid: its own childless element, a little larger than the canvas, moved by transform
+ * alone while panning (nothing is restyled or repainted). It fades with the zoom (--ga) instead
+ * of switching off, so zooming out dissolves it rather than popping.
+ */
+.amc-grid {
+  position: absolute;
+  inset: -64px;
+  pointer-events: none;
+  will-change: transform;
+  background-image: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--am-grid-dot, #d9dfea) calc(var(--ga, 1) * 70%), transparent) 0.9px,
+    transparent 1.2px
+  );
+  background-size: var(--gs, 24px) var(--gs, 24px);
+  background-position: var(--gp, 16px) var(--gp, 16px);
+}
+.amc-canvas.amc-nogrid > .amc-grid {
+  display: none;
 }
 .amc-canvas.amc-panning {
   cursor: grabbing;
@@ -114,26 +140,36 @@
 /* ---------- islands ---------- */
 .amc-isl {
   position: absolute;
-  border: 1px solid var(--am-island-border, #e2e6ee);
-  border-radius: 16px;
-  background: var(--am-island, #fff);
-  box-shadow: var(
-    --am-island-shadow,
-    0 1px 2px rgba(15, 23, 42, 0.05),
-    0 10px 30px rgba(15, 23, 42, 0.06)
-  );
-  transition:
-    opacity 0.2s,
-    box-shadow 0.2s;
+  border-radius: var(--am-r-xl, 18px);
+  background: linear-gradient(180deg, var(--am-island, #fff) 0%, #fcfdff 100%);
+  isolation: isolate;
+  transition: opacity var(--am-dur-2, 200ms) var(--am-ease-out, ease);
+}
+/*
+ * A hairline ring plus two soft layers: the island floats instead of sitting in a box. The shadow
+ * lives on a pseudo-element so that it can fade by opacity alone: while the zoom moves it is
+ * dropped (every zoom frame re-rasters it) and it fades back in when the zoom settles.
+ */
+.amc-isl::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  pointer-events: none;
+  box-shadow: var(--am-ring, 0 0 0 1px rgba(15, 23, 42, 0.06)), var(--am-elev-2);
+  transition: opacity var(--am-dur-3, 320ms) var(--am-ease-out, ease);
 }
 .amc-isl.amc-flash {
-  animation: amc-islflash 1.1s ease;
+  animation: amc-islflash 1.1s var(--am-ease-out, ease);
 }
 @keyframes amc-islflash {
   30% {
     box-shadow:
-      0 0 0 4px rgba(47, 109, 240, 0.35),
-      var(--am-island-shadow);
+      0 0 0 4px rgba(47, 109, 240, 0.3),
+      0 0 28px rgba(47, 109, 240, 0.18),
+      var(--am-ring, 0 0 0 1px rgba(15, 23, 42, 0.06)),
+      var(--am-elev-2);
   }
 }
 .amc-head {
@@ -147,8 +183,10 @@
   gap: 11px;
   padding: 0 20px;
   border-bottom: 1px solid #f0f2f7;
+  border-radius: var(--am-r-xl, 18px) var(--am-r-xl, 18px) 0 0;
   cursor: pointer;
   overflow: hidden;
+  transition: opacity 260ms var(--am-ease-out, ease) 90ms;
 }
 .amc-av {
   width: 30px;
@@ -234,6 +272,23 @@
 .amc-searching .amc-isl.amc-nomatch {
   opacity: 0.45;
 }
+/* Overview while searching: the title badge carries the count, so the card keeps no clipped
+   "N matches" line, and a title is never cut to "Module ..." by its badge. */
+.amc-searching .amc-sparse .amc-smatch,
+.amc-searching.amc-sparse .amc-smatch,
+.amc-searching.amc-tier-overview .amc-smatch {
+  display: none;
+}
+.amc-sparse .amc-ttl {
+  max-width: none;
+}
+.amc-sparse .amc-ttl-name {
+  overflow: visible;
+  text-overflow: clip;
+}
+.amc-searching .amc-isl.amc-nomatch .amc-ttl .amc-ismatch {
+  display: none;
+}
 .amc-searching .amc-isl.amc-nomatch .amc-ismatch {
   background: #eef1f6;
   color: var(--fs-muted, #5f687b);
@@ -259,7 +314,7 @@
   position: absolute;
   left: 0;
   bottom: 100%;
-  display: none;
+  display: flex;
   align-items: center;
   gap: min(calc(9px / var(--z)), 70px);
   max-width: 100%;
@@ -270,6 +325,19 @@
   white-space: nowrap;
   color: var(--fs-text, #1d2638);
   cursor: pointer;
+  /*
+   * A canvas-coloured halo behind the glyphs: flow curves pass under the title and would
+   * otherwise cut straight through the letters. Text-shadow, not a box, so no patch shows.
+   */
+  text-shadow:
+    0 0 0.12em var(--amc-halo, #f3f5f9),
+    0 0 0.3em var(--amc-halo, #f3f5f9),
+    0 0 0.55em var(--amc-halo, #f3f5f9),
+    0 0 0.9em var(--amc-halo, #f3f5f9);
+}
+/* Far out the 2-letter avatar would crowd the name out of a 90px island: the name alone. */
+.amc-far .amc-ttl .amc-av {
+  display: none;
 }
 .amc-ttl .amc-av {
   width: 1.6em;
@@ -294,27 +362,23 @@
   padding: 0 0.5em;
   border-radius: 1em;
 }
-.amc-tier-overview .amc-ttl {
-  display: flex;
-}
 
 /* Overview summary card with silhouettes of the real node rects. */
 .amc-sum {
   position: absolute;
   inset: 0;
-  display: none;
-  border-radius: 16px;
-  background: #fff;
+  display: block;
+  border-radius: inherit;
   cursor: pointer;
   overflow: hidden;
-  /* Text must fit the card: ~11 lines of height for tall islands, ~7.5 for short ones, ~20em wide. */
-  --fz: max(
-    min(calc(12px / var(--z)), calc(var(--sh, 600) * 0.09px), calc(var(--sw, 1296) * 0.045px)),
-    calc(8.5px / var(--z))
-  );
+  /* One size for every island, 10.5px on screen (the 8.5px floor is never reached): text that
+     does not fit its island is cut with an ellipsis instead of shrinking. */
+  --fz: min(calc(10.5px / var(--z)), 160px);
 }
 .amc-sum:hover {
-  box-shadow: inset 0 0 0 calc(2px / var(--z)) var(--fs-accent, #2f6df0);
+  box-shadow:
+    inset 0 0 0 calc(1.5px / var(--z)) rgba(47, 109, 240, 0.5),
+    inset 0 0 calc(28px / var(--z)) rgba(47, 109, 240, 0.08);
 }
 .amc-sil {
   position: absolute;
@@ -322,6 +386,8 @@
   top: 0;
   width: 100%;
   height: 100%;
+  /* The wash firms up with the zoom (15% -> 42%) instead of jumping at a tier. */
+  opacity: clamp(0.6, calc(0.4 + var(--z, 0.3) * 1.2), 1);
 }
 .amc-sumtxt {
   position: absolute;
@@ -332,14 +398,21 @@
   flex-direction: column;
   gap: calc(var(--fz) * 0.7);
   padding: calc(var(--fz) * 1.2) calc(var(--fz) * 1.6) calc(var(--fz) * 2.4);
-  background: linear-gradient(180deg, #fff 72%, rgba(255, 255, 255, 0));
+  /* Soft scrim: the text stays legible over the blobs, and the blobs surface below it. */
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.96) 0%,
+    rgba(255, 255, 255, 0.9) 55%,
+    rgba(255, 255, 255, 0) 100%
+  );
 }
 .amc-sc {
   font-size: var(--fz);
   line-height: 1.35;
   color: var(--fs-muted, #5f687b);
+  white-space: nowrap;
   overflow: hidden;
-  overflow-wrap: anywhere;
+  text-overflow: ellipsis;
 }
 .amc-sc b {
   color: var(--fs-text, #1d2638);
@@ -367,21 +440,17 @@
 .amc-short .amc-sbar {
   display: none;
 }
-/* The floor (8.5px on screen) wins over the box-fit terms: a short island shows its first line
-   readable instead of three lines at 3-5px; whatever does not fit is clipped under the fade. */
-.amc-short .amc-sum {
-  --fz: max(
-    min(calc(12px / var(--z)), calc(var(--sh, 600) * 0.14px), calc(var(--sw, 1296) * 0.06px)),
-    calc(8.5px / var(--z))
-  );
+/* Taller islands let a long line (the org-wide counts) wrap to two before cutting. */
+.amc-isl:not(.amc-short) .amc-sc {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  white-space: normal;
 }
+/* A short island shows its first line, at the same size as every other island's. */
 .amc-short .amc-sc + .amc-sc {
   display: none;
-}
-/* One line, cut with an ellipsis: wrapped to a sliver it showed only its first word. */
-.amc-short .amc-sc {
-  white-space: nowrap;
-  text-overflow: ellipsis;
 }
 .amc-shubs .amc-hubchip {
   height: calc(var(--fz) * 1.9);
@@ -394,85 +463,230 @@
   width: var(--fz);
   height: var(--fz);
 }
+/*
+ * Sparse (below 30%): an island is 40-190px wide, so its summary is one short count (or nothing
+ * for an empty island) rather than a line cut off mid-word.
+ */
+.amc-isl .amc-sc.amc-sc-short {
+  display: none;
+}
+.amc-sparse .amc-isl .amc-sc.amc-sc-short {
+  display: block;
+}
+.amc-sparse .amc-isl .amc-sc.amc-sc-full,
+.amc-sparse .amc-isl .amc-sbar,
+.amc-sparse .amc-isl .amc-shubs {
+  display: none;
+}
 .amc-smatch {
   font-size: var(--fz);
   font-weight: 700;
   color: #7a5a00;
 }
-.amc-tier-overview .amc-sum {
-  display: block;
+
+/*
+ * Far out, an island is a soft shape, not a box: its radius and shadow follow the zoom so they
+ * keep a constant look on screen (a 16px world radius would be a sharp 3px corner at 20%).
+ */
+.amc-tier-overview .amc-isl {
+  border-radius: clamp(18px, calc(14px / var(--z)), 110px);
 }
-.amc-tier-overview .amc-nodes,
-.amc-tier-overview .amc-edges,
-.amc-tier-overview .amc-head,
-.amc-tier-overview .amc-lane-lbl,
-.amc-tier-overview .amc-lane-sep {
-  display: none;
+.amc-tier-overview .amc-isl::before {
+  box-shadow:
+    0 0 0 calc(1px / var(--z)) rgba(15, 23, 42, 0.05),
+    0 calc(3px / var(--z)) calc(9px / var(--z)) rgba(30, 41, 80, 0.06),
+    0 calc(10px / var(--z)) min(calc(30px / var(--z)), 420px) rgba(30, 41, 80, 0.05);
 }
 
-/* Module -> module flows (overview only). */
+/*
+ * Teaser: the one revealed island is a clearing in the fog, not a slab on top of it. A feathered
+ * halo (a pre-feathered radial gradient on a pseudo-element, so no per-element blur) fades the
+ * edge from crisp white into the haze, and the shadow is layered and soft. Contents stay crisp:
+ * only the island's own edge is blended. The halo reach follows the zoom so it reads the same on
+ * screen at 30% as at 100%.
+ */
+.amc-teaser .amc-isl::after {
+  content: "";
+  position: absolute;
+  inset: calc(-1 * clamp(48px, calc(80px / var(--z, 1)), 480px));
+  z-index: -2;
+  border-radius: clamp(60px, calc(90px / var(--z, 1)), 480px);
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse closest-side at 50% 50%,
+    rgba(250, 251, 255, 0.92) 0%,
+    rgba(250, 251, 255, 0.86) 62%,
+    rgba(246, 248, 254, 0.6) 76%,
+    rgba(244, 246, 252, 0.28) 89%,
+    rgba(244, 246, 252, 0) 100%
+  );
+  transition: opacity var(--am-dur-3, 320ms) var(--am-ease-out, ease);
+}
+.amc-teaser .amc-isl::before {
+  box-shadow:
+    0 0 0 calc(1px / var(--z, 1)) rgba(15, 23, 42, 0.04),
+    var(--am-elev-1),
+    0 calc(4px / var(--z, 1)) min(calc(18px / var(--z, 1)), 240px) rgba(30, 41, 80, 0.06),
+    0 calc(14px / var(--z, 1)) min(calc(48px / var(--z, 1)), 640px) rgba(60, 70, 130, 0.07);
+}
+.amc-teaser.amc-zooming .amc-isl::after {
+  opacity: 0;
+  transition: none;
+}
+
+/*
+ * While the zoom is moving (the viewport sets amc-zooming, then clears it ~120ms after the last
+ * change) the soft shadows are dropped: each zoom frame re-rasters the world at a new scale, and
+ * the shadows and the title halos are most of that paint. They come back the moment it settles.
+ */
+.amc-canvas.amc-zooming .amc-isl::before {
+  opacity: 0;
+  transition: none;
+}
+.amc-canvas.amc-zooming .amc-ttl {
+  text-shadow: none;
+  transition: none;
+}
+.amc-canvas.amc-zooming .amc-nd:not(.amc-sel):not(.amc-match)::before {
+  box-shadow: none;
+  transition: none;
+}
+
+/*
+ * Semantic zoom crossfade. The overview layers (title, summary, flow curves) and the card layers
+ * (header, lane labels, nodes, edges) are both mounted for a moment around a tier change and trade
+ * places by opacity alone; the hidden side is `visibility: hidden` after the fade, so it takes no
+ * pointer input and no paint.
+ */
+.amc-sum,
+.amc-ttl,
 .amc-flows {
-  display: none;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  /* The outgoing side leaves fast (90ms) and the incoming one arrives after it: never two layers of text at once. */
+  transition:
+    opacity 90ms linear,
+    visibility 0s linear 90ms;
+}
+.amc-tier-overview .amc-sum,
+.amc-tier-overview .amc-ttl,
+.amc-tier-overview .amc-flows {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transition:
+    opacity 260ms var(--am-ease-out, ease) 90ms,
+    visibility 0s linear 0s;
 }
 .amc-tier-overview .amc-flows {
-  display: block;
+  pointer-events: none;
 }
+.amc-lane-lbl,
+.amc-lane-sep,
+.amc-nodes,
+.amc-edges {
+  transition:
+    opacity 260ms var(--am-ease-out, ease) 90ms,
+    visibility 0s linear 0s;
+}
+.amc-tier-overview .amc-head,
+.amc-tier-overview .amc-lane-lbl,
+.amc-tier-overview .amc-lane-sep,
+.amc-tier-overview .amc-nodes,
+.amc-tier-overview .amc-edges {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition:
+    opacity 90ms linear,
+    visibility 0s linear 90ms;
+}
+
+/* Module -> module flows (overview only): hairline, rounded, faint; a soft glow when lit. */
 .amc-ov {
   fill: none;
-  stroke: #c4ccd9;
+  stroke: #b9c2d3;
   stroke-linecap: round;
-  opacity: 0.6;
+  stroke-linejoin: round;
+  opacity: 0.5;
   vector-effect: non-scaling-stroke;
+  transition:
+    opacity var(--am-dur-2, 200ms) var(--am-ease-out, ease),
+    stroke var(--am-dur-2, 200ms) var(--am-ease-out, ease);
 }
 .amc-ov.amc-loop {
   stroke: var(--am-cascade, #d97706);
-  opacity: 0.65;
+  opacity: 0.5;
 }
 .amc-ov.amc-on {
   stroke: var(--fs-accent, #2f6df0);
-  opacity: 0.9;
+  opacity: 0.85;
+  filter: drop-shadow(0 0 3px rgba(47, 109, 240, 0.45));
+}
+.amc-ov.amc-loop.amc-on {
+  stroke: var(--am-cascade, #d97706);
+  filter: drop-shadow(0 0 3px rgba(217, 119, 6, 0.4));
 }
 .amc-ov-head {
-  fill: #c4ccd9;
-  opacity: 0.85;
+  fill: #b9c2d3;
+  stroke: #b9c2d3;
+  stroke-width: 0.35px;
+  stroke-linejoin: round;
+  opacity: 0.7;
+  transition: opacity var(--am-dur-2, 200ms) var(--am-ease-out, ease);
 }
 .amc-ov-head.amc-loop {
   fill: var(--am-cascade, #d97706);
+  stroke: var(--am-cascade, #d97706);
 }
 .amc-ov-head.amc-on {
   fill: var(--fs-accent, #2f6df0);
+  stroke: var(--fs-accent, #2f6df0);
   opacity: 1;
 }
 /* One card per hovered island in place of curve labels. */
 .amc-flowcard {
   position: absolute;
   z-index: 41;
-  width: 232px;
-  padding: 10px 12px 11px;
-  border: 1px solid var(--fs-border, #e2e6ee);
-  border-radius: 10px;
-  background: #fff;
-  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.16);
+  width: 256px;
+  padding: 12px 14px 12px;
+  border: 1px solid var(--am-glass-border, rgba(255, 255, 255, 0.65));
+  border-radius: var(--am-r-lg, 14px);
+  background: var(--am-glass-bg, rgba(255, 255, 255, 0.78));
+  -webkit-backdrop-filter: var(--am-glass-blur, blur(14px) saturate(1.4));
+  backdrop-filter: var(--am-glass-blur, blur(14px) saturate(1.4));
+  box-shadow: var(--am-ring, 0 0 0 1px rgba(15, 23, 42, 0.06)), var(--am-elev-3);
   font-size: 12px;
   line-height: 1.4;
   pointer-events: none;
+  animation: amc-pop var(--am-dur-2, 200ms) var(--am-ease-out, ease) both;
+}
+@keyframes amc-pop {
+  from {
+    opacity: 0;
+    transform: translateY(4px) scale(0.98);
+  }
 }
 .amc-flowcard > b {
   display: block;
-  margin-bottom: 4px;
-  font-size: 13px;
+  margin-bottom: 2px;
+  font-size: 13.5px;
+  letter-spacing: -0.005em;
 }
 .amc-flowcard h6 {
-  margin: 8px 0 2px;
+  margin: 10px 0 3px;
   color: var(--fs-muted, #5f687b);
-  font: 700 10.5px / 1.2 var(--fs-font, sans-serif);
-  letter-spacing: 0.08em;
+  font: 700 10px / 1.2 var(--fs-font, sans-serif);
+  letter-spacing: 0.09em;
   text-transform: uppercase;
 }
 .amc-flowcard .amc-fr {
-  display: flex;
-  gap: 8px;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: baseline;
+  column-gap: 14px;
+  padding: 2px 0;
 }
 .amc-flowcard .amc-fr > span:first-child {
   min-width: 0;
@@ -483,9 +697,13 @@
 .amc-flowcard .amc-fr > span:last-child {
   color: var(--fs-muted, #5f687b);
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  text-align: right;
 }
 .amc-flowcard .amc-loopnote {
-  margin-top: 6px;
+  margin-top: 8px;
+  padding-top: 7px;
+  border-top: 1px solid rgba(15, 23, 42, 0.07);
   color: #9a4f00;
 }
 
@@ -500,7 +718,9 @@
   cursor: pointer;
   isolation: isolate;
   box-sizing: border-box;
-  transition: opacity 0.18s ease;
+  transition:
+    opacity var(--am-dur-2, 200ms) var(--am-ease-out, ease),
+    transform var(--am-dur-1, 120ms) var(--am-ease-out, ease);
   --k: var(--am-k-rule, #2f6df0);
   --bd: var(--am-node-border, #dfe4ee);
   --shape: none;
@@ -510,24 +730,27 @@
   position: absolute;
   inset: 0;
   z-index: -1;
-  border-radius: 8px;
+  border-radius: 9px;
   background: #fff;
   border: 1px solid var(--bd);
+  box-shadow: var(--am-elev-1);
   transition:
-    border-color 0.15s,
-    box-shadow 0.15s;
+    border-color var(--am-dur-1, 120ms) var(--am-ease-out, ease),
+    box-shadow var(--am-dur-2, 200ms) var(--am-ease-out, ease);
 }
 .amc-nd:hover {
-  --bd: var(--k);
+  --bd: color-mix(in srgb, var(--k) 70%, #fff);
+  /* Lift by transform only; the shadow deepens with it. */
+  transform: translateY(-1px);
 }
 .amc-nd:hover::before {
-  box-shadow: var(--am-node-hover-shadow, 0 4px 14px rgba(15, 23, 42, 0.1));
+  box-shadow: var(--am-elev-2);
 }
 .amc-nd.amc-sel {
   --bd: var(--fs-accent, #2f6df0);
 }
 .amc-nd.amc-sel::before {
-  box-shadow: var(--am-select-ring, 0 0 0 2px #2f6df0, 0 0 0 6px rgba(47, 109, 240, 0.16));
+  box-shadow: var(--amc-sel-ring, 0 0 0 2px #2f6df0, 0 0 0 6px rgba(47, 109, 240, 0.16));
 }
 .amc-nd.amc-match {
   --bd: #e0b400;
@@ -539,7 +762,7 @@
 }
 .amc-nd.amc-sel.amc-match::before {
   box-shadow:
-    var(--am-select-ring, 0 0 0 2px #2f6df0, 0 0 0 6px rgba(47, 109, 240, 0.16)),
+    var(--amc-sel-ring, 0 0 0 2px #2f6df0, 0 0 0 6px rgba(47, 109, 240, 0.16)),
     0 0 0 9px var(--am-match-glow, rgba(253, 230, 138, 0.65));
 }
 .amc-nd.amc-flash::before {
@@ -627,7 +850,9 @@
   color: #fff;
   font: 700 10px / 18px var(--fs-font, sans-serif);
   white-space: nowrap;
-  box-shadow: 0 0 0 2px #fff;
+  box-shadow:
+    0 0 0 2px #fff,
+    0 1px 4px rgba(103, 65, 217, 0.3);
 }
 .amc-hub-here {
   display: none;
@@ -836,7 +1061,7 @@
 }
 .amc-k-approval.amc-sel::before {
   box-shadow:
-    var(--am-select-ring, 0 0 0 2px #2f6df0),
+    var(--amc-sel-ring, 0 0 0 2px #2f6df0),
     inset 0 0 0 3px #fff,
     inset 0 0 0 4px color-mix(in srgb, var(--k) 35%, #fff);
 }
@@ -980,11 +1205,13 @@
 .amc-e {
   fill: none;
   stroke: var(--am-edge, #b3bccb);
-  stroke-width: 1.5;
+  stroke-width: 1.25;
+  stroke-linecap: round;
+  stroke-linejoin: round;
   vector-effect: non-scaling-stroke;
   transition:
-    opacity 0.18s,
-    stroke 0.15s;
+    opacity var(--am-dur-2, 200ms) var(--am-ease-out, ease),
+    stroke var(--am-dur-1, 120ms) var(--am-ease-out, ease);
 }
 .amc-e-inf {
   stroke-dasharray: 6 4;
@@ -994,39 +1221,52 @@
 }
 .amc-e-ur-o {
   stroke: var(--am-edge-unresolved, #a9b2c3);
-  stroke-width: 4.5;
+  stroke-width: 4;
+  opacity: 0.8;
 }
 .amc-e-ur-i {
   stroke: #fff;
-  stroke-width: 2.5;
+  stroke-width: 2;
 }
 .amc-e-casc {
   stroke: var(--am-cascade, #d97706);
   stroke-dasharray: 7 4;
-  stroke-width: 1.6;
-  opacity: 0.85;
+  stroke-width: 1.4;
+  opacity: 0.8;
 }
 .amc-e-react {
   stroke: var(--am-cascade, #d97706);
   stroke-dasharray: 1.5 4;
   stroke-linecap: round;
-  stroke-width: 1.4;
+  stroke-width: 1.25;
 }
+/* Lit chain: a slightly firmer line over a wide, faint underlay (.amc-e-glow), not a thick stroke. */
 .amc-e-lit {
   stroke: var(--am-edge-hl, #2f6df0);
-  stroke-width: 2.25;
+  stroke-width: 1.75;
   opacity: 1;
+}
+.amc-e-glow {
+  stroke: var(--am-edge-hl, #2f6df0);
+  stroke-width: 7;
+  stroke-dasharray: none;
+  opacity: 0.13;
+  pointer-events: none;
+}
+.amc-e-glow.amc-e-casc {
+  stroke: var(--am-cascade, #d97706);
+  opacity: 0.16;
 }
 .amc-e-lit.amc-e-ur-i {
   stroke: #fff;
-  stroke-width: 2.5;
+  stroke-width: 2;
 }
 .amc-e-lit.amc-e-ur-o {
   stroke: var(--am-edge-hl, #2f6df0);
-  stroke-width: 4.5;
+  stroke-width: 4;
 }
 .amc-e-trunk {
-  stroke-width: 2.4;
+  stroke-width: 2;
 }
 .amc-trunk-n {
   font: 700 10.5px var(--fs-font, sans-serif);
@@ -1041,14 +1281,14 @@
 }
 .amc-e-lit.amc-e-casc {
   stroke: var(--am-cascade, #d97706);
-  stroke-width: 2.4;
+  stroke-width: 1.9;
 }
 .amc-e-lit.amc-e-react {
   stroke: var(--am-cascade, #d97706);
 }
 .amc-e-ghost {
   stroke: var(--am-edge-hl, #2f6df0);
-  stroke-width: 1.6;
+  stroke-width: 1.4;
   opacity: 0.6;
   stroke-dasharray: 2 5;
   stroke-linecap: round;
@@ -1087,14 +1327,20 @@
 .amc-chrome[hidden] {
   display: none;
 }
+/* Floating glass: one blurred layer per control (never per card), steady in size at 40px high. */
+.amc-zoom,
+.amc-mini {
+  border: 1px solid var(--am-glass-border, rgba(255, 255, 255, 0.65));
+  background: var(--am-glass-bg, rgba(255, 255, 255, 0.78));
+  -webkit-backdrop-filter: var(--am-glass-blur, blur(14px) saturate(1.4));
+  backdrop-filter: var(--am-glass-blur, blur(14px) saturate(1.4));
+  box-shadow: var(--am-ring, 0 0 0 1px rgba(15, 23, 42, 0.06)), var(--am-elev-3);
+}
 .amc-zoom {
   left: 12px;
   bottom: 12px;
   padding: 4px;
-  border: 1px solid var(--fs-border, #e2e6ee);
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.96);
-  box-shadow: 0 2px 10px rgba(15, 23, 42, 0.08);
+  border-radius: var(--am-r-lg, 14px);
 }
 .amc-zoom button {
   width: 30px;
@@ -1103,14 +1349,21 @@
   place-items: center;
   padding: 0;
   border: 0;
-  border-radius: 7px;
+  border-radius: 10px;
   background: transparent;
   color: var(--fs-muted, #5f687b);
   cursor: pointer;
+  transition:
+    background-color var(--am-dur-1, 120ms) var(--am-ease-out, ease),
+    color var(--am-dur-1, 120ms) var(--am-ease-out, ease),
+    transform var(--am-dur-1, 120ms) var(--am-ease-out, ease);
 }
 .amc-zoom button:hover {
-  background: var(--fs-surface, #f7f9fc);
+  background: rgba(47, 109, 240, 0.09);
   color: var(--fs-accent, #2f6df0);
+}
+.amc-zoom button:active {
+  transform: scale(0.93);
 }
 .amc-zoom button[aria-pressed="true"] {
   color: var(--fs-accent, #2f6df0);
@@ -1120,15 +1373,16 @@
   outline-offset: 1px;
 }
 .amc-pct {
-  min-width: 46px;
+  min-width: 44px;
   text-align: center;
   font: 600 12px var(--fs-font, sans-serif);
   color: var(--fs-muted, #5f687b);
   font-variant-numeric: tabular-nums;
 }
 .amc-tierlbl {
-  padding: 0 8px 0 6px;
-  border-left: 1px solid var(--fs-border, #e2e6ee);
+  margin: 0 2px 0 4px;
+  padding: 2px 8px 2px 10px;
+  border-left: 1px solid rgba(15, 23, 42, 0.09);
   font-size: 11.5px;
   color: var(--fs-muted, #5f687b);
   white-space: nowrap;
@@ -1136,31 +1390,33 @@
 .amc-mini {
   left: 12px;
   bottom: 60px;
+  /* Over a map the glass blur would only smear the washes: a near-opaque tint reads the same. */
+  background: rgba(255, 255, 255, 0.9);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
   padding: 0;
-  border: 1px solid var(--fs-border, #e2e6ee);
-  border-radius: 10px;
+  border-radius: var(--am-r-lg, 14px);
   overflow: hidden;
-  background: rgba(255, 255, 255, 0.96);
-  box-shadow: 0 2px 10px rgba(15, 23, 42, 0.08);
   cursor: pointer;
 }
 .amc-mini canvas {
   display: block;
-  width: 184px;
-  height: 124px;
+  width: 152px;
+  height: 103px;
 }
 .amc-tip {
   position: absolute;
   z-index: 40;
   max-width: 300px;
   padding: 7px 10px;
-  border-radius: 8px;
-  background: #1d2638;
+  border-radius: var(--am-r-md, 10px);
+  background: rgba(29, 38, 56, 0.94);
   color: #fff;
   font-size: 12px;
   line-height: 1.4;
   pointer-events: none;
-  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.3);
+  box-shadow: var(--am-elev-3);
+  animation: amc-pop var(--am-dur-1, 120ms) var(--am-ease-out, ease) both;
 }
 .amc-tip b {
   font-weight: 700;
@@ -1192,8 +1448,22 @@
 @media (prefers-reduced-motion: reduce) {
   .amc-nd,
   .amc-isl,
-  .amc-e {
+  .amc-e,
+  .amc-ov,
+  .amc-sum,
+  .amc-ttl,
+  .amc-flows,
+  .amc-head,
+  .amc-lane-lbl,
+  .amc-lane-sep,
+  .amc-nodes,
+  .amc-edges,
+  .amc-zoom button {
     transition: none;
+  }
+  .amc-flowcard,
+  .amc-tip {
+    animation: none;
   }
 }
 
@@ -1206,16 +1476,18 @@
   gap: 5px;
   padding: 0 9px 0 8px;
   border: 0;
-  border-left: 1px solid var(--fs-border, #e2e6ee);
-  border-radius: 0 7px 7px 0;
+  border-radius: 10px;
   background: transparent;
   color: var(--fs-muted, #5f687b);
   font: 600 11.5px var(--fs-font, sans-serif);
   cursor: pointer;
+  transition:
+    background-color var(--am-dur-1, 120ms) var(--am-ease-out, ease),
+    color var(--am-dur-1, 120ms) var(--am-ease-out, ease);
 }
 .amc-lgbtn:hover,
 .amc-lgbtn[aria-expanded="true"] {
-  background: var(--fs-surface, #f7f9fc);
+  background: rgba(47, 109, 240, 0.09);
   color: var(--fs-accent, #2f6df0);
 }
 .amc-lgbtn:focus-visible {
@@ -1232,11 +1504,14 @@
   max-height: calc(100% - 80px);
   padding: 12px 14px 10px;
   overflow: auto;
-  border: 1px solid var(--fs-border, #e2e6ee);
-  border-radius: 12px;
-  background: #fff;
-  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.16);
+  border: 1px solid var(--am-glass-border, rgba(255, 255, 255, 0.65));
+  border-radius: var(--am-r-lg, 14px);
+  background: var(--am-glass-bg, rgba(255, 255, 255, 0.86));
+  -webkit-backdrop-filter: var(--am-glass-blur, blur(14px) saturate(1.4));
+  backdrop-filter: var(--am-glass-blur, blur(14px) saturate(1.4));
+  box-shadow: var(--am-ring, 0 0 0 1px rgba(15, 23, 42, 0.06)), var(--am-elev-3);
   font-size: 12px;
+  animation: amc-pop var(--am-dur-2, 200ms) var(--am-ease-out, ease) both;
 }
 .amc-lg-col h6 {
   margin: 0 0 6px;

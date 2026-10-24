@@ -129,18 +129,29 @@ describe('search', () => {
     vi.useFakeTimers();
   });
 
-  it('debounces typing by about 80 ms and flushes on Enter', () => {
+  it('renders the first keystroke at once, debounces the burst by about 160 ms, flushes on Enter', () => {
     map = mountWithStore({ view: 'list' });
     const store = map.recorded.store();
     const input = map.q('.am-search input') as HTMLInputElement;
-    input.value = 'stage';
-    input.dispatchEvent(new Event('input', { bubbles: true }));
+    const type = (value: string) => {
+      input.value = value;
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+    };
+    // Leading edge: a single keystroke after idle is not held back.
+    type('s');
+    expect(store.get().query).toBe('s');
+    // The rest of the burst waits for the trailing edge.
+    type('st');
+    type('stage');
+    vi.advanceTimersByTime(120);
+    expect(store.get().query).toBe('s');
     vi.advanceTimersByTime(60);
-    expect(store.get().query).toBe('');
-    vi.advanceTimersByTime(30);
     expect(store.get().query).toBe('stage');
-    input.value = 'stage gate';
-    input.dispatchEvent(new Event('input', { bubbles: true }));
+    // After the window has gone quiet the next keystroke is immediate again.
+    vi.advanceTimersByTime(200);
+    type('stage g');
+    expect(store.get().query).toBe('stage g');
+    type('stage gate');
     key(input, 'Enter');
     expect(store.get().query).toBe('stage gate');
   });

@@ -5,9 +5,14 @@
  */
 import type { Camera } from '../context';
 import { reducedMotion } from './dom';
-import { clamp, FAR_ZOOM, type Rect, ZOOM_MAX, ZOOM_MIN } from './geometry';
+import { clamp, FAR_ZOOM, type Rect, SPARSE_ZOOM, ZOOM_MAX, ZOOM_MIN } from './geometry';
 
 const FALLBACK_SIZE = { w: 1280, h: 800 };
+/** The grid element overhangs the canvas by this much so a translate never exposes its edge (> 24 * max zoom). */
+const GRID_BLEED = 64;
+/** `--z` follows a zoom gesture in steps of this many e-folds (~10%), then lands exactly. */
+const Z_STEP = 0.1;
+const Z_SETTLE_MS = 120;
 
 const ease = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2);
 
@@ -26,7 +31,13 @@ export interface ViewportOptions {
   isInteractive?: (target: Element) => boolean;
   /** The user moved the camera by hand. */
   onUserMove?: () => void;
+  /** World y of the topmost island (its overview title sits just above); lets a button zoom keep it clear of the banner. */
+  contentTop?: () => number | null;
 }
+
+/** Button and keyboard zoom steps glide over this long; wheel and pinch stay immediate. */
+const ZOOM_GLIDE_MS = 200;
+const easeOut = (t: number) => 1 - (1 - t) ** 3;
 
 export class Viewport {
   x = 0;
@@ -36,6 +47,15 @@ export class Viewport {
   spaceHeld = false;
   lastDragMoved = false;
   private anim = 0;
+  private zoomAnim = 0;
+  private zoomSettle = 0;
+  private zooming = false;
+  private zWritten = 0;
+  private lastZ = Number.NaN;
+  private measured: { w: number; h: number } | null = null;
+  private readonly grid: HTMLElement;
+  /** Where a gliding button zoom is headed; null at rest. */
+  private zoomGoal: { z: number; x: number; y: number } | null = null;
   private readonly min: number;
   private readonly max: number;
   private readonly cleanups: Array<() => void> = [];
@@ -49,15 +69,40 @@ export class Viewport {
   ) {
     this.min = opts.min ?? ZOOM_MIN;
     this.max = opts.max ?? ZOOM_MAX;
+    this.grid = document.createElement('div');
+    this.grid.className = 'amc-grid';
+    this.grid.setAttribute('aria-hidden', 'true');
+    canvas.insertBefore(this.grid, canvas.firstChild);
+    this.watchSize();
     this.bind();
   }
 
+  /**
+   * The canvas size, measured once and kept until it resizes: reading a rect after the camera
+   * wrote forces a style recalc on every frame of a pan or a fly-to.
+   */
   size(): { w: number; h: number } {
+    if (this.measured) return this.measured;
     const r = this.canvas.getBoundingClientRect();
-    if (r.width > 0 && r.height > 0) return { w: r.width, h: r.height };
-    const w = this.canvas.clientWidth;
-    const h = this.canvas.clientHeight;
-    return w > 0 && h > 0 ? { w, h } : FALLBACK_SIZE;
+    let size = FALLBACK_SIZE;
+    if (r.width > 0 && r.height > 0) size = { w: r.width, h: r.height };
+    else {
+      const w = this.canvas.clientWidth;
+      const h = this.canvas.clientHeight;
+      if (w > 0 && h > 0) size = { w, h };
+      else return size;
+    }
+    if (this.sizeObserver) this.measured = size;
+    return size;
+  }
+
+  private sizeObserver: ResizeObserver | null = null;
+  private watchSize() {
+    if (typeof ResizeObserver !== 'function') return;
+    this.sizeObserver = new ResizeObserver(() => {
+      this.measured = null;
+    });
+    this.sizeObserver.observe(this.canvas);
   }
 
   private safe(): number {
@@ -123,15 +168,57 @@ export class Viewport {
 
   apply() {
     this.world.style.transform = `translate3d(${this.x}px, ${this.y}px, 0) scale(${this.z})`;
-    const style = this.canvas.style;
-    style.setProperty('--z', String(this.z));
+    if (this.z !== this.lastZ) {
+      this.lastZ = this.z;
+      this.publishZoom();
+    }
+    // The dot grid is its own element and a pure translate while panning; nothing the whole
+    // subtree inherits is written per pan frame.
     const gs = 24 * this.z;
-    style.setProperty('--gs', `${gs}px`);
-    style.setProperty('--gx', `${this.x % gs}px`);
-    style.setProperty('--gy', `${this.y % gs}px`);
-    this.canvas.classList.toggle('amc-nogrid', this.opts.grid === false || this.z < 0.3);
-    this.canvas.classList.toggle('amc-far', this.z < FAR_ZOOM);
+    this.grid.style.transform = `translate3d(${this.x % gs}px, ${this.y % gs}px, 0)`;
     this.opts.onChange?.(this);
+  }
+
+  /**
+   * Zoom-dependent state, written only when the zoom moved. `--z` drives counter-scaled text, and
+   * any write to it restyles and re-lays-out every label under the world, so it follows the
+   * gesture in coarse steps and lands exactly once the zoom settles. The grid is a childless
+   * element, so its variables are cheap.
+   */
+  private publishZoom() {
+    const z = this.z;
+    const g = this.grid.style;
+    const gs = 24 * z;
+    g.setProperty('--gs', `${gs}px`);
+    g.setProperty('--gp', `${GRID_BLEED % gs}px`);
+    // The dot grid dissolves between 15% and 40% zoom instead of switching off.
+    g.setProperty('--ga', clamp((z - 0.15) / 0.25, 0, 1).toFixed(3));
+    this.canvas.classList.toggle('amc-nogrid', this.opts.grid === false || z < 0.15);
+    this.canvas.classList.toggle('amc-far', z < FAR_ZOOM);
+    this.canvas.classList.toggle('amc-sparse', z < SPARSE_ZOOM);
+    // While the zoom moves, the canvas drops its costliest paint (soft shadows): every frame of a
+    // zoom re-rasters the world at the new scale.
+    if (!this.zooming) {
+      this.zooming = true;
+      this.canvas.classList.add('amc-zooming');
+    }
+    window.clearTimeout(this.zoomSettle);
+    this.zoomSettle = window.setTimeout(() => this.settleZoom(), Z_SETTLE_MS);
+    if (this.zWritten === 0 || Math.abs(Math.log(z / this.zWritten)) >= Z_STEP) this.writeZ();
+  }
+
+  private writeZ() {
+    this.zWritten = this.z;
+    this.world.style.setProperty('--z', String(this.z));
+  }
+
+  private settleZoom() {
+    this.zoomSettle = 0;
+    if (this.zooming) {
+      this.zooming = false;
+      this.canvas.classList.remove('amc-zooming');
+    }
+    if (this.zWritten !== this.z) this.writeZ();
   }
 
   /** World rectangle currently on screen. */
@@ -145,6 +232,7 @@ export class Viewport {
   }
 
   setCamera(c: Camera) {
+    this.endZoomGlide();
     cancelAnimationFrame(this.anim);
     const zoom = clamp(c.zoom, this.min, this.max);
     this.z = zoom;
@@ -162,15 +250,77 @@ export class Viewport {
     this.apply();
   }
 
+  /** The zoom a button press is gliding to (the current zoom at rest). */
+  goalZoom(): number {
+    return this.zoomGoal?.z ?? this.z;
+  }
+
+  /** Jump a gliding button zoom to its end state. */
+  private endZoomGlide() {
+    cancelAnimationFrame(this.zoomAnim);
+    const goal = this.zoomGoal;
+    if (!goal) return;
+    this.zoomGoal = null;
+    this.z = goal.z;
+    this.x = goal.x;
+    this.y = goal.y;
+    this.apply();
+  }
+
+  /**
+   * Button and keyboard zoom: a short ease toward the target, compounding when pressed again
+   * mid-glide. Anchored on the centre of the free area; when the whole top of the content was
+   * clear of the banner, it stays clear (zooming in about the centre would slide it underneath).
+   */
   zoomBy(factor: number) {
     const { w, h } = this.size();
     const top = this.safeTop();
     cancelAnimationFrame(this.anim);
-    this.zoomAt((w - this.safe()) / 2, top + (h - top) / 2, factor);
+    const sx = (w - this.safe()) / 2;
+    const sy = top + (h - top) / 2;
+    const base = this.zoomGoal ?? { z: this.z, x: this.x, y: this.y };
+    const nz = clamp(base.z * factor, this.min, this.max);
+    const k = nz / base.z;
+    const goal = { z: nz, x: sx - (sx - base.x) * k, y: sy - (sy - base.y) * k };
+    const contentTop = this.opts.contentTop?.();
+    if (contentTop != null) {
+      const pad = 16;
+      // The overview title sits 26 screen px above the island.
+      const wasClear = contentTop * base.z - 26 + base.y >= top + pad - 0.5;
+      const now = contentTop * goal.z - 26 + goal.y;
+      if (wasClear && now < top + pad) goal.y += top + pad - now;
+    }
     this.opts.onUserMove?.();
+    cancelAnimationFrame(this.zoomAnim);
+    if (reducedMotion() || typeof requestAnimationFrame !== 'function') {
+      this.zoomGoal = null;
+      this.z = goal.z;
+      this.x = goal.x;
+      this.y = goal.y;
+      this.apply();
+      return;
+    }
+    const from = { z: this.z, x: this.x, y: this.y };
+    this.zoomGoal = goal;
+    const t0 = performance.now();
+    const step = (now: number) => {
+      const p = clamp((now - t0) / ZOOM_GLIDE_MS, 0, 1);
+      if (p >= 1) {
+        this.endZoomGlide();
+        return;
+      }
+      const e = easeOut(p);
+      this.z = Math.exp(Math.log(from.z) + (Math.log(goal.z) - Math.log(from.z)) * e);
+      this.x = from.x + (goal.x - from.x) * e;
+      this.y = from.y + (goal.y - from.y) * e;
+      this.apply();
+      this.zoomAnim = requestAnimationFrame(step);
+    };
+    this.zoomAnim = requestAnimationFrame(step);
   }
 
   panBy(dx: number, dy: number) {
+    if (this.zoomGoal) this.endZoomGlide();
     this.x += dx;
     this.y += dy;
     this.apply();
@@ -238,6 +388,7 @@ export class Viewport {
   }
 
   flyTo(t: { x: number; y: number; z: number }, animate = true) {
+    this.endZoomGlide();
     cancelAnimationFrame(this.anim);
     if (!animate || reducedMotion()) {
       this.x = t.x;
@@ -292,10 +443,14 @@ export class Viewport {
   }
 
   stop() {
+    this.endZoomGlide();
     cancelAnimationFrame(this.anim);
   }
 
   dispose() {
+    window.clearTimeout(this.zoomSettle);
+    this.sizeObserver?.disconnect();
+    cancelAnimationFrame(this.zoomAnim);
     cancelAnimationFrame(this.anim);
     for (const off of this.cleanups) off();
     this.cleanups.length = 0;
@@ -316,6 +471,7 @@ export class Viewport {
       'wheel',
       (e) => {
         e.preventDefault();
+        this.endZoomGlide();
         cancelAnimationFrame(this.anim);
         this.opts.onUserMove?.();
         const r = c.getBoundingClientRect();
@@ -344,6 +500,7 @@ export class Viewport {
       if (e.button !== 0 && e.button !== 1) return;
       const target = e.target instanceof Element ? e.target : null;
       if (target && this.opts.isInteractive?.(target) && !this.spaceHeld && e.button === 0) return;
+      this.endZoomGlide();
       cancelAnimationFrame(this.anim);
       const id = e.pointerId ?? 0;
       this.pointers.set(id, { x: e.clientX, y: e.clientY });

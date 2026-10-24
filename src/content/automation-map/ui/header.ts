@@ -8,7 +8,8 @@ import { mapIcon } from './icons';
 import { type CoverageView, coverageView, type ShellModel } from './model';
 import { upgradeButton } from './parts';
 
-export const SEARCH_DEBOUNCE_MS = 80;
+/** Longer than a typist's key cadence, so a burst of keys commits once; Enter commits at once. */
+export const SEARCH_DEBOUNCE_MS = 160;
 const SHOWN_FAILURES = 3;
 const FULL_PLACEHOLDER = 'Search rules, functions, fields, templates, webhooks and code…';
 /** The preview reads one flow in full: it can search that, not the whole org's code. */
@@ -76,6 +77,7 @@ export function createHeader(env: RegionEnv): Header {
     { className: 'am-seg', attrs: { role: 'group', 'aria-label': 'View' } },
     tabs,
   );
+  seg.style.setProperty('--n', String(TABS.length));
 
   const input = el('input', {
     attrs: {
@@ -114,7 +116,10 @@ export function createHeader(env: RegionEnv): Header {
     slash,
   ]);
 
-  const commit = debounce((value: string) => actions.setQuery(value), SEARCH_DEBOUNCE_MS);
+  // Leading edge: one keystroke after idle renders at once; a burst settles on the trailing edge.
+  const commit = debounce((value: string) => actions.setQuery(value), SEARCH_DEBOUNCE_MS, {
+    leading: true,
+  });
   const refreshHas = () => searchBox.classList.toggle('has', input.value !== '');
   input.addEventListener('input', () => {
     refreshHas();
@@ -199,6 +204,16 @@ export function createHeader(env: RegionEnv): Header {
     }
     const view: MapView = m.state.view === 'trace' ? 'board' : m.state.view;
     for (const tab of tabs) tab.setAttribute('aria-pressed', String(tab.dataset.view === view));
+    // The sliding indicator reads the active index (CSS transform only).
+    seg.style.setProperty(
+      '--i',
+      String(
+        Math.max(
+          0,
+          TABS.findIndex((t) => t.view === view),
+        ),
+      ),
+    );
     filtersButton.hidden = false;
     const cov = m.access === 'checking' ? null : coverageView(m.snapshot);
     const sig = JSON.stringify([

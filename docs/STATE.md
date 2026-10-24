@@ -59,6 +59,22 @@ Listing copy and paste-ready dashboard/privacy/reviewer/What's new fields are in
   ZIP is rebuilt from). The popup showed "Open Zoho CRM to use tools" on a CRM tab in the owner's
   report; not investigated.
 
+- **Automation Map polish and performance** — landed on `main` (squashed, ADR 0033); not released.
+  Owner accepted the teaser live check as sufficient on 2026-10-24: Arc/Dia-style shell (sliding view indicator, custom checkboxes, glass banner,
+  popovers and zoom bar, inspector slide, focus rings), sparse/tonal zoom tiers with opacity
+  crossfades, softer edges beneath titles, glass hover card and minimap, "1 rule" plurals, bounded
+  fog (fixes the hard rectangular slabs), teaser rail/List fog counts agree, and the per-frame
+  render budget. 330-rule fixture: pan style recalc 4.7ms→0.1ms per frame, slow zoom frames at 32%
+  62→1–3 of 120, search work over 20 keys 437ms→119ms. Verified: `npm run verify`,
+  `npm run test:e2e:automation-map`, two independent screenshot reviews against a baseline, and a
+  read-only live pass in the owner's org, which is in **teaser** mode (no console errors; fog has no
+  slabs; inspector framing good). Not verified live: full (Pro) mode on a real org. Known open:
+  floating chrome can overlap content after a user zoom or pan; at 1024px a column can touch the
+  inspector at the 45% floor; wheel can pan into empty space (no pan limits); the zoom readout jumps
+  to its final value during a glide; Upgrade CTA count unchanged (owner decision); dagre worker,
+  hidden-view detach and minimap batching not done. Visual states: Playwright `-g "visual states"`
+  with `AM_SHOTS`; perf: `playwright.automation-map-perf.config.ts`.
+
 - **Automation Map** — landed on `main` as one squashed commit (`b270898`, ADRs
   0025–0032); not released. Latest automated verification: `npm run verify` passed
   **1,242 tests across 75 files**, TypeScript, Biome (one existing bridge warning) and production

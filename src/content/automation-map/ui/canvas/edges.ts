@@ -63,24 +63,35 @@ export function createDefs(ids: EdgeMarkers): SVGDefsElement {
     });
     if (ring) {
       m.append(
-        s('circle', { cx: 5, cy: 5, r: 3.2, fill: '#fff', stroke: '#a9b2c3', 'stroke-width': 1.6 }),
+        s('circle', { cx: 5, cy: 5, r: 3, fill: '#fff', stroke: '#a9b2c3', 'stroke-width': 1.4 }),
       );
     } else if (fill) {
-      m.append(s('path', { d: 'M1,1 L9,5 L1,9 z', fill }));
+      // A small head with a softly concave back and rounded joins, not a hard triangle.
+      m.append(
+        s('path', {
+          d: 'M1.6,1.6 L8.4,5 L1.6,8.4 Q3.6,5 1.6,1.6 z',
+          fill,
+          stroke: fill,
+          'stroke-width': 1.2,
+          'stroke-linejoin': 'round',
+        }),
+      );
     } else {
       m.append(
         s('path', {
-          d: 'M1,1.5 L9,5 L1,8.5',
+          d: 'M1.6,1.8 L8.2,5 L1.6,8.2',
           fill: 'none',
           stroke: '#9aa3b5',
-          'stroke-width': 1.5,
+          'stroke-width': 1.3,
+          'stroke-linecap': 'round',
+          'stroke-linejoin': 'round',
         }),
       );
     }
     return m;
   };
   defs.append(
-    marker(ids.arrow, 7, 9, '#b3bccb'),
+    marker(ids.arrow, 6.5, 9, '#b3bccb'),
     marker(ids.arrowHl, 7, 9, '#2f6df0'),
     marker(ids.arrowOpen, 8, 9, null),
     marker(ids.ring, 8, 8, null, true),

@@ -60,4 +60,50 @@
   --am-silhouette-2: #e8ecf3;
   --am-pro: #6741d9;
   --am-pro-soft: #f1edfd;
+
+  /* Polish tokens (additive; adopt per component). Elevation: layered, low-alpha, blue-slate tint. */
+  --am-ring: 0 0 0 1px rgba(15, 23, 42, 0.06);
+  --am-elev-1: 0 1px 2px rgba(15, 23, 42, 0.05), 0 1px 1px rgba(30, 41, 80, 0.03);
+  --am-elev-2: 0 1px 2px rgba(15, 23, 42, 0.04), 0 4px 12px rgba(30, 41, 80, 0.07);
+  --am-elev-3:
+    0 2px 4px rgba(15, 23, 42, 0.04), 0 8px 20px rgba(30, 41, 80, 0.09),
+    0 18px 40px rgba(30, 41, 80, 0.05);
+  --am-elev-4:
+    0 4px 8px rgba(15, 23, 42, 0.05), 0 16px 32px rgba(30, 41, 80, 0.12),
+    0 32px 64px rgba(30, 41, 80, 0.08);
+
+  /* Radii scale: chips/ports, rows, cards, islands/panels, large sheets, pills. */
+  --am-r-xs: 4px;
+  --am-r-sm: 6px;
+  --am-r-md: 10px;
+  --am-r-lg: 14px;
+  --am-r-xl: 18px;
+  --am-r-pill: 999px;
+
+  /* Glass: only for a handful of floating chrome (zoom bar, minimap, hover cards, banners), never per card. */
+  --am-glass-bg: rgba(255, 255, 255, 0.78);
+  --am-glass-border: rgba(255, 255, 255, 0.65);
+  --am-glass-blur: blur(14px) saturate(1.4);
+
+  /* Motion: ease-out for settles, spring (slight overshoot) for pop-ins; three durations. */
+  --am-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --am-ease-spring: cubic-bezier(0.34, 1.4, 0.64, 1);
+  --am-dur-1: 120ms;
+  --am-dur-2: 200ms;
+  --am-dur-3: 320ms;
+
+  /* Feather: soft blur radii for zoomed-out content and fog edges. */
+  --am-feather-sm: 2px;
+  --am-feather-md: 6px;
+  --am-feather-lg: 16px;
+
+  /* Gradients: canvas backdrop, cool blue/lavender fog masses, Pro call to action. */
+  --am-grad-canvas: radial-gradient(120% 90% at 20% 0%, #f8faff 0%, #f3f5f9 55%, #eef1f8 100%);
+  --am-grad-fog-a: rgba(120, 156, 240, 0.34);
+  --am-grad-fog-b: rgba(160, 140, 235, 0.28);
+  --am-grad-fog-c: rgba(190, 215, 250, 0.3);
+  --am-grad-pro: linear-gradient(135deg, #7c5ae6 0%, #6741d9 55%, #4f5fe0 100%);
+
+  /* Focus: soft double ring (accent core plus halo) for keyboard focus. */
+  --am-focus-ring: 0 0 0 2px #ffffff, 0 0 0 4px #2f6df0, 0 0 0 7px rgba(47, 109, 240, 0.18);
 }

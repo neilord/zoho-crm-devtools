@@ -562,10 +562,14 @@ describe('camera and store sync', () => {
     const cam = board.camera();
     const item = rule as NonNullable<typeof rule>;
     const island = board.model().islands.find((I) => I.id === item.islandId);
-    const worldX = (island?.x ?? 0) + item.x + item.w / 2;
-    const screenX = (worldX - cam.x) * cam.zoom;
-    // Centred in the area left of a 400px inspector: (1280 - 400) / 2 = 440.
-    expect(Math.abs(screenX - 440)).toBeLessThan(2);
+    // The island is framed in the area left of a 400px inspector (1280 - 400 = 880), and the
+    // selected node sits inside it.
+    const left = ((island?.x ?? 0) - cam.x) * cam.zoom;
+    const right = ((island?.x ?? 0) + (island?.w ?? 0) - cam.x) * cam.zoom;
+    const nodeRight = ((island?.x ?? 0) + item.x + item.w - cam.x) * cam.zoom;
+    expect(nodeRight).toBeLessThanOrEqual(880);
+    expect(left).toBeGreaterThanOrEqual(0);
+    expect(right <= 880 || cam.zoom <= 0.5 + 1e-6).toBe(true);
     board.dispose();
   });
 
@@ -648,8 +652,11 @@ describe('store patches and snapshots', () => {
     const item = board.model().byNode.get(rule?.id ?? '')?.[0];
     const island = board.model().islands.find((I) => I.id === item?.islandId);
     const cam = board.camera();
-    const screenX = ((island?.x ?? 0) + (item?.x ?? 0) + (item?.w ?? 0) / 2 - cam.x) * cam.zoom;
-    expect(Math.abs(screenX - 440)).toBeLessThan(2);
+    const nodeRight = ((island?.x ?? 0) + (item?.x ?? 0) + (item?.w ?? 0) - cam.x) * cam.zoom;
+    const nodeLeft = ((island?.x ?? 0) + (item?.x ?? 0) - cam.x) * cam.zoom;
+    // Inside the area a 400px inspector leaves free (1280 - 400).
+    expect(nodeRight).toBeLessThanOrEqual(880);
+    expect(nodeLeft).toBeGreaterThanOrEqual(0);
     board.dispose();
   });
 });
