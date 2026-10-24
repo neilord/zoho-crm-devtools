@@ -204,6 +204,17 @@
     inset 0 0 0 1px rgba(255, 255, 255, 0.08);
 }
 
+.am-chip-beta {
+  padding: 1px 6px;
+  border-radius: var(--am-r-pill);
+  box-shadow: inset 0 0 0 1px var(--am-hairline);
+  color: var(--am-lane-label);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
 .am-chip-preview {
   padding: 2px 8px;
   border-radius: var(--am-r-pill);

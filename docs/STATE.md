@@ -3,7 +3,7 @@
 The single living state document for this repository. It is a snapshot, not a changelog; completed
 history lives in git and durable reasoning lives in ADRs.
 
-_Last updated: 2026-10-24 — production worker fix landed on `main`: every production build before it shipped a dead service worker; the pending 2.4.0 ZIP must not be uploaded._
+_Last updated: 2026-10-25 — Automation Map labelled Beta ahead of release. Earlier: the production worker fix landed on `main` (every production build before it shipped a dead service worker), so the pending 2.4.0 ZIP must not be uploaded._
 
 ## Current status
 
@@ -44,7 +44,7 @@ Listing copy and paste-ready dashboard/privacy/reviewer/What's new fields are in
 | Paid tier and Export functions | release ready (2.4.0) | Optional account via normal-tab OAuth/PKCE, entitlement with Free fallback, Paid-entitlement-gated Export (JSON/CSV/Markdown) beside Search All Functions, upgrade modal, popup account card, one-time notice. Live-checked in an authenticated org. |
 | Popup redesign | release ready | Landed on `main`: compact account sheet, Plus/Pro/Max checkout columns from the contract (`billing:openCheckout {plan}`, validated against paid keys → `/app/billing?checkout=<plan>`), single Manage billing (`/app/billing`), signed-out Start free trial + Log in, paywall link renamed "Log in". Trial buttons (popup and paywall) send `billing:signUp`, which adds `screen_hint=signup` so the account site opens /signup; Log in keeps /login (cloud PR #16, deployed and smoke-checked 2026-10-24). The once-only notice now leads with Export functions and Search All Workflows, keeping the account/data disclosure as a fine-print line. 503 tests and `npm run verify` pass; stubbed-`chrome` screenshots of every state. Owner reviewed the reloaded dev popup on 2026-10-23. Not clicked live: Manage billing, plan-column checkout (incl. plan change for an existing subscriber), sign-in-then-checkout. Signed-out + once-only notice is ~760px, so Chrome scrolls once. The sign-up hint was not clicked through in a real extension session. |
 | Search All Workflows | release ready | Landed on `main` for any paid plan (ADR 0024); 493 tests and the Chromium harness (`npm run test:e2e:workflows`) pass. Authenticated US-org live acceptance passed on 2026-10-21: 327 rules, ~50 s cold index, cached search usable in ~3 s on reopen, 6 function-source gaps (1 unavailable, 5 name-only). Not verified live: free-user upgrade modal (jsdom only), other DCs, 1024/1280 widths, delete/score/Cliq types. Known nit: after Esc, a scope-chip click then immediate typing can miss search focus. Unreleased; upgrade-modal copy needs owner approval. |
-| Automation Map | landed on `main` (`b270898`), not released | Integrated Pro/Max map and bounded fog teaser; acceptance and remaining owner steps below. |
+| Automation Map | landed on `main` (`b270898`), not released; labelled **Beta** | Integrated Pro/Max map and bounded fog teaser; acceptance and remaining owner steps below. A muted "Beta" pill sits beside the overlay title (aria-hidden, so the dialog name stays "Automation Map") and inside the Workflow Rules toolbar button (hidden below 1100px with the label). The Setup entry keeps only Zoho's "New" marker. Verified by `npm run verify` and the Chromium harness; not checked live in Zoho. |
 | Agent context | done | Closed docs taxonomy, ADR log, living state, and guardrails are installed. |
 | Rare Zoho surfaces | in-progress | Editor mount/settings selectors and less common overlays still need observation as they appear. |
 

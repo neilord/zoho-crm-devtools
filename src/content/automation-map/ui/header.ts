@@ -182,6 +182,8 @@ export function createHeader(env: RegionEnv): Header {
     el('h2', { className: 'am-brand', attrs: { id: 'am-title' } }, [
       el('span', { className: 'logo' }, [mapIcon('map', 15)]),
       text('Automation Map'),
+      // Hidden from the accessible name so the dialog stays labelled "Automation Map".
+      el('span', { className: 'am-chip-beta', text: 'Beta', attrs: { 'aria-hidden': 'true' } }),
     ]),
     preview,
     filtersButton,

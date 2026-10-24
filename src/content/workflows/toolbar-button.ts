@@ -25,6 +25,7 @@ const BUTTON_CSS =
     `:is(#${WORKFLOW_SEARCH_BUTTON_ID},#${AUTOMATION_MAP_BUTTON_ID})`,
   ) +
   `
+#${AUTOMATION_MAP_BUTTON_ID} .zcdt-beta{padding:2px 5px;border-radius:999px;box-shadow:inset 0 0 0 1px #c9cfdc;color:#5f6b80;font-size:10px;font-weight:600;letter-spacing:.04em;text-transform:uppercase}
 @media(max-width:1100px){#${AUTOMATION_MAP_BUTTON_ID}{width:34px;padding:0;justify-content:center}#${AUTOMATION_MAP_BUTTON_ID} span{display:none}}
 `;
 
@@ -95,10 +96,13 @@ export function injectAutomationMapButton(onOpen: () => void): void {
     button.id = AUTOMATION_MAP_BUTTON_ID;
     button.type = 'button';
     button.title = 'See what runs in this CRM and what can change each field';
-    button.setAttribute('aria-label', 'Automation Map');
+    button.setAttribute('aria-label', 'Automation Map (Beta)');
     const label = document.createElement('span');
     label.textContent = 'Automation Map';
-    button.append(mapIcon(), label);
+    const beta = document.createElement('span');
+    beta.className = 'zcdt-beta';
+    beta.textContent = 'Beta';
+    button.append(mapIcon(), label, beta);
     button.addEventListener('click', (event) => {
       event.preventDefault();
       onOpen();

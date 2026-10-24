@@ -189,8 +189,8 @@ describe('Automation Map entry lifecycle', () => {
     await flush();
     const button = document.getElementById(WORKFLOW_SEARCH_BUTTON_ID)
       ?.nextElementSibling as HTMLButtonElement;
-    expect(button.textContent).toBe('Automation Map');
-    expect(button.getAttribute('aria-label')).toBe('Automation Map');
+    expect(button.textContent).toBe('Automation MapBeta');
+    expect(button.getAttribute('aria-label')).toBe('Automation Map (Beta)');
     button.click();
     await flush();
     expect(s.mountOverlay.mock.calls[0][0].initialState.view).toBe('board');
