@@ -7,6 +7,13 @@ _Last updated: 2026-10-24 — production worker fix landed on `main`: every prod
 
 ## Current status
 
+Owner-requested complimentary Pro access was applied in the private production backend on
+2026-10-24 using the existing no-card local-trial mechanism through 2099-12-31. The production
+resolver confirmed `pro` and `entitled: true`; no Stripe customer/subscription or charge was
+created. Account identifiers and the pre-change rollback record remain outside this public repo.
+The account UI can still describe this grant as a trial; extension entitlement caching lasts up
+to five minutes. No application code or deployment changed (status note only).
+
 Version 2.4.0 (optional account, paid plans, Export functions) is on `main` and packaged with
 `npm run zip`. Production manifest: `storage` only, no host permissions, a module service worker,
 Chrome 116 minimum. Verification: 274 tests, TypeScript, Biome, production build. 2.3.0 was
