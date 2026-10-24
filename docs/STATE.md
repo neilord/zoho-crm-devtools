@@ -3,7 +3,7 @@
 The single living state document for this repository. It is a snapshot, not a changelog; completed
 history lives in git and durable reasoning lives in ADRs.
 
-_Last updated: 2026-10-24 — production worker fix on `claude/production-build-connection-4b7ffb`: every production build before it shipped a dead service worker; the pending 2.4.0 ZIP must not be uploaded._
+_Last updated: 2026-10-24 — production worker fix landed on `main`: every production build before it shipped a dead service worker; the pending 2.4.0 ZIP must not be uploaded._
 
 ## Current status
 
@@ -43,8 +43,7 @@ Listing copy and paste-ready dashboard/privacy/reviewer/What's new fields are in
 
 ## In flight
 
-- **Production service-worker fix** — on branch `claude/production-build-connection-4b7ffb`, not
-  landed. Every production build since the worker was added had `service-worker-loader.js` import
+- **Production service-worker fix** — landed on `main` (`cdb927f`). Every production build since the worker was added had `service-worker-loader.js` import
   the content-script chunk: CRXJS named both `src/background/index.ts` and `src/content/index.ts`
   chunks `index.ts-*` and the loader picked the wrong one. The worker never answered, so the
   popup account card and the Automation Map stayed on "Checking your plan…". Dev builds were
