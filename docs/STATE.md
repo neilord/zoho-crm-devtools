@@ -56,7 +56,7 @@ Listing copy and paste-ready dashboard/privacy/reviewer/What's new fields are in
   chunks `index.ts-*` and the loader picked the wrong one. The worker never answered, so the
   popup account card and the Automation Map stayed on "Checking your plan…". Dev builds were
   unaffected (their worker entry has another name), which is why live acceptance missed it. The
-  repo-root `zoho-crm-devtools.zip` (2.4.0) has the defect — **do not upload it**. Fix: worker
+  repo-root `zoho-crm-devtools.zip` was rebuilt from `b03c0a2` on 2026-10-25 (loader imports `worker.ts-*`; includes the What's new card); the earlier defective 2.4.0 ZIP is gone. Fix: worker
   entry renamed to `src/background/worker.ts`, a build guard fails when a loader imports the wrong
   chunk (proved by reintroducing the collision), and `npm run build:local` builds production code
   with the pinned unpacked key into `dist-local`. Verified: `npm run verify` (1,242 tests); headless
