@@ -1,7 +1,13 @@
 # Changelog
 
-## 2.4.0 - 2026-10-20
+## 2.4.0 - 2026-10-25
 
+- Added Search All Workflows on Setup › Workflow Rules: search criteria, actions, field updates
+  and linked functions across every rule. Included in every paid plan.
+- Added Automation Map (Beta): see how workflow rules, field updates and functions connect on one
+  zoomable map. Included in Pro and Max.
+- Added a one-time "What's new" card introducing these tools. It stays until you click Got it,
+  close it, or open one of its links.
 - Added optional account sign-in in a browser tab. All existing features stay free forever,
   with no account required.
 - Added Paid Export functions beside Search All Functions: download your org's functions locally

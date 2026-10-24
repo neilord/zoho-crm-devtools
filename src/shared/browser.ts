@@ -196,3 +196,17 @@ export async function automationMapCacheMessage(
   if (!reply?.ok) throw new Error('Automation Map cache unavailable');
   return unpackAutomationMapCache(reply.value);
 }
+
+/** Calls `listener` with the new value whenever `key` changes in sync storage; returns an unsubscribe. */
+export function onSyncStorageKeyChanged(
+  key: string,
+  listener: (newValue: unknown) => void,
+): () => void {
+  const handler = (changes: Record<string, chrome.storage.StorageChange>, areaName: string) => {
+    if (areaName === 'sync' && key in changes) {
+      listener(changes[key].newValue);
+    }
+  };
+  getChromeApi().storage.onChanged.addListener(handler);
+  return () => getChromeApi().storage.onChanged.removeListener(handler);
+}

@@ -15,6 +15,8 @@ renumbers.
 
 ## Log
 
+- [`0034-whats-new-announcement-card.md`](0034-whats-new-announcement-card.md) — one-time "What's new" corner card that shows until acknowledged, one corner card at a time.
+
 - [`0032-automation-map-settled-freshness-and-counts.md`](0032-automation-map-settled-freshness-and-counts.md) — settled freshness despite dependency failures, selectable writer entities and honest inventory/gap counts.
 - [`0033-automation-map-zoom-tiers-and-render-budget.md`](0033-automation-map-zoom-tiers-and-render-budget.md) — sparse zoom tier and tonal washes, fog size bounds, per-frame render budget, search and selection framing.
 

@@ -3,7 +3,7 @@
 The single living state document for this repository. It is a snapshot, not a changelog; completed
 history lives in git and durable reasoning lives in ADRs.
 
-_Last updated: 2026-10-25 — Automation Map labelled Beta ahead of release. Earlier: the production worker fix landed on `main` (every production build before it shipped a dead service worker), so the pending 2.4.0 ZIP must not be uploaded._
+_Last updated: 2026-10-25 — What's new announcement card (variant B) landed on `main` (ADR 0034); 2.4.0 rebuilt for release. Earlier: Automation Map labelled Beta; the production worker fix landed on `main`._
 
 ## Current status
 
@@ -38,6 +38,7 @@ Listing copy and paste-ready dashboard/privacy/reviewer/What's new fields are in
 |---|---|---|
 | Editor enhancements | done | Themes, indent guides, and syntax highlighting are shipped. |
 | Cross-function search | done | Search and native-editor handoff shipped in 2.1.0. |
+| What's new card | landed on `main`, not live-checked | Corner card announcing Search All Workflows, Automation Map (Beta) and Export functions, with an interactive hero that previews each tool on row hover/focus/tap. Shows on every CRM org page load until Got it, close or any link click; sync-stored under `whatsNewWorkflowTools2026`, and other tabs drop it on acknowledgement. The AI Assistant promo waits while it is pending (ADR 0034). Verified by `npm run verify` (1,261 tests); **not checked live in Zoho** (render, bottom-bar clearance, link navigation, map deep link from another page). |
 | AI Assistant promo card | release ready | One-time corner card on any CRM page, max two impressions, 3-day snooze once, sync-stored (ADR 0008). Uses the assistant's inlined icon and a DOM-built mini side-panel illustration (no image assets). Live-checked: render, bottom-bar clearance, snooze persistence, Install opens the tagged store URL and ends the card. Shipping in 2.3.0. |
 | New Functions toolbar | release ready | Search All Functions sits beside the new native Search field. Legacy placement is unchanged (ADR 0007). Version 2.2.1 is verified and packaged; Chrome Web Store publication is pending. Live checks covered both versions of an authenticated EU org, version switches, reloads, dashboard opening, and a 1280px viewport. |
 | Dashboard preview highlighting | done | Own Deluge tokenizer highlights the `fs-code` preview using Zoho's native light palette (ADR 0005). Shipping in 2.2.0. Theme-following deferred to a later release (needs the observed editor theme persisted first). |

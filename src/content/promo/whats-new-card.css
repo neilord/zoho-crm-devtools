@@ -1,0 +1,455 @@
+/*
+ * Styles for the "What's new" announcement card. Applied inside a shadow root,
+ * so the selectors never touch Zoho's page. Tokens match the AI Assistant promo
+ * card so both corner cards read as one family.
+ */
+
+:host {
+  all: initial;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.wn-card {
+  --wn-bg: #ffffff;
+  --wn-border: #e2e6ee;
+  --wn-hair: #d5dbe6;
+  --wn-text: #1d2638;
+  --wn-body: #3d4657;
+  --wn-muted: #6b7488;
+  --wn-accent: #2f6df0;
+  --wn-accent-hover: #2458c9;
+  --wn-surface: #f7f9fc;
+  --wn-hero-bg: #e8f3ef;
+  --wn-hero-accent: #0f6e56;
+  --wn-hero-accent-bg: #d5ece3;
+  --wn-font: "Segoe UI", system-ui, -apple-system, sans-serif;
+
+  position: fixed;
+  right: 20px;
+  /* Clears Zoho's bottom utility bar (My Pins, Chats, Help) instead of covering it. */
+  bottom: 56px;
+  /* Below the search overlay (2147483000) so the overlay always wins. */
+  z-index: 2147482000;
+  width: 344px;
+  max-width: calc(100vw - 40px);
+  overflow: hidden;
+  background: var(--wn-bg);
+  border: 1px solid var(--wn-border);
+  border-radius: 10px;
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.18);
+  color: var(--wn-text);
+  font-family: var(--wn-font);
+  font-size: 13px;
+  line-height: 1.5;
+  text-align: left;
+  animation: wn-slide-in 240ms ease-out;
+}
+
+@keyframes wn-slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.wn-card a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.wn-card h2,
+.wn-card p,
+.wn-card ul {
+  margin: 0;
+  padding: 0;
+}
+
+.wn-card ul {
+  list-style: none;
+}
+
+.wn-card :focus-visible {
+  outline: 2px solid var(--wn-accent);
+  outline-offset: 2px;
+}
+
+.wn-ic {
+  flex: 0 0 auto;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.wn-close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--wn-muted);
+  cursor: pointer;
+}
+
+.wn-close:hover,
+.wn-close:focus-visible {
+  background: var(--wn-bg);
+  color: var(--wn-text);
+}
+
+/* Hero: three stacked previews, one visible at a time. */
+.wn-hero {
+  position: relative;
+  height: 128px;
+  padding: 14px 16px 0;
+  overflow: hidden;
+  background: var(--wn-hero-bg);
+}
+
+.wn-layer {
+  position: absolute;
+  top: 14px;
+  right: 16px;
+  bottom: 0;
+  left: 16px;
+  opacity: 0;
+  transform: translateY(6px);
+  transition:
+    opacity 200ms ease,
+    transform 200ms ease;
+}
+
+.wn-card[data-active="0"] .wn-layer-0,
+.wn-card[data-active="1"] .wn-layer-1,
+.wn-card[data-active="2"] .wn-layer-2 {
+  opacity: 1;
+  transform: none;
+}
+
+.wn-panel {
+  height: 100%;
+  padding: 10px 10px 12px;
+  border: 1px solid var(--wn-border);
+  border-bottom: 0;
+  border-radius: 8px 8px 0 0;
+  background: var(--wn-bg);
+}
+
+.wn-search {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 26px;
+  padding: 0 8px;
+  border: 1px solid var(--wn-border);
+  border-radius: 6px;
+  background: var(--wn-surface);
+  color: var(--wn-text);
+  font:
+    11.5px / 1 ui-monospace,
+    "SF Mono",
+    Menlo,
+    Consolas,
+    monospace;
+  white-space: nowrap;
+}
+
+.wn-search .wn-ic {
+  color: var(--wn-muted);
+}
+
+.wn-hit {
+  padding: 0 1px;
+  border-radius: 2px;
+  background: var(--wn-hero-accent-bg);
+  color: var(--wn-hero-accent);
+}
+
+.wn-res {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 7px;
+  color: var(--wn-body);
+  font-size: 11.5px;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.wn-res-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.wn-dot {
+  flex: 0 0 auto;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+.wn-dot-accent {
+  background: var(--wn-accent);
+}
+
+.wn-dot-green {
+  background: var(--wn-hero-accent);
+}
+
+.wn-dot-neutral {
+  background: #98a2b6;
+}
+
+.wn-tag {
+  padding: 1px 6px;
+  border-radius: 999px;
+  box-shadow: inset 0 0 0 1px var(--wn-hair);
+  color: var(--wn-muted);
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.wn-tag-green {
+  background: var(--wn-hero-accent-bg);
+  box-shadow: none;
+  color: var(--wn-hero-accent);
+}
+
+.wn-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.wn-svg text {
+  font-family: "Segoe UI", system-ui, sans-serif;
+  font-size: 9.5px;
+  font-weight: 600;
+}
+
+.wn-svg text.wn-mono {
+  font-family: ui-monospace, Menlo, Consolas, monospace;
+  font-size: 8.5px;
+  font-weight: 700;
+}
+
+/* Content */
+.wn-content {
+  padding: 14px 16px;
+}
+
+.wn-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.wn-logo {
+  flex: 0 0 auto;
+}
+
+.wn-eyebrow {
+  flex: 1;
+  min-width: 0;
+  padding-right: 30px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--wn-body);
+}
+
+.wn-card .wn-title {
+  margin-bottom: 8px;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.wn-card .wn-list {
+  margin: 0 -8px 10px;
+}
+
+.wn-row {
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+  padding: 8px;
+  border-radius: 8px;
+  cursor: default;
+  transition: background-color 150ms ease;
+}
+
+.wn-tile {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--wn-border);
+  border-radius: 8px;
+  background: var(--wn-surface);
+  color: var(--wn-accent);
+  transition:
+    background-color 150ms ease,
+    color 150ms ease,
+    border-color 150ms ease;
+}
+
+.wn-card[data-active="0"] .wn-row[data-i="0"],
+.wn-card[data-active="1"] .wn-row[data-i="1"],
+.wn-card[data-active="2"] .wn-row[data-i="2"] {
+  background: var(--wn-surface);
+}
+
+.wn-card[data-active="0"] .wn-row[data-i="0"] .wn-tile,
+.wn-card[data-active="1"] .wn-row[data-i="1"] .wn-tile,
+.wn-card[data-active="2"] .wn-row[data-i="2"] .wn-tile {
+  border-color: var(--wn-accent);
+  background: var(--wn-accent);
+  color: #ffffff;
+}
+
+.wn-card[data-active="0"] .wn-row[data-i="0"] .wn-arrow,
+.wn-card[data-active="1"] .wn-row[data-i="1"] .wn-arrow,
+.wn-card[data-active="2"] .wn-row[data-i="2"] .wn-arrow {
+  opacity: 1;
+  transform: none;
+}
+
+.wn-row-title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 6px;
+  min-height: 18px;
+}
+
+.wn-row-desc {
+  margin-top: 2px;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--wn-body);
+}
+
+.wn-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border-radius: 4px;
+  color: var(--wn-text);
+  font-weight: 700;
+  line-height: 1.3;
+  cursor: pointer;
+}
+
+.wn-link:hover,
+.wn-link:focus-visible {
+  color: var(--wn-accent-hover);
+}
+
+.wn-arrow {
+  opacity: 0;
+  transform: translateX(-3px);
+  transition:
+    opacity 150ms ease,
+    transform 150ms ease;
+}
+
+.wn-link:hover .wn-arrow,
+.wn-link:focus-visible .wn-arrow {
+  opacity: 1;
+  transform: none;
+}
+
+.wn-beta {
+  padding: 1px 6px;
+  border-radius: 999px;
+  box-shadow: inset 0 0 0 1px var(--wn-hair);
+  color: var(--wn-muted);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  line-height: 1.5;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.wn-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.wn-primary,
+.wn-ghost {
+  display: inline-flex;
+  align-items: center;
+  height: 32px;
+  padding: 0 14px;
+  border-radius: 8px;
+  font: 600 13px / 1 var(--wn-font);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.wn-card .wn-primary {
+  border: 1px solid var(--wn-accent);
+  background: var(--wn-accent);
+  color: #ffffff;
+}
+
+.wn-card .wn-primary:hover,
+.wn-card .wn-primary:focus-visible {
+  border-color: var(--wn-accent-hover);
+  background: var(--wn-accent-hover);
+}
+
+.wn-ghost {
+  padding: 0 12px;
+  border: 1px solid var(--wn-border);
+  background: var(--wn-bg);
+  color: var(--wn-muted);
+  font-weight: 500;
+}
+
+.wn-ghost:hover,
+.wn-ghost:focus-visible {
+  border-color: var(--wn-accent);
+  color: var(--wn-accent);
+}
+
+.wn-card .wn-fine {
+  margin-top: 10px;
+  font-size: 11.5px;
+  line-height: 1.4;
+  color: var(--wn-muted);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wn-card,
+  .wn-layer,
+  .wn-row,
+  .wn-tile,
+  .wn-arrow {
+    animation: none;
+    transition: none;
+  }
+}
