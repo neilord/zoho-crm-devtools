@@ -457,18 +457,6 @@ function mount(
         el('b', { text: 'Partial index. ' }),
         text(`Still loading ${need.join(', ')}. Results may grow as indexing finishes.`),
       ]);
-    } else if (constrained && coverage.status.kind === 'gaps' && coverage.gaps > 0) {
-      sig = `gaps:${coverage.gaps}`;
-      content = bannerNodes([
-        el('b', { text: `${coverage.gaps} gap${coverage.gaps === 1 ? '' : 's'} in the index. ` }),
-        text(
-          'Matches inside items that failed to load, or whose function source is unavailable, cannot be found. ',
-        ),
-        button('wf-btn link', 'Details', () => {
-          state.popOpen = true;
-          renderIndex(coverage);
-        }),
-      ]);
     } else if (constrained && coverage.status.kind === 'failed') {
       sig = 'failed';
       content = bannerNodes([
