@@ -572,6 +572,17 @@ describe('coverage', () => {
     expect(index.retried).toBe(1);
   });
 
+  it('keeps gaps in the pill and adds no banner above search results', async () => {
+    await openWith(
+      new FakeIndex(
+        snapshot(sampleRules(), { isComplete: false, failures: [failure('f1', vi.fn())] }),
+      ),
+    );
+    type('x');
+    expect(q('.wf-pill').textContent).toContain('gap');
+    expect(root().querySelector('.wf-partial')).toBeNull();
+  });
+
   it('offers a retry on a failed action card', async () => {
     const retry = vi.fn(async () => {});
     const rules = sampleRules();
