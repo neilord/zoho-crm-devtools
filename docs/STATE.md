@@ -3,7 +3,7 @@
 The single living state document for this repository. It is a snapshot, not a changelog; completed
 history lives in git and durable reasoning lives in ADRs.
 
-_Last updated: 2026-10-25 — What's new announcement card (variant B) landed on `main` (ADR 0034); 2.4.0 rebuilt for release. Earlier: Automation Map labelled Beta; the production worker fix landed on `main`._
+_Last updated: 2026-10-25 — Final release checks in `chore/release-2-4-final-checks`: production OAuth passed in Andrew; fixed announcement/map stacking and privacy disclosures. Authenticated Zoho acceptance and store submission remain pending._
 
 ## Current status
 
@@ -16,7 +16,7 @@ to five minutes. No application code or deployment changed (status note only).
 
 Version 2.4.0 (optional account, paid plans, Export functions) is on `main` and packaged with
 `npm run zip`. Production manifest: `storage` only, no host permissions, a module service worker,
-Chrome 116 minimum. Verification: 274 tests, TypeScript, Biome, production build. 2.3.0 was
+Chrome 116 minimum. Verification: 1,261 tests, TypeScript, Biome, production build. 2.3.0 was
 submitted to the Chrome Web Store before this release. The backend and website
 (https://devtools.zsetup.com, https://api.devtools.zsetup.com) are live in the private
 `zsetup/zoho-crm-devtools-cloud` repository, with Stripe in **live** mode.
@@ -50,6 +50,40 @@ Listing copy and paste-ready dashboard/privacy/reviewer/What's new fields are in
 | Rare Zoho surfaces | in-progress | Editor mount/settings selectors and less common overlays still need observation as they appear. |
 
 ## In flight
+
+- **Final 2.4.0 acceptance — 2026-10-25:** resumed Claude Code's "Release announcement
+  notification design" session (`c06a20c0-0016-4b90-9413-9b4173444a80`). It explicitly keeps
+  the unsubmitted release at **2.4.0**, including the map and announcement; this supersedes
+  the older separate-map-release note below.
+  - Loaded production `dist-local` in the **Andrew** Chrome profile through native computer use,
+    replacing its unpacked dev-build path. Verified Pro account rendering, Sign out → Free,
+    fresh OAuth login via the website session → Pro, callback tab closure, and Manage billing
+    navigation. No purchase or subscription was created. The complimentary grant still displays
+    as a long Pro trial (known grant representation).
+  - `npm run verify` passes (1,261 tests). Workflow packaged regression passes. Map checks pass
+    across the full run's eight successful cases plus a focused corrected teaser rerun: full and
+    teaser, browser/worker restart, history, persistent-503 warm cache/Retry/Refresh and 1440/1024
+    large-org visual states. The initial sandbox Chromium launch aborted; tests passed outside
+    the sandbox. The teaser check now flies to the revealed module before expecting cards in
+    the zoomed-out overview.
+  - Found/fixed a real interaction bug: a delayed announcement shared the map's z-index and
+    intercepted Refresh. Map now sits above corner cards and below the upgrade modal; the
+    packaged regression requires the announcement to be visible while clicking Refresh.
+  - Production Chromium with synthetic CRM fixtures passed announcement hover/focus previews,
+    1280×657 and 375×700 layout (card clears the 56px bottom inset), map-link navigation from
+    Setup, cross-tab acknowledgement and reload persistence. Screenshots were visually inspected
+    outside the repo. This does **not** replace authenticated Zoho acceptance.
+  - `PRIVACY.md` now covers workflow/map reads and local caches plus synced announcement state.
+    Matching website disclosure fix: private cloud PR #19 (local full gate and CI verification
+    passed; deployment pending). No new permissions or data destinations.
+  - **Remaining:** Andrew's Zoho CRM session is signed out; the Zoho Accounts tab is left open
+    for owner login. Then reload the updated `dist-local` extension and check the card against
+    real Zoho chrome, links, export, workflow search, full map, and editor regression. Chrome Web
+    Store dashboard opened in the requested DevTools profile, but native accessibility returned
+    no controls and screenshots were unavailable; nothing was uploaded or submitted. Published
+    update-permission testing and a real live payment/webhook/entitlement round trip remain
+    unverified. The existing release ZIP still comes from main before the stacking fix; rebuild it
+    after acceptance/landing. Do not land the visual fix or submit the store release before required acceptance.
 
 - **Production service-worker fix** — landed on `main` (`cdb927f`). Every production build since the worker was added had `service-worker-loader.js` import
   the content-script chunk: CRXJS named both `src/background/index.ts` and `src/content/index.ts`
@@ -102,9 +136,8 @@ Listing copy and paste-ready dashboard/privacy/reviewer/What's new fields are in
   field-metadata reads remain explicit, retryable coverage gaps (paths match research; no
   client-side fix evidenced); 271 gaps live are mostly functions with partial/limited analysis.
   Not verified: other DCs, legacy Workflow UIs, very large orgs beyond this one.
-  Remaining: do not re-zip the pending 2.4.0 submission from `main`; ship the map in its own
-  release (e.g. 2.5.0) with version bump, CHANGELOG and a PRIVACY.md line for the map's local
-  IndexedDB cache; push/deploy cloud `feat/plan-features` for authoritative
+  Remaining: the owner subsequently chose to include the map in the still-unsubmitted 2.4.0
+  release (see final acceptance above); CHANGELOG already reflects it. Push/deploy cloud `feat/plan-features` for authoritative
   server feature lists (contract **0.2.0**); store release with matching version bump and
   CHANGELOG; owner approval of Pro-specific upgrade copy. Other DCs and legacy UIs, a real
   screen reader and trackpad remain unverified; client-script analysis is out of scope.
@@ -126,6 +159,20 @@ Listing copy and paste-ready dashboard/privacy/reviewer/What's new fields are in
   Do not land until the changed modal is checked in authenticated Zoho. No store submission
   or cloud repository changes performed.
 
+- **Release readiness check, 2026-10-25** (read-only, `e2bd1ba`):
+  - **Passed:**
+    - Live Stripe has three active DevTools products and prices ($23/$57/$143 monthly), plus once-coupons that match the $9/$35/$99 intro prices.
+    - The account has `charges_enabled` and `payouts_enabled`, and the live webhook is enabled at `api.devtools.zsetup.com` for the four handled events.
+    - API `/health` returns 200, and the pricing page lists all three paid features.
+    - The ZIP is 2.4.0, `storage` only, and its worker hash equals a fresh `build:local`.
+    - The production entitlement DTO has no `features` field, so the client falls back to the bundled 0.2.0 contract and Pro/Max get the map.
+  - **Not passed or not verified:**
+    - `npm run verify` failed twice in full runs on one test, the `workflow-search` 500-rule timing check (median 49/55 ms against a 40 ms bound). It passes alone, so it is a load-sensitive bound, not a product bug.
+    - There are **zero live DevTools subscriptions**, so no real purchase → webhook → entitlement has ever completed.
+    - Nothing in the production build has been live-tested in Zoho: sign-in, the What's new card, Automation Map full mode.
+    - PRIVACY.md and the website privacy page don't mention the workflow caches or the Automation Map IndexedDB cache, though the store copy does.
+    - The obsolete TEST webhook `we_1USYwvExZf6RntHfovTwGoJS` is still enabled.
+    - The Plus product carries stale metadata `plan: pro`. The API reads only `plan_key`.
 - **2.4.0 store submission** — upload the ZIP, set "Contains in-app purchases", the listing URLs,
   privacy-practice answers and reviewer instructions from
   [`store-listing/2.4.0-submission.md`](store-listing/2.4.0-submission.md), then submit. Before

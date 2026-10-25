@@ -146,6 +146,8 @@ for (const teaser of [false, true]) {
         await expect(page.locator(`${host} .am-fog-host`)).toContainText('1 flow');
         await scan();
         await shot(page, 'teaser-board');
+        // Fit-all uses Overview: fly to the revealed island before expecting individual cards.
+        await page.getByRole('button', { name: 'Orchard preview', exact: true }).click();
         await expect(page.locator(`${host} .amc-k-rule`)).toBeVisible();
         await scan();
         await shot(page, 'teaser-flow');
@@ -168,6 +170,7 @@ for (const teaser of [false, true]) {
         await page.getByRole('button', { name: 'Show on map' }).click();
         await expect(page.locator('#zcdt-workflow-search-overlay')).toHaveCount(0);
         await expect(page.locator(`${host} .am-insp.open`)).toHaveCount(0);
+        await page.getByRole('button', { name: 'Orchard preview', exact: true }).click();
         await expect(page.locator(`${host} .amc-k-rule`)).toBeVisible();
         await expect.poll(() => page.evaluate(() => location.hash)).not.toContain('rule:102');
         await scan();
@@ -662,6 +665,8 @@ test('warm open with persistent HTTP 503 failures performs zero Zoho requests', 
     );
     // Explicit refresh still revalidates unrelated dependencies.
     await expect(page.locator(`${host} .wf-pop`)).toContainText('Updated');
+    // An unacknowledged announcement may arrive after the map; it must not intercept Refresh.
+    await expect(page.locator('#zcdt-whats-new .wn-card')).toBeVisible();
     const beforeRefresh = paths.length;
     await page.locator(`${host} [data-fk="refresh-now"]`).click();
     await expect
