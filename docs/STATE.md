@@ -74,15 +74,18 @@ Listing copy and paste-ready dashboard/privacy/reviewer/What's new fields are in
     Setup, cross-tab acknowledgement and reload persistence. Screenshots were visually inspected
     outside the repo. This does **not** replace authenticated Zoho acceptance.
   - `PRIVACY.md` now covers workflow/map reads and local caches plus synced announcement state.
-    Matching website disclosure fix: private cloud PR #19 (local full gate and CI verification
-    passed; deployment pending). No new permissions or data destinations.
+    Matching website disclosure fix: private cloud PR #19 merged as `65b1fb6`; production
+    workflow `40195756769` succeeded. Live privacy page contains the workflow/IndexedDB text
+    (HTTP 200); API readiness is HTTP 200. No new permissions or data destinations.
   - **Remaining:** Andrew's Zoho CRM session is signed out; the Zoho Accounts tab is left open
     for owner login. Then reload the updated `dist-local` extension and check the card against
     real Zoho chrome, links, export, workflow search, full map, and editor regression. Chrome Web
     Store dashboard opened in the requested DevTools profile, but native accessibility returned
     no controls and screenshots were unavailable; nothing was uploaded or submitted. Published
     update-permission testing and a real live payment/webhook/entitlement round trip remain
-    unverified. The existing release ZIP still comes from main before the stacking fix; rebuild it
+    unverified. Public branch push was blocked by automatic approval review because explicit
+    authorization for public source disclosure is required; owner approval is pending.
+    The existing release ZIP still comes from main before the stacking fix; rebuild it
     after acceptance/landing. Do not land the visual fix or submit the store release before required acceptance.
 
 - **Production service-worker fix** — landed on `main` (`cdb927f`). Every production build since the worker was added had `service-worker-loader.js` import
