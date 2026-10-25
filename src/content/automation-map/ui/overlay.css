@@ -129,9 +129,9 @@
 .am-overlay {
   position: fixed;
   inset: 0;
-  /* Below the upgrade modal (z-index 2147482500 in billing/upgrade-modal.css), so the modal that
-     lock affordances open is never hidden behind the map. */
-  z-index: 2147482000;
+  /* Above corner cards (2147482000), which can appear after this overlay opens and otherwise
+     intercept its controls; below the upgrade modal (2147482500) opened by lock affordances. */
+  z-index: 2147482200;
   display: flex;
   padding: 10px;
   background: radial-gradient(120% 100% at 50% 0%, rgba(30, 38, 64, 0.4), rgba(14, 19, 34, 0.56));
