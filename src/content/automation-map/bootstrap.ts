@@ -1,3 +1,4 @@
+import { automationMapComingSoon } from '../../features/automation-map-gate';
 import { loadSettings } from '../../settings/storage';
 import { billingMessage } from '../../shared/browser';
 import { isWorkflowOrigin } from '../../shared/workflow-cache-protocol';
@@ -14,6 +15,7 @@ import {
   type OpenAutomationMapOptions,
 } from './entry/request';
 import { reconcileSettingsMapEntry, removeSettingsMapEntries } from './entry/settings';
+import { showAutomationMapWaitlist } from './entry/waitlist';
 import type { MapPortStore } from './port';
 import type { MapDataPort, MapViewState, MountView } from './ui/context';
 
@@ -45,6 +47,9 @@ function loadedRuntime(): NonNullable<typeof runtime> {
 type EntryStore = MapPortStore & Pick<AutomationMapStore, 'start' | 'dispose'>;
 export interface AutomationMapEntryDependencies {
   isEnabled(): Promise<boolean>;
+  /** True while the map is gated behind the Coming soon waitlist (ADR 0035). */
+  comingSoon(): boolean;
+  showWaitlist(options: { onClose(): void }): { close(): void };
   context(): CrmContext | null;
   resolveUi(): Promise<AutomationMapUi>;
   createStore(deps: AutomationMapDependencies): EntryStore;
@@ -55,6 +60,8 @@ export interface AutomationMapEntryDependencies {
 }
 const defaults: AutomationMapEntryDependencies = {
   isEnabled: async () => (await loadSettings()).enabled,
+  comingSoon: automationMapComingSoon,
+  showWaitlist: (options) => showAutomationMapWaitlist(options),
   context: () => (isWorkflowOrigin(location.origin) ? resolveCrmContext() : null),
   resolveUi,
   createStore: (deps) => loadedRuntime().createStore(deps),
@@ -90,6 +97,12 @@ export function startAutomationMapEntryPoints(
     const current = deps.context();
     return current?.orgId === context.orgId && current.origin === context.origin;
   };
+  /** A reload (or the reconcile loop) must not reopen the popup from the link that opened it. */
+  const stripMapHash = () => {
+    if (!hasAutomationMapHash(location.hash)) return;
+    history.replaceState(history.state, '', location.pathname + location.search);
+    seenHash = undefined;
+  };
   const close = () => {
     generation++;
     active?.close();
@@ -103,6 +116,26 @@ export function startAutomationMapEntryPoints(
       if (!(await deps.isEnabled()) || disposed || mine !== generation) return;
       const context = deps.context();
       if (!context) return;
+      if (deps.comingSoon()) {
+        // Gated: show the waitlist and stop. The runtime is never imported and nothing reads Zoho.
+        enabled = true;
+        closeWorkflowSearchOverlay();
+        closeFunctionSearch();
+        closeUpgradeModals();
+        stripMapHash();
+        let done = false;
+        const handle = deps.showWaitlist({
+          onClose() {
+            if (done) return;
+            done = true;
+            stripMapHash();
+            if (active?.close === dismissWaitlist) active = undefined;
+          },
+        });
+        const dismissWaitlist = () => handle.close();
+        active = { context, close: dismissWaitlist };
+        return;
+      }
       const ui = await deps.resolveUi();
       const stillEnabled = await deps.isEnabled();
       if (disposed || mine !== generation || !sameContext(context) || !stillEnabled) return;

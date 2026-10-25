@@ -1,4 +1,5 @@
 import { contract } from '../../billing/config';
+import { automationMapComingSoon } from '../../features/automation-map-gate';
 import { closeIcon, el } from '../functions/dom';
 import type { CrmContext } from '../zoho/crm-context';
 import whatsNewCss from './whats-new-card.css?inline';
@@ -22,7 +23,8 @@ type CardContext = Pick<CrmContext, 'origin' | 'orgId'>;
 interface Feature {
   title: string;
   description: string;
-  beta?: boolean;
+  /** Row label; "Coming soon" replaces "Beta" while the map is gated (ADR 0035). */
+  badge?: 'beta' | 'soon';
   /** Path under the org's CRM URL. */
   path: string;
   icon: IconName;
@@ -40,7 +42,7 @@ const FEATURES: Feature[] = [
   {
     title: 'Automation Map',
     description: 'See how rules, field updates and functions connect on one zoomable map.',
-    beta: true,
+    badge: 'beta',
     path: 'settings/workflow-rules#zcdt-map=v1',
     icon: 'map',
   },
@@ -51,6 +53,17 @@ const FEATURES: Feature[] = [
     icon: 'export',
   },
 ];
+
+/** Resolved per render so the switch can be flipped without touching the table. */
+function featureCopy(feature: Feature): Feature {
+  if (feature.icon !== 'map' || !automationMapComingSoon()) return feature;
+  return {
+    ...feature,
+    badge: 'soon',
+    description:
+      'Coming soon to Pro: see how rules, field updates and functions connect on one map.',
+  };
+}
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
@@ -290,7 +303,7 @@ export function showWhatsNewCard(
     card.dataset.active = String(index);
   };
 
-  const rows = FEATURES.map((feature, index) => {
+  const rows = FEATURES.map(featureCopy).map((feature, index) => {
     const href = featureUrl(context, feature);
     const row = el('li', { className: 'wn-row', dataset: { i: String(index) } }, [
       el('span', { className: 'wn-tile' }, [featureIcon(feature.icon)]),
@@ -300,7 +313,10 @@ export function showWhatsNewCard(
             el('span', { text: feature.title }),
             arrowIcon() as unknown as Node,
           ]),
-          feature.beta ? el('span', { className: 'wn-beta', text: 'Beta' }) : null,
+          feature.badge === 'beta' ? el('span', { className: 'wn-beta', text: 'Beta' }) : null,
+          feature.badge === 'soon'
+            ? el('span', { className: 'wn-soon', text: 'Coming soon' })
+            : null,
         ]),
         el('p', { className: 'wn-row-desc', text: feature.description }),
       ]),

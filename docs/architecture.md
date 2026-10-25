@@ -313,6 +313,10 @@ failures and byte counts without source contents.
 
 ## 12. Automation Map
 
+> **Gated (ADR 0035):** while `AUTOMATION_MAP_COMING_SOON` (`src/features/automation-map-gate.ts`) is
+> true, `open()` shows the waitlist popup (`automation-map/entry/waitlist.ts`) before `resolveUi()`,
+> so the runtime below is never loaded. The description of the runtime applies when the switch is off.
+
 ### Runtime, graph and UI
 
 `automation-map/bootstrap.ts` registers entries from the isolated-world content script. On first

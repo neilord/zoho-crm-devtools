@@ -1,4 +1,11 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
+
+const gate = vi.hoisted(() => ({ on: true }));
+vi.mock('../src/features/automation-map-gate', () => ({
+  AUTOMATION_MAP_COMING_SOON: true,
+  automationMapComingSoon: () => gate.on,
+}));
+
 import { contract } from '../src/billing/config';
 import { showWhatsNewCard, WHATS_NEW_HOST_ID } from '../src/content/promo/whats-new-card';
 
@@ -45,13 +52,30 @@ describe('whats new card', () => {
     }
   });
 
-  it('marks only Automation Map as Beta and exposes the landmark and hidden hero', () => {
+  it('marks only Automation Map as Coming soon and exposes the landmark and hidden hero', () => {
     showWhatsNewCard(context, () => {});
     const rows = [...root().querySelectorAll('.wn-row')];
-    expect(rows.map((row) => row.querySelector('.wn-beta') !== null)).toEqual([false, true, false]);
+    expect(rows.map((row) => row.querySelector('.wn-soon')?.textContent ?? null)).toEqual([
+      null,
+      'Coming soon',
+      null,
+    ]);
+    expect(root().querySelector('.wn-beta')).toBeNull();
+    expect(rows[1].querySelector('.wn-row-desc')?.textContent).toMatch(/^Coming soon to Pro/);
     expect(query('.wn-card').getAttribute('role')).toBe('complementary');
     expect(query('.wn-card').getAttribute('aria-label')).toBe("What's new in Zoho CRM DevTools");
     expect(query('.wn-hero').getAttribute('aria-hidden')).toBe('true');
+  });
+
+  it('keeps the Beta label when the Coming soon switch is off', () => {
+    gate.on = false;
+    try {
+      showWhatsNewCard(context, () => {});
+      expect(root().querySelectorAll('.wn-beta')).toHaveLength(1);
+      expect(root().querySelector('.wn-soon')).toBeNull();
+    } finally {
+      gate.on = true;
+    }
   });
 
   it('takes the trial length from the product contract', () => {

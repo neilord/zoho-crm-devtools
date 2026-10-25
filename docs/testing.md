@@ -50,6 +50,10 @@ are collected. It takes approximately 15 seconds; no real org/account access is 
 
 ### Built-extension Automation Map integration
 
+The map is gated as Coming soon (ADR 0035); `npm run test:e2e:automation-map` builds with
+`VITE_AUTOMATION_MAP_COMING_SOON=off` (development builds only) so the overlay still opens.
+
+
 Run `npm run test:e2e:automation-map`. It builds two isolated development packages (full unlock
 and forced teaser, the latter under `dist-dev/teaser`) and loads each actual extension in
 Chromium. Synthetic Zoho fixtures cover every store endpoint, unquoted 19-digit catalogue IDs,

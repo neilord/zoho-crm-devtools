@@ -1,4 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+
+const gate = vi.hoisted(() => ({ on: true }));
+vi.mock('../src/features/automation-map-gate', () => ({
+  AUTOMATION_MAP_COMING_SOON: true,
+  automationMapComingSoon: () => gate.on,
+}));
+
 import {
   reconcileSettingsMapEntry,
   removeSettingsMapEntries,
@@ -89,7 +96,10 @@ describe('Settings Automation Map adapter', () => {
     expect(
       badge?.querySelector('crm-ui-loaders > .crmNewReleaseLoader > .crmNewReleaseLoader_3'),
     ).not.toBeNull();
-    expect(link?.textContent).toBe('Automation Map');
+    // Gated: a short "Soon" pill follows the sparkle and the link name says why.
+    expect(link?.textContent).toBe('Automation MapSoon');
+    expect(link?.getAttribute('aria-label')).toBe('Automation Map, coming soon');
+    expect(link?.querySelector('.zcdt-map-soon')?.textContent).toBe('Soon');
     // The label sits in Zoho's `.setup-menus-text` wrapper, which carries the dark label colour.
     expect(link?.querySelector(':scope > span.setup-menus-text')?.textContent).toBe(
       'Automation Map',
@@ -97,6 +107,31 @@ describe('Settings Automation Map adapter', () => {
     link?.click();
     expect(open).toHaveBeenCalledOnce();
     expect(document.querySelector('[data-zcdt-map-entry="home"]')).toBeNull();
+  });
+  it('shows "Coming soon" after the sparkle on Setup home and keeps it past the NEW cutoff', () => {
+    reconcileSettingsMapEntry(vi.fn());
+    const item = document.querySelector('[data-zcdt-map-entry="home"]');
+    const children = [...(item?.childNodes ?? [])].filter((n) => n.nodeType === 1);
+    expect(children.map((n) => (n as HTMLElement).className.split(' ')[0])).toEqual([
+      'setupMenulink',
+      'zcdt-map-new',
+      'zcdt-map-soon',
+    ]);
+    expect(item?.querySelector('.zcdt-map-soon')?.textContent).toBe('Coming soon');
+    expect(item?.querySelector('a')?.getAttribute('aria-label')).toBe(
+      'Automation Map, coming soon',
+    );
+  });
+  it('falls back to the plain entry when the switch is off', () => {
+    gate.on = false;
+    try {
+      reconcileSettingsMapEntry(vi.fn());
+      const item = document.querySelector('[data-zcdt-map-entry="home"]');
+      expect(item?.querySelector('.zcdt-map-soon')).toBeNull();
+      expect(item?.querySelector('a')?.hasAttribute('aria-label')).toBe(false);
+    } finally {
+      gate.on = true;
+    }
   });
   it('does not invent an anchor when Developer Hub or the Functions row is missing', () => {
     document.body.innerHTML = '<div class="crmSetupHomeGroupCards" aria-label="Automation"></div>';

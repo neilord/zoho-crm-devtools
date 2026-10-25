@@ -27,7 +27,7 @@
     "verify": "npm run check && npm run typecheck && npm run test && npm run build",
     "zip": "npm run build && rm -f zoho-crm-devtools.zip && cd dist && zip -r ../zoho-crm-devtools.zip .",
     "test:e2e:workflows": "VITE_WORKFLOW_SEARCH_UNLOCK=true npm run build:dev && playwright test --config playwright.workflows.config.ts",
-    "test:e2e:automation-map": "VITE_AUTOMATION_MAP_UNLOCK=true VITE_WORKFLOW_SEARCH_UNLOCK=true npm run build:dev && VITE_AUTOMATION_MAP_UNLOCK=true VITE_AUTOMATION_MAP_FORCE_TEASER=true VITE_WORKFLOW_SEARCH_UNLOCK=true vite build --mode development --outDir dist-dev/teaser && playwright test --config playwright.automation-map.config.ts"
+    "test:e2e:automation-map": "VITE_AUTOMATION_MAP_COMING_SOON=off VITE_AUTOMATION_MAP_UNLOCK=true VITE_WORKFLOW_SEARCH_UNLOCK=true npm run build:dev && VITE_AUTOMATION_MAP_COMING_SOON=off VITE_AUTOMATION_MAP_UNLOCK=true VITE_AUTOMATION_MAP_FORCE_TEASER=true VITE_WORKFLOW_SEARCH_UNLOCK=true vite build --mode development --outDir dist-dev/teaser && playwright test --config playwright.automation-map.config.ts"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.1",
