@@ -3,7 +3,7 @@
 The single living state document for this repository. It is a snapshot, not a changelog; completed
 history lives in git and durable reasoning lives in ADRs.
 
-_Last updated: 2026-10-25 — Final release checks in `chore/release-2-4-final-checks`: production OAuth passed in Andrew; fixed announcement/map stacking and privacy disclosures. Authenticated Zoho acceptance and store submission remain pending._
+_Last updated: 2026-10-25 — Production read-only acceptance passed in Andrew for the announcement, account, all exports, both searches and full Automation Map. Release-fix PR #2 is verified; store submission and the permission-update test remain pending._
 
 ## Current status
 
@@ -38,14 +38,14 @@ Listing copy and paste-ready dashboard/privacy/reviewer/What's new fields are in
 |---|---|---|
 | Editor enhancements | done | Themes, indent guides, and syntax highlighting are shipped. |
 | Cross-function search | done | Search and native-editor handoff shipped in 2.1.0. |
-| What's new card | landed on `main`, not live-checked | Corner card announcing Search All Workflows, Automation Map (Beta) and Export functions, with an interactive hero that previews each tool on row hover/focus/tap. Shows on every CRM org page load until Got it, close or any link click; sync-stored under `whatsNewWorkflowTools2026`, and other tabs drop it on acknowledgement. The AI Assistant promo waits while it is pending (ADR 0034). Verified by `npm run verify` (1,261 tests); **not checked live in Zoho** (render, bottom-bar clearance, link navigation, map deep link from another page). |
+| What's new card | live acceptance passed; unreleased | Corner card announcing Search All Workflows, Automation Map (Beta) and Export functions, with an interactive hero that previews each tool on row hover/focus/tap. Shows on every CRM org page load until Got it, close or any link click; sync-stored under `whatsNewWorkflowTools2026`, and other tabs drop it on acknowledgement. The AI Assistant promo waits while it is pending (ADR 0034). Verified by `npm run verify` (1,261 tests) and production live acceptance: render, bottom-bar clearance, map-link navigation from Functions, acknowledgement persistence and map layering. |
 | AI Assistant promo card | release ready | One-time corner card on any CRM page, max two impressions, 3-day snooze once, sync-stored (ADR 0008). Uses the assistant's inlined icon and a DOM-built mini side-panel illustration (no image assets). Live-checked: render, bottom-bar clearance, snooze persistence, Install opens the tagged store URL and ends the card. Shipping in 2.3.0. |
 | New Functions toolbar | release ready | Search All Functions sits beside the new native Search field. Legacy placement is unchanged (ADR 0007). Version 2.2.1 is verified and packaged; Chrome Web Store publication is pending. Live checks covered both versions of an authenticated EU org, version switches, reloads, dashboard opening, and a 1280px viewport. |
 | Dashboard preview highlighting | done | Own Deluge tokenizer highlights the `fs-code` preview using Zoho's native light palette (ADR 0005). Shipping in 2.2.0. Theme-following deferred to a later release (needs the observed editor theme persisted first). |
 | Paid tier and Export functions | release ready (2.4.0) | Optional account via normal-tab OAuth/PKCE, entitlement with Free fallback, Paid-entitlement-gated Export (JSON/CSV/Markdown) beside Search All Functions, upgrade modal, popup account card, one-time notice. Live-checked in an authenticated org. |
-| Popup redesign | release ready | Landed on `main`: compact account sheet, Plus/Pro/Max checkout columns from the contract (`billing:openCheckout {plan}`, validated against paid keys → `/app/billing?checkout=<plan>`), single Manage billing (`/app/billing`), signed-out Start free trial + Log in, paywall link renamed "Log in". Trial buttons (popup and paywall) send `billing:signUp`, which adds `screen_hint=signup` so the account site opens /signup; Log in keeps /login (cloud PR #16, deployed and smoke-checked 2026-10-24). The once-only notice now leads with Export functions and Search All Workflows, keeping the account/data disclosure as a fine-print line. 503 tests and `npm run verify` pass; stubbed-`chrome` screenshots of every state. Owner reviewed the reloaded dev popup on 2026-10-23. Not clicked live: Manage billing, plan-column checkout (incl. plan change for an existing subscriber), sign-in-then-checkout. Signed-out + once-only notice is ~760px, so Chrome scrolls once. The sign-up hint was not clicked through in a real extension session. |
+| Popup redesign | release ready | Landed on `main`: compact account sheet, Plus/Pro/Max checkout columns from the contract (`billing:openCheckout {plan}`, validated against paid keys → `/app/billing?checkout=<plan>`), single Manage billing (`/app/billing`), signed-out Start free trial + Log in, paywall link renamed "Log in". Trial buttons (popup and paywall) send `billing:signUp`, which adds `screen_hint=signup` so the account site opens /signup; Log in keeps /login (cloud PR #16, deployed and smoke-checked 2026-10-24). The once-only notice now leads with Export functions and Search All Workflows, keeping the account/data disclosure as a fine-print line. 503 tests and `npm run verify` pass; stubbed-`chrome` screenshots of every state. Owner reviewed the reloaded dev popup on 2026-10-23. Manage billing and production OAuth sign-out/login passed on 2026-10-25. Not clicked live: plan-column checkout (incl. plan change for an existing subscriber), sign-in-then-checkout. Signed-out + once-only notice is ~760px, so Chrome scrolls once. The sign-up hint was not clicked through in a real extension session. |
 | Search All Workflows | release ready | Landed on `main` for any paid plan (ADR 0024); 493 tests and the Chromium harness (`npm run test:e2e:workflows`) pass. Authenticated US-org live acceptance passed on 2026-10-21: 327 rules, ~50 s cold index, cached search usable in ~3 s on reopen, 6 function-source gaps (1 unavailable, 5 name-only). Not verified live: free-user upgrade modal (jsdom only), other DCs, 1024/1280 widths, delete/score/Cliq types. Known nit: after Esc, a scope-chip click then immediate typing can miss search focus. Unreleased; upgrade-modal copy needs owner approval. |
-| Automation Map | landed on `main` (`b270898`), not released; labelled **Beta** | Integrated Pro/Max map and bounded fog teaser; acceptance and remaining owner steps below. A muted "Beta" pill sits beside the overlay title (aria-hidden, so the dialog name stays "Automation Map") and inside the Workflow Rules toolbar button (hidden below 1100px with the label). The Setup entry keeps only Zoho's "New" marker. Verified by `npm run verify` and the Chromium harness; not checked live in Zoho. |
+| Automation Map | landed on `main` (`b270898`), not released; labelled **Beta** | Integrated Pro/Max map and bounded fog teaser; acceptance and remaining owner steps below. A muted "Beta" pill sits beside the overlay title (aria-hidden, so the dialog name stays "Automation Map") and inside the Workflow Rules toolbar button (hidden below 1100px with the label). The Setup entry keeps only Zoho's "New" marker. Verified by `npm run verify`, the Chromium harness and full-Pro production acceptance on 2026-10-25 (Board/List/search/inspector/trace/field lens/warm reopen; partial coverage stays explicit). |
 | Agent context | done | Closed docs taxonomy, ADR log, living state, and guardrails are installed. |
 | Rare Zoho surfaces | in-progress | Editor mount/settings selectors and less common overlays still need observation as they appear. |
 
@@ -77,16 +77,32 @@ Listing copy and paste-ready dashboard/privacy/reviewer/What's new fields are in
     Matching website disclosure fix: private cloud PR #19 merged as `65b1fb6`; production
     workflow `40195756769` succeeded. Live privacy page contains the workflow/IndexedDB text
     (HTTP 200); API readiness is HTTP 200. No new permissions or data destinations.
-  - **Remaining:** Andrew's Zoho CRM session is signed out; the Zoho Accounts tab is left open
-    for owner login. Then reload the updated `dist-local` extension and check the card against
-    real Zoho chrome, links, export, workflow search, full map, and editor regression. Chrome Web
-    Store dashboard opened in the requested DevTools profile, but native accessibility returned
-    no controls and screenshots were unavailable; nothing was uploaded or submitted. Published
-    update-permission testing and a real live payment/webhook/entitlement round trip remain
-    unverified. Public branch push was blocked by automatic approval review because explicit
-    authorization for public source disclosure is required; owner approval is pending.
-    The existing release ZIP still comes from main before the stacking fix; rebuild it
-    after acceptance/landing. Do not land the visual fix or submit the store release before required acceptance.
+  - Authenticated production acceptance passed in Andrew after reloading `dist-local`, with the
+    owner's explicit **no CRM writes** constraint. Only configuration reads and local analysis/
+    downloads were exercised: no Save, Run/Execute, trigger, record or configuration mutation.
+    Announcement renders above Zoho's bottom bar, its map link navigates from Functions to the
+    workflow route and opens the full Pro map; it stays acknowledged on subsequent navigation.
+    Map: 327 rules / 924 functions / 182 modules, 273 explicit coverage gaps; settled Board,
+    List, search (including code), inspector, trace, field lens and warm reopen all work. Gaps
+    include 82 unavailable sources, 168 partial analyses and configuration reads Zoho did not
+    return; completeness is not claimed. Workflow search settles at 327 rules / 6 gaps and finds
+    criteria and linked-source matches. Search All Functions and its source preview still work.
+    JSON, CSV and Markdown downloads each account for 924 catalog entries: 842 sources plus
+    82 explicit skipped/error entries. Local files were parsed for structure/counts; no client
+    data, source, screenshots or identifiers were added to the repo.
+  - Owner approved the public branch push; it succeeded. [Release-fix PR #2](https://github.com/neilord/zoho-crm-devtools/pull/2)
+    has green CI; production dependency audit reports zero known vulnerabilities.
+  - **Remaining before store submission:** Chrome's Extension Update Testing Tool against the
+    published 2.3.0 build. Manifest comparison passed: `storage` only, no added required/optional
+    permissions or hosts, identical content-script matches. The official tool is prepared in a
+    temporary directory, but its macOS Chrome install flow needs device policy (or Chromium);
+    no OS policy was changed. A completed live payment → webhook → entitlement remains unverified
+    (test-mode lifecycle and live catalog configuration were checked previously). The store dashboard is now reachable through native computer use in the requested DevTools
+    profile, but Google requires password/MFA re-verification; the owner was asked to complete it.
+    Nothing was uploaded/submitted. `npm run zip` rebuilt the 2.4.0 production candidate with
+    the stacking fix, correct worker, no pinned key or dev entries, `storage` only and no host
+    permissions (SHA-256 `81675eb9b2f84701ff70ca7430884188749c2be847422e344f2f49d3b9c3752a`).
+
 
 - **Production service-worker fix** — landed on `main` (`cdb927f`). Every production build since the worker was added had `service-worker-loader.js` import
   the content-script chunk: CRXJS named both `src/background/index.ts` and `src/content/index.ts`
@@ -99,9 +115,8 @@ Listing copy and paste-ready dashboard/privacy/reviewer/What's new fields are in
   with the pinned unpacked key into `dist-local`. Verified: `npm run verify` (1,242 tests); headless
   Chromium with `dist` and `dist-local` both answer `billing:getEntitlement` and render the
   signed-out account card; an API call from the path-id `dist` worker fails CORS while the pinned
-  id (`lkgcneekmlnpcjcfeieehpokgmefpdde`) gets HTTP 401 (allowed). Not verified: owner's Chrome
-  with `dist-local`, sign-in, and the 2.4.0 line (the fix must also reach whatever tree the 2.4.0
-  ZIP is rebuilt from). The popup showed "Open Zoho CRM to use tools" on a CRM tab in the owner's
+  id (`lkgcneekmlnpcjcfeieehpokgmefpdde`) gets HTTP 401 (allowed). Owner's Chrome with `dist-local` and fresh sign-in passed on 2026-10-25 (final acceptance above);
+  the 2.4.0 ZIP must be rebuilt after the remaining release fix lands. The popup showed "Open Zoho CRM to use tools" on a CRM tab in the owner's
   report; not investigated.
 
 - **Automation Map polish and performance** — landed on `main` (squashed, ADR 0033); not released.
@@ -113,7 +128,7 @@ Listing copy and paste-ready dashboard/privacy/reviewer/What's new fields are in
   62→1–3 of 120, search work over 20 keys 437ms→119ms. Verified: `npm run verify`,
   `npm run test:e2e:automation-map`, two independent screenshot reviews against a baseline, and a
   read-only live pass in the owner's org, which is in **teaser** mode (no console errors; fog has no
-  slabs; inspector framing good). Not verified live: full (Pro) mode on a real org. Known open:
+  slabs; inspector framing good). Full (Pro) production mode passed live on 2026-10-25 (final acceptance above). Known open:
   floating chrome can overlap content after a user zoom or pan; at 1024px a column can touch the
   inspector at the 45% floor; wheel can pan into empty space (no pan limits); the zoom readout jumps
   to its final value during a glide; Upgrade CTA count unchanged (owner decision); dagre worker,
