@@ -1,3 +1,4 @@
+import { automationMapComingSoon } from '../../features/automation-map-gate';
 import { mapIcon } from '../automation-map/entry/icon';
 import { searchAllFunctionsIcon } from '../functions/dom';
 
@@ -25,8 +26,11 @@ const BUTTON_CSS =
     `:is(#${WORKFLOW_SEARCH_BUTTON_ID},#${AUTOMATION_MAP_BUTTON_ID})`,
   ) +
   `
-#${AUTOMATION_MAP_BUTTON_ID} .zcdt-beta{padding:2px 5px;border-radius:999px;box-shadow:inset 0 0 0 1px #c9cfdc;color:#5f6b80;font-size:10px;font-weight:600;letter-spacing:.04em;text-transform:uppercase}
-@media(max-width:1100px){#${AUTOMATION_MAP_BUTTON_ID}{width:34px;padding:0;justify-content:center}#${AUTOMATION_MAP_BUTTON_ID} span{display:none}}
+#${AUTOMATION_MAP_BUTTON_ID}{position:relative}
+#${AUTOMATION_MAP_BUTTON_ID} .zcdt-beta,#${AUTOMATION_MAP_BUTTON_ID} .zcdt-soon{padding:2px 5px;border-radius:999px;box-shadow:inset 0 0 0 1px #c9cfdc;color:#5f6b80;font-size:10px;font-weight:600;letter-spacing:.04em;text-transform:uppercase}
+#${AUTOMATION_MAP_BUTTON_ID} .zcdt-soon{padding:2px 6px;background:#fdf0d2;box-shadow:none;color:#8a5a00;font-weight:700;line-height:1.3}
+#${AUTOMATION_MAP_BUTTON_ID} .zcdt-soon-dot{display:none;position:absolute;top:-4px;right:-4px;width:9px;height:9px;border-radius:50%;background:#d99a1e;box-shadow:0 0 0 2px #fff}
+@media(max-width:1100px){#${AUTOMATION_MAP_BUTTON_ID}{width:34px;padding:0;justify-content:center}#${AUTOMATION_MAP_BUTTON_ID} span{display:none}#${AUTOMATION_MAP_BUTTON_ID} .zcdt-soon-dot{display:block}}
 `;
 
 let activeHandler: (event: MouseEvent) => void = () => {};
@@ -82,7 +86,7 @@ export function removeWorkflowSearchButton(doc: Document = document): void {
   doc.getElementById(WORKFLOW_SEARCH_BUTTON_STYLE_ID)?.remove();
 }
 
-/** The map is available to every plan; its store decides full access versus preview. */
+/** The map is available to every plan; its store decides full access versus preview (or, while gated, the waitlist opens). */
 export function injectAutomationMapButton(onOpen: () => void): void {
   const search = document.getElementById(WORKFLOW_SEARCH_BUTTON_ID);
   if (!search) {
@@ -96,13 +100,25 @@ export function injectAutomationMapButton(onOpen: () => void): void {
     button.id = AUTOMATION_MAP_BUTTON_ID;
     button.type = 'button';
     button.title = 'See what runs in this CRM and what can change each field';
-    button.setAttribute('aria-label', 'Automation Map (Beta)');
     const label = document.createElement('span');
     label.textContent = 'Automation Map';
-    const beta = document.createElement('span');
-    beta.className = 'zcdt-beta';
-    beta.textContent = 'Beta';
-    button.append(mapIcon(), label, beta);
+    const badge = document.createElement('span');
+    if (automationMapComingSoon()) {
+      // Gated (ADR 0035): the pill replaces Beta; under 1100px a dot stands in for the hidden label.
+      button.title = 'Automation Map is coming soon to Pro. Click to join the waitlist.';
+      button.setAttribute('aria-label', 'Automation Map, coming soon');
+      badge.className = 'zcdt-soon';
+      badge.textContent = 'Coming soon';
+      const dot = document.createElement('i');
+      dot.className = 'zcdt-soon-dot';
+      dot.setAttribute('aria-hidden', 'true');
+      button.append(mapIcon(), label, badge, dot);
+    } else {
+      button.setAttribute('aria-label', 'Automation Map (Beta)');
+      badge.className = 'zcdt-beta';
+      badge.textContent = 'Beta';
+      button.append(mapIcon(), label, badge);
+    }
     button.addEventListener('click', (event) => {
       event.preventDefault();
       onOpen();

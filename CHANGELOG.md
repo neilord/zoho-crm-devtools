@@ -4,8 +4,10 @@
 
 - Added Search All Workflows on Setup › Workflow Rules: search criteria, actions, field updates
   and linked functions across every rule. Included in every paid plan.
-- Added Automation Map (Beta): see how workflow rules, field updates and functions connect on one
-  zoomable map. Included in Pro and Max.
+- Automation Map is coming soon to Pro: a waitlist popup (with a static preview) replaces the
+  map everywhere it can be opened, and the Workflow Rules button, Setup entries and What's new
+  card are labelled "Coming soon". Pro and Max members are on the waitlist automatically; the map
+  turns on for them when it is released. It reads nothing from Zoho until then.
 - Added a one-time "What's new" card introducing these tools. It stays until you click Got it,
   close it, or open one of its links.
 - Added optional account sign-in in a browser tab. All existing features stay free forever,

@@ -392,6 +392,19 @@
   white-space: nowrap;
 }
 
+.wn-soon {
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: #fdf0d2;
+  color: #8a5a00;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  line-height: 1.5;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
 .wn-actions {
   display: flex;
   align-items: center;

@@ -1,0 +1,425 @@
+/*
+ * Automation Map "Coming soon" waitlist popup (ADR 0035). Light DOM on document.body, so every
+ * rule is scoped under [data-zcdt-waitlist] and resets the properties Zoho's page CSS could leak
+ * into. Palette and stacking mirror the upgrade modal.
+ */
+[data-zcdt-waitlist] {
+  --zw-bg: #ffffff;
+  --zw-surface: #f7f9fc;
+  --zw-border: #e2e6ee;
+  --zw-text: #1d2638;
+  --zw-body: #3d4657;
+  --zw-muted: #6b7488;
+  --zw-accent: #2f6df0;
+  --zw-accent-hover: #2458c9;
+  --zw-accent-soft: #eaf1fe;
+  --zw-ok: #2e9e5b;
+  --zw-soon-bg: #fdf0d2;
+  --zw-soon-text: #8a5a00;
+  --zw-note-bg: #fff8e6;
+  --zw-note-border: #f1dba2;
+  --zw-note-text: #6b4b00;
+  --zw-font: "Zoho_Puvi_Regular", "Segoe UI", system-ui, -apple-system, sans-serif;
+
+  position: fixed;
+  inset: 0;
+  /* Same layer as the upgrade modal: above the corner promo card, below the search overlay. */
+  z-index: 2147482500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(20, 26, 40, 0.45);
+  font-family: var(--zw-font);
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--zw-text);
+  animation: zw-fade 140ms ease-out;
+}
+
+[data-zcdt-waitlist] *,
+[data-zcdt-waitlist] *::before,
+[data-zcdt-waitlist] *::after {
+  box-sizing: border-box;
+}
+
+@keyframes zw-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes zw-rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes zw-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+[data-zcdt-waitlist] .zw-dialog {
+  position: relative;
+  width: 100%;
+  max-width: 720px;
+  max-height: calc(100vh - 32px);
+  overflow-x: hidden;
+  overflow-y: auto;
+  border: 1px solid var(--zw-border);
+  border-radius: 12px;
+  background: var(--zw-bg);
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.35);
+  outline: 0;
+  animation: zw-rise 180ms ease-out;
+}
+
+/* Static illustration: 330px at full width, shrinking with the viewport; fades into the card. */
+[data-zcdt-waitlist] .zw-preview {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 720 / 400;
+  max-height: 330px;
+  overflow: hidden;
+  pointer-events: none;
+  user-select: none;
+  background: #f3f5f9;
+}
+
+[data-zcdt-waitlist] .zw-preview::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0;
+  height: 90px;
+  background: linear-gradient(rgba(255, 255, 255, 0), #ffffff);
+}
+
+[data-zcdt-waitlist] .zw-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+[data-zcdt-waitlist] .zw-t {
+  font-family: var(--zw-font);
+  fill: var(--zw-text);
+}
+
+[data-zcdt-waitlist] .zw-plate {
+  fill: rgba(255, 255, 255, 0.92);
+}
+
+[data-zcdt-waitlist] .zw-col {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  fill: #646d82;
+}
+
+[data-zcdt-waitlist] .zw-ntitle {
+  font-size: 11px;
+  font-weight: 600;
+}
+
+[data-zcdt-waitlist] .zw-nsub {
+  font-size: 10px;
+  fill: #5f687b;
+}
+
+[data-zcdt-waitlist] .zw-tab {
+  font-size: 11px;
+  font-weight: 600;
+  dominant-baseline: central;
+  fill: #5f687b;
+}
+
+[data-zcdt-waitlist] .zw-tab-on {
+  fill: var(--zw-accent);
+}
+
+[data-zcdt-waitlist] .zw-tab-strong {
+  fill: var(--zw-text);
+}
+
+[data-zcdt-waitlist] .zw-search {
+  font-size: 11px;
+  dominant-baseline: central;
+  fill: #5f687b;
+}
+
+[data-zcdt-waitlist] .zw-zoom {
+  font-size: 13px;
+  dominant-baseline: central;
+  fill: var(--zw-body);
+}
+
+[data-zcdt-waitlist] .zw-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.15);
+  color: var(--zw-body);
+  cursor: pointer;
+}
+
+[data-zcdt-waitlist] .zw-close:hover {
+  background: #ffffff;
+  color: var(--zw-text);
+}
+
+[data-zcdt-waitlist] .zw-body {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 6px 32px 28px;
+}
+
+[data-zcdt-waitlist] .zw-pills {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+[data-zcdt-waitlist] .zw-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font: 700 11px / 1.5 var(--zw-font);
+  letter-spacing: 0.06em;
+}
+
+[data-zcdt-waitlist] .zw-pill-soon {
+  background: var(--zw-soon-bg);
+  color: var(--zw-soon-text);
+}
+
+[data-zcdt-waitlist] .zw-pill-pro {
+  background: var(--zw-accent-soft);
+  color: var(--zw-accent-hover);
+}
+
+[data-zcdt-waitlist] .zw-pill-ok {
+  padding-left: 6px;
+  background: #e3f4ea;
+  color: #1f7a45;
+}
+
+[data-zcdt-waitlist] .zw-text {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+[data-zcdt-waitlist] .zw-title {
+  margin: 0;
+  padding: 0;
+  font: 700 22px / 1.25 var(--zw-font);
+  color: var(--zw-text);
+}
+
+[data-zcdt-waitlist] .zw-copy {
+  max-width: 600px;
+  margin: 0;
+  color: var(--zw-body);
+}
+
+[data-zcdt-waitlist] .zw-benefits {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+[data-zcdt-waitlist] .zw-benefits li {
+  display: flex;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  color: var(--zw-body);
+  font-size: 13px;
+}
+
+[data-zcdt-waitlist] .zw-tick {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  margin-top: 1px;
+  border-radius: 50%;
+  background: #e3f4ea;
+  color: var(--zw-ok);
+}
+
+[data-zcdt-waitlist] .zw-tick svg {
+  stroke-width: 3;
+}
+
+[data-zcdt-waitlist] .zw-note {
+  margin: 0;
+  padding: 9px 12px;
+  border: 1px solid var(--zw-note-border);
+  border-radius: 6px;
+  background: var(--zw-note-bg);
+  color: var(--zw-note-text);
+  font-size: 13px;
+}
+
+[data-zcdt-waitlist] .zw-cta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-top: 4px;
+  min-height: 40px;
+}
+
+[data-zcdt-waitlist] button {
+  margin: 0;
+  font-family: var(--zw-font);
+  text-transform: none;
+  letter-spacing: normal;
+  cursor: pointer;
+}
+
+[data-zcdt-waitlist] .zw-primary,
+[data-zcdt-waitlist] .zw-neutral,
+[data-zcdt-waitlist] .zw-ghost {
+  height: 40px;
+  padding: 0 18px;
+  border: 0;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1;
+  box-shadow: none;
+  transition:
+    background-color 120ms ease,
+    border-color 120ms ease;
+}
+
+[data-zcdt-waitlist] .zw-primary {
+  background: var(--zw-accent);
+  color: #ffffff;
+}
+
+[data-zcdt-waitlist] .zw-primary:hover {
+  background: var(--zw-accent-hover);
+}
+
+[data-zcdt-waitlist] .zw-neutral {
+  border: 1px solid #b9c0cf;
+  background: #ffffff;
+  color: #313949;
+}
+
+[data-zcdt-waitlist] .zw-neutral:hover {
+  border-color: #6a78ff;
+  background: #f7f9ff;
+  color: #2446d8;
+}
+
+[data-zcdt-waitlist] .zw-ghost {
+  padding: 0 12px;
+  background: transparent;
+  color: var(--zw-accent);
+}
+
+[data-zcdt-waitlist] .zw-ghost:hover {
+  color: var(--zw-accent-hover);
+  background: var(--zw-accent-soft);
+}
+
+[data-zcdt-waitlist] .zw-primary:focus-visible,
+[data-zcdt-waitlist] .zw-neutral:focus-visible,
+[data-zcdt-waitlist] .zw-ghost:focus-visible,
+[data-zcdt-waitlist] .zw-close:focus-visible {
+  outline: 0;
+  box-shadow: 0 0 0 3px rgba(47, 109, 240, 0.35);
+}
+
+[data-zcdt-waitlist] .zw-fine {
+  margin-left: auto;
+  color: var(--zw-muted);
+  font-size: 12px;
+}
+
+[data-zcdt-waitlist] .zw-wait {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--zw-body);
+}
+
+[data-zcdt-waitlist] .fs-spinner {
+  flex: 0 0 auto;
+  color: var(--zw-accent);
+  animation: zw-spin 800ms linear infinite;
+}
+
+@media (max-width: 759px) {
+  [data-zcdt-waitlist] .zw-body {
+    padding: 4px 20px 22px;
+  }
+
+  [data-zcdt-waitlist] .zw-benefits {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+  }
+
+  [data-zcdt-waitlist] .zw-title {
+    font-size: 20px;
+  }
+
+  [data-zcdt-waitlist] .zw-cta {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  [data-zcdt-waitlist] .zw-fine {
+    margin-left: 0;
+    text-align: center;
+  }
+}
+
+/* Short windows: the preview gives up height first, down to a floor, then the dialog scrolls. */
+@media (max-height: 640px) {
+  [data-zcdt-waitlist] .zw-preview {
+    max-height: max(160px, calc(100vh - 400px));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-zcdt-waitlist],
+  [data-zcdt-waitlist] .zw-dialog,
+  [data-zcdt-waitlist] .fs-spinner {
+    animation: none;
+  }
+}

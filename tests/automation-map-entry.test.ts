@@ -1,4 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+
+// These tests cover the map's own lifecycle, so the Coming soon gate is off here. The gate itself
+// is covered by automation-map-waitlist.test.ts.
+vi.mock('../src/features/automation-map-gate', () => ({
+  AUTOMATION_MAP_COMING_SOON: false,
+  automationMapComingSoon: () => false,
+}));
+
 import { FREE } from '../src/billing/entitlement';
 import {
   type AutomationMapEntryDependencies,

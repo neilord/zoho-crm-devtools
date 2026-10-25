@@ -1,7 +1,9 @@
 # Privacy And Permissions
 
 This policy describes the 2.4.0 account, Export functions, Search All Workflows and Automation Map
-(Beta) release of Zoho CRM DevTools.
+(coming soon) release of Zoho CRM DevTools. Automation Map is not available yet: while it is
+gated, opening it shows a waitlist popup and reads nothing from Zoho. The map disclosures below
+describe how it will behave when it is released.
 Existing editor features remain free and work without an account.
 
 ## Local editor features

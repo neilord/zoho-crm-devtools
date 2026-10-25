@@ -1,3 +1,4 @@
+import { automationMapComingSoon } from '../../features/automation-map-gate';
 import { zohoSelectors } from './selectors';
 
 export const AUTOMATION_MAP_NEW_BADGE_UNTIL = '2027-01-31';
@@ -67,8 +68,19 @@ export function createSettingsMapEntry(
   const loader = doc.createElement('crm-ui-loaders');
   loader.append(sparkle);
   badge.append(loader);
+  // Gated (ADR 0035): our own amber pill follows Zoho's sparkle and ignores the sparkle's date cutoff.
+  // The narrow left nav gets the short "Soon" so the row stays on one line.
+  let soon: HTMLElement | null = null;
+  if (automationMapComingSoon()) {
+    soon = doc.createElement('span');
+    soon.className = 'zcdt-map-soon';
+    soon.textContent = nav ? 'Soon' : 'Coming soon';
+    soon.style.cssText = `display:inline-block;flex:0 0 auto;margin-left:${nav ? 6 : 8}px;padding:${nav ? '1px 5px' : '2px 7px'};border-radius:999px;background:#fdf0d2;color:#8a5a00;font:700 10px/1.4 "Zoho_Puvi_Regular","Segoe UI",system-ui,sans-serif;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap;vertical-align:middle;cursor:pointer`;
+    link.setAttribute('aria-label', 'Automation Map, coming soon');
+  }
   const showBadge = new Date().toISOString().slice(0, 10) <= AUTOMATION_MAP_NEW_BADGE_UNTIL;
   if (showBadge && nav) link.append(badge);
+  if (soon && nav) link.append(soon);
   link.addEventListener('click', (event) => {
     event.preventDefault();
     event.stopPropagation();
@@ -86,6 +98,13 @@ export function createSettingsMapEntry(
       item.append(doc.createTextNode(' '), badge);
       badge.style.cursor = 'pointer';
       badge.addEventListener('click', (event) => {
+        event.preventDefault();
+        onOpen();
+      });
+    }
+    if (soon) {
+      item.append(doc.createTextNode(' '), soon);
+      soon.addEventListener('click', (event) => {
         event.preventDefault();
         onOpen();
       });

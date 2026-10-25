@@ -105,6 +105,12 @@ export function closeUpgradeModals(): void {
   for (const close of [...openModalClosers]) close();
 }
 
+/** Sibling modals (the Automation Map waitlist) join the same handoff close. */
+export function registerUpgradeModalCloser(close: () => void): () => void {
+  openModalClosers.add(close);
+  return () => openModalClosers.delete(close);
+}
+
 const FOCUSABLE = 'button:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])';
 
 /**
